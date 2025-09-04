@@ -15,6 +15,8 @@ const studentSchema = new mongoose.Schema(
     walletBalance: { type: Number, default: 0 },
     // Student can belong to multiple modules; default to all
     modules: { type: [String], enum: ['library', 'food', 'store'], default: ['library', 'food', 'store'] },
+    // Soft status flag
+    active: { type: Boolean, default: true },
   },
   { timestamps: true }
 );

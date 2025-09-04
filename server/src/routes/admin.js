@@ -25,6 +25,19 @@ router.get('/students/:id', async (req, res) => {
 // All admin routes require admin role
 router.use(auth(), requireRoles('admin'));
 
+// Activate/Deactivate a student (admin only)
+router.put('/students/:id/active', async (req, res) => {
+  try {
+    const { active } = req.body;
+    if (typeof active !== 'boolean') return res.status(400).json({ message: 'active must be boolean' });
+    const s = await Student.findByIdAndUpdate(req.params.id, { active }, { new: true });
+    if (!s) return res.status(404).json({ message: 'Not found' });
+    return res.json(s);
+  } catch (e) {
+    return res.status(400).json({ message: e.message });
+  }
+});
+
 // Reset a student's password (admin)
 router.post('/students/:id/reset-password', async (req, res) => {
   try {

@@ -86,6 +86,72 @@ mongoose.connection.once('connected', async () => {
       await Item.insertMany(defaults);
       console.log('Seeded default food items');
     }
+
+    // Seed 20 best books into library if empty
+    try {
+      const libCount = await Item.countDocuments({ type: 'library' });
+      if (libCount === 0) {
+        const libraryDefaults = [
+          { type: 'library', name: 'To Kill a Mockingbird', author: 'Harper Lee', year: 1960, topics: ['Fiction', 'Classic'], quantity: 8 },
+          { type: 'library', name: '1984', author: 'George Orwell', year: 1949, topics: ['Dystopia', 'Politics'], quantity: 8 },
+          { type: 'library', name: 'The Great Gatsby', author: 'F. Scott Fitzgerald', year: 1925, topics: ['Classic'], quantity: 6 },
+          { type: 'library', name: 'Pride and Prejudice', author: 'Jane Austen', year: 1813, topics: ['Romance', 'Classic'], quantity: 6 },
+          { type: 'library', name: 'The Catcher in the Rye', author: 'J.D. Salinger', year: 1951, topics: ['Fiction'], quantity: 6 },
+          { type: 'library', name: 'The Hobbit', author: 'J.R.R. Tolkien', year: 1937, topics: ['Fantasy'], quantity: 6 },
+          { type: 'library', name: 'Fahrenheit 451', author: 'Ray Bradbury', year: 1953, topics: ['Dystopia'], quantity: 6 },
+          { type: 'library', name: 'Jane Eyre', author: 'Charlotte Brontë', year: 1847, topics: ['Gothic', 'Classic'], quantity: 5 },
+          { type: 'library', name: 'Brave New World', author: 'Aldous Huxley', year: 1932, topics: ['Dystopia'], quantity: 5 },
+          { type: 'library', name: 'The Alchemist', author: 'Paulo Coelho', year: 1988, topics: ['Philosophy', 'Fiction'], quantity: 8 },
+          { type: 'library', name: 'Sapiens', author: 'Yuval Noah Harari', year: 2011, topics: ['History', 'Anthropology'], quantity: 5 },
+          { type: 'library', name: 'Atomic Habits', author: 'James Clear', year: 2018, topics: ['Self-help', 'Productivity'], quantity: 10 },
+          { type: 'library', name: 'Deep Work', author: 'Cal Newport', year: 2016, topics: ['Productivity'], quantity: 6 },
+          { type: 'library', name: 'Thinking, Fast and Slow', author: 'Daniel Kahneman', year: 2011, topics: ['Psychology'], quantity: 6 },
+          { type: 'library', name: 'The Pragmatic Programmer', author: 'Andrew Hunt, David Thomas', year: 1999, topics: ['Software'], quantity: 6 },
+          { type: 'library', name: 'Clean Code', author: 'Robert C. Martin', year: 2008, topics: ['Software'], quantity: 6 },
+          { type: 'library', name: 'Introduction to Algorithms', author: 'Cormen et al.', year: 2009, topics: ['CS', 'Algorithms'], quantity: 4 },
+          { type: 'library', name: 'The Art of Computer Programming', author: 'Donald Knuth', year: 1968, topics: ['CS'], quantity: 3 },
+          { type: 'library', name: 'Cracking the Coding Interview', author: 'Gayle Laakmann McDowell', year: 2015, topics: ['Interviews', 'CS'], quantity: 6 },
+          { type: 'library', name: 'The Lean Startup', author: 'Eric Ries', year: 2011, topics: ['Business', 'Startups'], quantity: 6 },
+        ];
+        await Item.insertMany(libraryDefaults);
+        console.log('Seeded default library books (20)');
+      }
+    } catch (e) {
+      console.warn('Library seed skipped:', e.message);
+    }
+
+    // Seed basic supermarket items for store if empty
+    try {
+      const storeCount = await Item.countDocuments({ type: 'store' });
+      if (storeCount === 0) {
+        const storeDefaults = [
+          { type: 'store', name: 'Notebook (200 pages)', price: 60, quantity: 120 },
+          { type: 'store', name: 'Ball Pen (Blue)', price: 10, quantity: 500 },
+          { type: 'store', name: 'Ball Pen (Black)', price: 10, quantity: 400 },
+          { type: 'store', name: 'Pencil HB', price: 8, quantity: 300 },
+          { type: 'store', name: 'Eraser', price: 5, quantity: 250 },
+          { type: 'store', name: 'Sharpener', price: 7, quantity: 200 },
+          { type: 'store', name: 'Highlighter', price: 25, quantity: 150 },
+          { type: 'store', name: 'A4 Paper (100 sheets)', price: 120, quantity: 80 },
+          { type: 'store', name: 'Ruler 30cm', price: 15, quantity: 180 },
+          { type: 'store', name: 'Glue Stick', price: 20, quantity: 140 },
+          { type: 'store', name: 'Stapler', price: 90, quantity: 60 },
+          { type: 'store', name: 'Staples (Box)', price: 30, quantity: 100 },
+          { type: 'store', name: 'Calculator (Scientific)', price: 650, quantity: 25 },
+          { type: 'store', name: 'USB Drive 32GB', price: 450, quantity: 40 },
+          { type: 'store', name: 'Water Bottle 1L', price: 120, quantity: 70 },
+          { type: 'store', name: 'Instant Noodles', price: 30, quantity: 200 },
+          { type: 'store', name: 'Chocolate Bar', price: 25, quantity: 180 },
+          { type: 'store', name: 'Biscuits Pack', price: 20, quantity: 220 },
+          { type: 'store', name: 'Biscuit Cream Pack', price: 25, quantity: 200 },
+          { type: 'store', name: 'Chips Packet', price: 20, quantity: 220 },
+        ];
+        await Item.insertMany(storeDefaults);
+        console.log('Seeded default store items');
+      }
+    } catch (e) {
+      console.warn('Store seed skipped:', e.message);
+    }
   } catch (e) {
     console.warn('Food seed skipped:', e.message);
   }
