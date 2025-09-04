@@ -36,7 +36,10 @@ router.get('/balance', auth(), async (req, res) => {
 router.get('/history', auth(), async (req, res) => {
   try {
     if (!req.student) return res.status(401).json({ message: 'Unauthorized' });
-    const list = await WalletTransaction.find({ studentId: req.student._id }).sort({ createdAt: -1 }).lean();
+    const filter = { studentId: req.student._id };
+    if (req.query.receiptId) filter.receiptId = req.query.receiptId;
+    if (req.query.module) filter.module = req.query.module;
+    const list = await WalletTransaction.find(filter).sort({ createdAt: -1 }).lean();
     return res.json(list);
   } catch (e) {
     return res.status(500).json({ message: e.message });

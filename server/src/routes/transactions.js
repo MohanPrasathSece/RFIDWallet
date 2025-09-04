@@ -42,6 +42,11 @@ router.post('/', async (req, res) => {
           rfid_uid: student.rfid_uid || '',
           amount,
           type: 'debit',
+          itemId: item._id,
+          itemName: item.name,
+          itemPrice: item.price,
+          module: body.module,
+          receiptId: body.receiptId,
         });
       } catch {}
       // Emit wallet update
@@ -61,10 +66,11 @@ router.post('/', async (req, res) => {
 
 // List transactions with filters: ?module=&user=&status=&from=&to= (public)
 router.get('/', async (req, res) => {
-  const { module, user, status, from, to } = req.query;
+  const { module, user, student, status, from, to } = req.query;
   const filter = {};
   if (module) filter.module = module;
   if (user) filter.user = user;
+  if (student) filter.student = student;
   if (status) filter.status = status;
   if (from || to) {
     filter.createdAt = {};

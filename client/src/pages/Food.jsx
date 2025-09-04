@@ -43,10 +43,23 @@ export default function Food() {
       return;
     }
     setError('');
+    // Check if adding this item would exceed wallet balance
+    const price = Number(it.price) || 0;
+    const proposed = cartTotal + price;
+    if (Number(student?.walletBalance || 0) < proposed) {
+      setError('Insufficient wallet balance for this item.');
+      return;
+    }
     setCart(prev => {
       const idx = prev.findIndex(x => x._id === it._id);
       if (idx >= 0) {
         const copy = [...prev];
+        // Also ensure increasing existing item doesn't exceed balance
+        const nextTotal = cartTotal + price; // cartTotal reflects prev state
+        if (Number(student?.walletBalance || 0) < nextTotal) {
+          setError('Insufficient wallet balance for this item.');
+          return prev;
+        }
         copy[idx] = { ...copy[idx], qty: copy[idx].qty + 1 };
         return copy;
       }
@@ -55,8 +68,20 @@ export default function Food() {
   };
 
   const updateQty = (id, delta) => {
-    setCart(prev => prev
-      .map(it => it._id === id ? { ...it, qty: Math.max(1, it.qty + delta) } : it));
+    setError('');
+    setCart(prev => {
+      const item = prev.find(x => x._id === id);
+      if (!item) return prev;
+      if (delta > 0) {
+        const price = Number(item.price) || 0;
+        const proposed = cartTotal + price; // based on previous state
+        if (Number(student?.walletBalance || 0) < proposed) {
+          setError('Insufficient wallet balance to increase quantity.');
+          return prev;
+        }
+      }
+      return prev.map(it => it._id === id ? { ...it, qty: Math.max(1, it.qty + delta) } : it);
+    });
   };
 
   const removeFromCart = (id) => setCart(prev => prev.filter(it => it._id !== id));
@@ -111,10 +136,17 @@ export default function Food() {
     if (cart.length === 0) return;
     try {
       setError('');
+      // Final guard before purchase
+      if (cartTotal > Number(student?.walletBalance || 0)) {
+        setError('Insufficient wallet balance to proceed.');
+        setShowConfirm(false);
+        return;
+      }
       // Print/save receipt first
       printBill();
       saveBillPdf();
-      // Process items sequentially
+      // Process items sequentially with a single receiptId for this purchase
+      const receiptId = `FOOD-${Date.now()}-${Math.random().toString(36).slice(2,6)}`;
       for (const c of cart) {
         for (let i = 0; i < c.qty; i += 1) {
           await api.post('/transactions', {
@@ -123,6 +155,7 @@ export default function Food() {
             module: 'food',
             action: 'purchase',
             status: 'approved',
+            receiptId,
           });
         }
       }
@@ -361,12 +394,15 @@ export default function Food() {
               ))}
               <div className="flex items-center justify-end gap-2 pt-2">
                 <button className="px-3 py-1 bg-gray-100 rounded" onClick={clearCart}>Clear</button>
-                <button disabled={!student || cart.length===0}
+                <button disabled={!student || cart.length===0 || cartTotal > Number(student?.walletBalance || 0)}
                         onClick={() => setShowConfirm(true)}
                         className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded disabled:opacity-60">
                   Proceed
                 </button>
               </div>
+              {student && cart.length>0 && cartTotal > Number(student?.walletBalance || 0) && (
+                <div className="mt-2 text-sm text-red-600">Insufficient wallet balance. Remove items or reduce quantities.</div>
+              )}
             </div>
           )}
         </div>

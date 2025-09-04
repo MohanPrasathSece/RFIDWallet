@@ -12,6 +12,7 @@ import AddFood from './pages/AddFood.jsx';
 import StudentDashboard from './pages/StudentDashboard.jsx';
 import StudentHistory from './pages/StudentHistory.jsx';
 import StudentProfile from './pages/StudentProfile.jsx';
+import StudentPurchaseDetails from './pages/StudentPurchaseDetails.jsx';
 import AddStore from './pages/AddStore.jsx';
 
 export default function App() {
@@ -30,6 +31,7 @@ export default function App() {
       <Route path="/login" element={<Navigate to="/" replace />} />
       <Route path="/student" element={<StudentDashboard />} />
       <Route path="/student/history" element={<StudentHistory />} />
+      <Route path="/student/purchase/:receiptId" element={<StudentPurchaseDetails />} />
       <Route path="/student/profile" element={<StudentProfile />} />
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>

@@ -4,7 +4,7 @@ import { api } from '../shared/api';
 import { io } from 'socket.io-client';
 import { useAuth } from '../shared/AuthContext.jsx';
 
-export default function StudentDashboard() {
+function StudentDashboard() {
   const brandName = import.meta?.env?.VITE_BRAND_NAME || 'Greenfield College Cards';
   const navigate = useNavigate();
   const { logout } = useAuth();
@@ -112,7 +112,7 @@ export default function StudentDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 py-10 px-4">
+    <div className="min-h-screen bg-gradient-to-b from-white to-green-50/40 py-10 px-4">
       <div className="max-w-3xl mx-auto">
         {/* Top Bar */}
         <div className="flex items-center justify-between mb-5">
@@ -123,7 +123,7 @@ export default function StudentDashboard() {
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setMenuOpen(v=>!v)}
-              className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 text-white grid place-items-center shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              className="w-9 h-9 rounded-full bg-gradient-to-br from-green-500 to-green-600 text-white grid place-items-center shadow-md focus:outline-none focus:ring-2 focus:ring-green-300"
               aria-haspopup="menu"
               aria-expanded={menuOpen}
             >
@@ -141,9 +141,10 @@ export default function StudentDashboard() {
         {error && <div className="mb-4 text-sm text-red-600">{error}</div>}
 
         {/* Hero Card */}
-        <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm mb-6">
-          <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-emerald-200/30 blur-2xl" />
-          <div className="absolute bottom-0 -left-10 w-60 h-60 rounded-full bg-indigo-200/30 blur-3xl" />
+        <div className="relative overflow-hidden rounded-2xl border border-green-100 bg-white/80 backdrop-blur shadow-sm mb-6">
+          <div className="absolute -top-16 -right-10 w-56 h-56 rounded-full bg-green-100/70 blur-3xl" />
+          <div className="absolute bottom-0 -left-10 w-60 h-60 rounded-full bg-green-50/80 blur-3xl" />
+          <div className="absolute inset-0 bg-gradient-to-br from-green-50/80 via-white/60 to-green-50/80 pointer-events-none" />
           <div className="relative p-5 md:p-6">
             {initLoading ? (
               <div className="animate-pulse flex items-center gap-4">
@@ -157,42 +158,41 @@ export default function StudentDashboard() {
             ) : (
               <div className="flex items-center justify-between gap-4 flex-wrap">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 text-white grid place-items-center font-semibold">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-green-600 text-white grid place-items-center font-semibold shadow">
                     {profile.name ? profile.name.split(' ').map(s=>s[0]).slice(0,2).join('') : 'ST'}
                   </div>
                   <div>
-                    <div className="text-sm text-slate-500">{profile.name || '—'}</div>
-                    <div className="text-xs font-mono text-slate-500">RFID: {profile.rfid_uid || '—'}</div>
+                    <div className="text-sm text-slate-800 font-medium">{profile.name || '—'}</div>
+                    <div className="text-[11px] font-mono text-slate-500">RFID: {profile.rfid_uid || '—'}</div>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-xs text-slate-500">Current Balance</div>
-                  <div className="text-3xl font-semibold text-slate-800">₹ {balance?.toFixed(2)}</div>
+                  <div className="inline-flex items-center gap-2 rounded-full bg-green-50 px-3 py-1 text-[11px] text-green-700 ring-1 ring-green-200">
+                    <span className="h-2 w-2 rounded-full bg-green-500"></span>
+                    Balance
+                  </div>
+                  <div className="mt-1 text-3xl font-semibold text-slate-800">₹ {balance?.toFixed(2)}</div>
                 </div>
               </div>
             )}
-            <div className="mt-4 flex gap-3 items-center">
-              <input className="input flex-1" type="number" placeholder="Add amount (₹)" value={amount} onChange={e=>setAmount(e.target.value)} />
-              <button className="btn-primary whitespace-nowrap" onClick={handleAdd} disabled={loading}>
+            <div className="mt-4 flex gap-2 items-center">
+              <input className="input-sm rounded-xl flex-1 bg-white placeholder-slate-400 focus:ring-green-300" type="number" placeholder="Add amount (₹)" value={amount} onChange={e=>setAmount(e.target.value)} />
+              <button className="rounded-xl whitespace-nowrap px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm disabled:opacity-60" onClick={handleAdd} disabled={loading}>
                 {loading ? 'Processing…' : 'Add Funds'}
               </button>
             </div>
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="p-4 flex items-center justify-between">
-            <div className="text-lg font-medium text-slate-800">Quick Actions</div>
-          </div>
-          <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <button onClick={() => navigate('/student/history')} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-sm text-left">
-              <div className="font-medium">View History</div>
+        {/* History Button */}
+        <div className="rounded-2xl border border-green-100 bg-white/80 backdrop-blur shadow-sm">
+          <div className="p-4">
+            <button onClick={() => navigate('/student/history')} className="w-full px-4 py-3 rounded-xl ring-1 ring-green-200 bg-white hover:bg-green-50 text-slate-700 text-sm text-left transition">
+              <div className="font-medium flex items-center gap-2">
+                <span className="inline-block h-2 w-2 rounded-full bg-green-500"></span>
+                View History
+              </div>
               <div className="text-xs text-slate-500">See all your transactions</div>
-            </button>
-            <button onClick={() => navigate('/student/profile')} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-sm text-left">
-              <div className="font-medium">Profile</div>
-              <div className="text-xs text-slate-500">Manage your profile and password</div>
             </button>
           </div>
         </div>
@@ -202,3 +202,5 @@ export default function StudentDashboard() {
     </div>
   );
 }
+
+export default StudentDashboard;
