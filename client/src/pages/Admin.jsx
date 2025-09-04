@@ -115,7 +115,7 @@ export default function Admin() {
           <div className="flex items-center gap-3">
             <span className="text-sm text-gray-600 hidden md:block">{user?.name || 'Admin'}</span>
             <button
-              onClick={() => { logout(); navigate('/login'); }}
+              onClick={() => { logout(); navigate('/'); }}
               className="px-3 py-1.5 text-sm bg-gray-800 hover:bg-black text-white rounded"
             >Logout</button>
           </div>
