@@ -11,20 +11,55 @@ export default function FoodHistory() {
   const location = useLocation();
 
   useEffect(() => {
-    // Optional: accept student id via query string ?student=<id>
+    // Accept rollNo or student id via query string
     const params = new URLSearchParams(location.search);
+    const rollNo = params.get('rollNo');
     const s = params.get('student');
-    if (s) setStudentId(s);
+    (async () => {
+      try {
+        if (rollNo) {
+          setError('');
+          setLoading(true);
+          const { data } = await api.get('/students/find', { params: { rollNo } });
+          setStudentId(data?._id || '');
+          if (data?._id) {
+            const res = await api.get('/food/history', { params: { student: data._id } });
+            setHistory(res.data || []);
+          }
+        } else if (s) {
+          setStudentId(s);
+          setError('');
+          setLoading(true);
+          const res = await api.get('/food/history', { params: { student: s } });
+          setHistory(res.data || []);
+        }
+      } catch (e) {
+        setError(e?.response?.data?.message || e.message || 'Failed to load history');
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, [location.search]);
 
+  const resolveStudentId = async (value) => {
+    // If value looks like a Mongo ObjectId, use directly; otherwise treat as rollNo
+    const isObjectId = /^[a-f\d]{24}$/i.test(value);
+    if (isObjectId) return value;
+    const { data } = await api.get('/students/find', { params: { rollNo: value } });
+    return data?._id;
+  };
+
   const loadHistory = async () => {
-    if (!studentId) { setError('Enter a student id to load history'); return; }
+    if (!studentId) { setError('Enter roll number or student id to load history'); return; }
     try {
       setLoading(true); setError('');
-      const res = await api.get('/food/history', { params: { student: studentId } });
+      const id = await resolveStudentId(studentId);
+      if (!id) throw new Error('Student not found');
+      const res = await api.get('/food/history', { params: { student: id } });
       setHistory(res.data || []);
     } catch (e) {
       setError(e?.response?.data?.message || e.message || 'Failed to load history');
+      setHistory([]);
     } finally { setLoading(false); }
   };
 
@@ -42,8 +77,8 @@ export default function FoodHistory() {
         <div className="bg-white p-4 rounded shadow">
           <div className="flex gap-3 items-end">
             <div className="flex-1">
-              <label className="block text-sm text-gray-600 mb-1">Student Id</label>
-              <input value={studentId} onChange={e=>setStudentId(e.target.value)} placeholder="Paste student _id"
+              <label className="block text-sm text-gray-600 mb-1">Roll No or Student Id</label>
+              <input value={studentId} onChange={e=>setStudentId(e.target.value)} placeholder="Enter roll number or student _id"
                      className="w-full border rounded px-3 py-2" />
             </div>
             <button className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded" onClick={loadHistory} disabled={loading}>

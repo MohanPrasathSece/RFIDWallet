@@ -6,8 +6,8 @@ const Transaction = require('../models/Transaction');
 // Purchase history for food module (public for local use)
 router.get('/history', async (req, res) => {
   try {
-    const { student: studentId, rfidNumber } = req.query;
-    const student = await resolveStudent({ studentId, rfidNumber });
+    const { student: studentId, rfidNumber, rollNo, rfid_uid } = req.query;
+    const student = await resolveStudent({ studentId, rfidNumber, rollNo, rfid_uid });
     if (!student) return res.status(404).json({ message: 'Student not found' });
     const txs = await getCommerceHistory('food', student._id);
     // Map to include essential fields
@@ -16,7 +16,7 @@ router.get('/history', async (req, res) => {
       createdAt: tx.createdAt,
       action: tx.action,
       status: tx.status,
-      item: tx.item ? { _id: tx.item._id, name: tx.item.name } : null,
+      item: tx.item ? { _id: tx.item._id, name: tx.item.name, price: tx.item.price } : null,
       student: tx.student ? { _id: tx.student._id, name: tx.student.name, rfid: tx.student.rfid_uid } : null,
       notes: tx.notes || ''
     }));
@@ -39,7 +39,7 @@ router.get('/history-all', async (req, res) => {
       createdAt: tx.createdAt,
       action: tx.action,
       status: tx.status,
-      item: tx.item ? { _id: tx.item._id, name: tx.item.name } : null,
+      item: tx.item ? { _id: tx.item._id, name: tx.item.name, price: tx.item.price } : null,
       student: tx.student ? { _id: tx.student._id, name: tx.student.name, rfid: tx.student.rfid_uid } : null,
       notes: tx.notes || ''
     }));

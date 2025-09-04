@@ -42,8 +42,8 @@ export default function FoodScans() {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-3 py-2 text-left">When</th>
-                    <th className="px-3 py-2 text-left">Action</th>
                     <th className="px-3 py-2 text-left">Item</th>
+                    <th className="px-3 py-2 text-right">Amount</th>
                     <th className="px-3 py-2 text-left">Student</th>
                     <th className="px-3 py-2 text-left">RFID</th>
                     <th className="px-3 py-2 text-left">Status</th>
@@ -53,8 +53,8 @@ export default function FoodScans() {
                   {allHistory.map(row => (
                     <tr key={row._id} className="border-t">
                       <td className="px-3 py-2">{new Date(row.createdAt).toLocaleString()}</td>
-                      <td className="px-3 py-2 capitalize">{row.action}</td>
                       <td className="px-3 py-2">{row.item?.name || '-'}</td>
+                      <td className="px-3 py-2 text-right">₹ {Number(row.item?.price ?? 0).toFixed(2)}</td>
                       <td className="px-3 py-2">{row.student?.name || '-'}</td>
                       <td className="px-3 py-2">{row.student?.rfid || '-'}</td>
                       <td className="px-3 py-2 capitalize">{row.status || '-'}</td>

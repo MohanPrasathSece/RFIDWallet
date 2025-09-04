@@ -1,7 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 
 const links = [
-  { to: '/', label: 'Home', icon: '🏠' },
   { to: '/library', label: 'Library', icon: '📚' },
   { to: '/food', label: 'Food Court', icon: '🍔' },
   { to: '/store', label: 'Store', icon: '🛍️' },

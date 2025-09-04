@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../shared/api.js';
 import { io } from 'socket.io-client';
 import { Link } from 'react-router-dom';
+import { jsPDF } from 'jspdf';
 
 export default function Food() {
   const [rollNo, setRollNo] = useState('');
@@ -12,6 +13,8 @@ export default function Food() {
   const [allHistory, setAllHistory] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   // Items for listing
   const [items, setItems] = useState([]);
@@ -82,13 +85,35 @@ export default function Food() {
     w.close();
   };
 
+  const saveBillPdf = () => {
+    try {
+      const doc = new jsPDF();
+      const lineH = 8;
+      let y = 10;
+      const put = (text, x = 10) => { doc.text(String(text), x, y); y += lineH; };
+      put('Food Court Bill');
+      put(`Student: ${student?.name || ''}`);
+      put(`Roll No: ${student?.rollNo || ''}`);
+      put(`RFID: ${student?.rfid_uid || ''}`);
+      y += 2;
+      put('Items:');
+      cart.forEach(c => put(`- ${c.name}  x${c.qty}  = ₹ ${(c.qty * Number(c.price)).toFixed(2)}`));
+      y += 2;
+      put(`Total: ₹ ${cartTotal.toFixed(2)}`);
+      const ts = new Date().toISOString().replace(/[:.]/g, '-');
+      const file = `FoodBill_${student?.rollNo || student?.name || 'student'}_${ts}.pdf`;
+      doc.save(file);
+    } catch (_) {}
+  };
+
   const confirmAndPurchase = async () => {
     if (!student?._id) return;
     if (cart.length === 0) return;
     try {
       setError('');
-      // Optionally print bill before purchase
+      // Print/save receipt first
       printBill();
+      saveBillPdf();
       // Process items sequentially
       for (const c of cart) {
         for (let i = 0; i < c.qty; i += 1) {
@@ -104,8 +129,13 @@ export default function Food() {
       clearCart();
       setShowConfirm(false);
       await findStudent();
-      await loadHistory();
       await loadAllScans();
+      // Show confirmation message after successful post
+      setSuccessMsg('Order confirmed. Receipt has been printed and saved as PDF.');
+      setShowSuccessModal(true);
+      // Auto-hide after 5 seconds
+      setTimeout(() => setSuccessMsg(''), 5000);
+      // Keep selected student after order until user cancels manually
     } catch (e) {
       setError(e?.response?.data?.message || e.message || 'Failed to complete purchase');
     }
@@ -143,6 +173,14 @@ export default function Food() {
       setStudent(null);
       setError(e?.response?.data?.message || 'Error finding student.');
     }
+  };
+
+  const unscan = () => {
+    setStudent(null);
+    setRollNo('');
+    setRfid('');
+    clearCart();
+    // localStorage cleared by effect below
   };
 
   const connectRfidReader = async () => {
@@ -198,6 +236,29 @@ export default function Food() {
     return () => socket.disconnect();
   }, [student, rfid]);
 
+  // Persist student and cart across navigation
+  useEffect(() => {
+    try {
+      const savedStudent = localStorage.getItem('food_student');
+      const savedCart = localStorage.getItem('food_cart');
+      if (savedStudent) {
+        const s = JSON.parse(savedStudent);
+        setStudent(s);
+        setRollNo(s?.rollNo || '');
+        setRfid(s?.rfid_uid || '');
+      }
+      if (savedCart) setCart(JSON.parse(savedCart));
+    } catch (_) {}
+  }, []);
+
+  useEffect(() => {
+    try {
+      if (student) localStorage.setItem('food_student', JSON.stringify(student));
+      else localStorage.removeItem('food_student');
+      localStorage.setItem('food_cart', JSON.stringify(cart));
+    } catch (_) {}
+  }, [student, cart]);
+
   // Removed inline add/purchase flows; use separate Add Food page and approvals.
 
   return (
@@ -222,18 +283,21 @@ export default function Food() {
               <div className="flex items-center gap-2">
                 <input value={rfid} onChange={e => setRfid(e.target.value)} placeholder="Scan or enter RFID"
                        className="w-full border rounded px-3 py-2" />
-                <button onClick={connectRfidReader} className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">Scan</button>
+                <button onClick={connectRfidReader} className="px-3 py-2 bg-blue-400 text-white rounded hover:bg-blue-500 text-sm">Scan</button>
               </div>
             </div>
             <div className="flex gap-2">
               <button onClick={findStudent} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded">Find Student</button>
-              <button onClick={loadHistory} disabled={!student} className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded disabled:opacity-50">Load History</button>
             </div>
           </div>
           {error && <div className="mt-2 text-red-600 text-sm">{error}</div>}
+          {successMsg && <div className="mt-2 text-emerald-700 bg-emerald-50 border border-emerald-200 text-sm px-3 py-2 rounded">{successMsg}</div>}
           {student && (
-            <div className="mt-3 text-sm text-gray-700">
-              <span className="font-medium">Student:</span> {student.name} | <span className="font-medium">Wallet Balance:</span> ₹{student.walletBalance}
+            <div className="mt-3 text-sm text-gray-700 flex items-center gap-2 flex-wrap">
+              <div>
+                <span className="font-medium">Student:</span> {student.name} | <span className="font-medium">Wallet Balance:</span> ₹{student.walletBalance}
+              </div>
+              <button onClick={unscan} className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded border border-gray-200">Cancel</button>
             </div>
           )}
         </div>
@@ -247,19 +311,26 @@ export default function Food() {
             <div className="text-gray-500">No food items yet. Use "Add Food" to create some.</div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {items.map(it => (
-                <div key={it._id} className="border rounded p-3 flex items-center justify-between">
-                  <div>
-                    <div className="font-medium">{it.name}</div>
-                    <div className="text-sm text-gray-600">₹{it.price ?? '-'} · Qty {it.quantity ?? 0}</div>
+              {items.map(it => {
+                const qty = it.quantity ?? 0;
+                const cardClass = `border rounded p-3 flex items-center justify-between ${qty === 0 ? 'opacity-50' : qty <= 5 ? 'bg-red-50 border-red-200' : ''}`;
+                const qtyClass = `text-sm ${qty === 0 ? 'text-gray-400' : qty <= 5 ? 'text-red-600' : 'text-gray-600'}`;
+                return (
+                  <div key={it._id} className={cardClass} title={qty === 0 ? 'Out of stock' : qty <= 5 ? 'Low stock' : undefined}>
+                    <div>
+                      <div className="font-medium">{it.name}</div>
+                      <div className={qtyClass}>₹{it.price ?? '-'} · Qty {qty}</div>
+                    </div>
+                    <button
+                      disabled={!student || qty === 0}
+                      onClick={() => addToCart(it)}
+                      className="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded disabled:opacity-60"
+                    >
+                      Add to Cart
+                    </button>
                   </div>
-                  <button disabled={!student}
-                          onClick={() => addToCart(it)}
-                          className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded disabled:opacity-60">
-                    Add to Cart
-                  </button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -334,12 +405,25 @@ export default function Food() {
           </div>
         )}
 
+        {/* Success Modal */}
+        {showSuccessModal && (
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+            <div className="bg-white rounded shadow p-5 w-full max-w-sm">
+              <div className="text-lg font-semibold mb-2">Order Confirmed</div>
+              <p className="text-sm text-gray-700">Receipt has been printed and saved as PDF to your downloads.</p>
+              <div className="flex items-center justify-end gap-2 mt-4">
+                <button className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded" onClick={() => setShowSuccessModal(false)}>OK</button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="bg-white p-4 rounded shadow">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">More</h2>
             <div className="flex gap-2">
               <Link
-                to={`/food/history${student?._id ? `?student=${student._id}` : ''}`}
+                to={`/food/history${student?.rollNo ? `?rollNo=${encodeURIComponent(student.rollNo)}` : ''}`}
                 className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded"
               >
                 Purchase History
