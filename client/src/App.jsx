@@ -7,6 +7,7 @@ import FoodHistory from './pages/FoodHistory.jsx';
 import FoodScans from './pages/FoodScans.jsx';
 import Store from './pages/Store.jsx';
 import Admin from './pages/Admin.jsx';
+import RecentStudents from './pages/RecentStudents.jsx';
 import AddBook from './pages/AddBook.jsx';
 import AddFood from './pages/AddFood.jsx';
 import StudentDashboard from './pages/StudentDashboard.jsx';
@@ -14,6 +15,7 @@ import StudentHistory from './pages/StudentHistory.jsx';
 import StudentProfile from './pages/StudentProfile.jsx';
 import StudentPurchaseDetails from './pages/StudentPurchaseDetails.jsx';
 import AddStore from './pages/AddStore.jsx';
+import StudentAnalytics from './pages/StudentAnalytics.jsx';
 
 export default function App() {
   return (
@@ -28,11 +30,13 @@ export default function App() {
       <Route path="/store" element={<Store />} />
       <Route path="/store/add" element={<AddStore />} />
       <Route path="/admin" element={<Admin />} />
+      <Route path="/admin/students" element={<RecentStudents />} />
       <Route path="/login" element={<Navigate to="/" replace />} />
       <Route path="/student" element={<StudentDashboard />} />
       <Route path="/student/history" element={<StudentHistory />} />
       <Route path="/student/purchase/:receiptId" element={<StudentPurchaseDetails />} />
       <Route path="/student/profile" element={<StudentProfile />} />
+      <Route path="/student/analytics" element={<StudentAnalytics />} />
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );

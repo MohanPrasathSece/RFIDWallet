@@ -111,6 +111,11 @@ function StudentDashboard() {
     }
   };
 
+  // Compute recent history (latest 3 entries) for a clean, minimal preview
+  const recent = [...history]
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, 3);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-green-50/40 py-10 px-4">
       <div className="max-w-3xl mx-auto">
@@ -132,6 +137,7 @@ function StudentDashboard() {
             {menuOpen && (
               <div className="absolute right-0 mt-2 w-44 rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden z-10">
                 <button className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50" onClick={() => { setMenuOpen(false); navigate('/student/profile'); }}>Profile</button>
+                <button className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50" onClick={() => { setMenuOpen(false); navigate('/student/analytics'); }}>Analytics</button>
                 <div className="h-px bg-slate-100" />
                 <button className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50" onClick={handleLogout}>Logout</button>
               </div>
@@ -184,15 +190,57 @@ function StudentDashboard() {
           </div>
         </div>
 
-        {/* History Button */}
-        <div className="rounded-2xl border border-green-100 bg-white/80 backdrop-blur shadow-sm">
-          <div className="p-4">
-            <button onClick={() => navigate('/student/history')} className="w-full px-4 py-3 rounded-xl ring-1 ring-green-200 bg-white hover:bg-green-50 text-slate-700 text-sm text-left transition">
-              <div className="font-medium flex items-center gap-2">
-                <span className="inline-block h-2 w-2 rounded-full bg-green-500"></span>
-                View History
-              </div>
-              <div className="text-xs text-slate-500">See all your transactions</div>
+        {/* Minimal Recent Activity */}
+        <div className="rounded-2xl border border-green-100 bg-white/80 backdrop-blur shadow-sm overflow-hidden">
+          <div className="p-4 border-b border-green-100 text-slate-800 font-medium">Recent Activity</div>
+          {initLoading ? (
+            <div className="divide-y divide-green-100">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="p-4 animate-pulse flex items-center justify-between">
+                  <div className="h-3 w-40 bg-slate-200 rounded" />
+                  <div className="h-3 w-20 bg-slate-200 rounded" />
+                </div>
+              ))}
+            </div>
+          ) : recent.length === 0 ? (
+            <div className="p-4 text-sm text-slate-500">No recent transactions</div>
+          ) : (
+            <div className="divide-y divide-green-100">
+              {recent.map((row, i) => (
+                <button
+                  key={row._id || i}
+                  onClick={() => {
+                    if (row.type === 'debit' && (row.receiptId || row.module)) {
+                      const id = row.receiptId || `single:${row._id}`;
+                      navigate(`/student/purchase/${encodeURIComponent(id)}`);
+                    }
+                  }}
+                  className={`w-full text-left p-4 flex items-center justify-between ${row.type==='debit' ? 'hover:bg-green-50/50' : ''}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 rounded-full grid place-items-center bg-green-50 text-sm">
+                      {row.type === 'credit' ? '➕' : (row.module === 'food' ? '🍔' : row.module === 'store' ? '🛍️' : '🧾')}
+                    </div>
+                    <div>
+                      <div className="text-sm text-slate-800">
+                        {row.type === 'credit' ? 'Top-up' : (row.itemName || (row.module === 'store' ? 'Store' : row.module === 'food' ? 'Food Court' : 'Purchase'))}
+                      </div>
+                      <div className="text-xs text-slate-500">{new Date(row.createdAt).toLocaleString()}</div>
+                    </div>
+                  </div>
+                  <div className={`text-sm font-semibold ${row.type === 'debit' ? 'text-red-600' : 'text-emerald-600'}`}>
+                    {row.type === 'debit' ? '-' : '+'} ₹ {Number(row.amount || 0).toFixed(2)}
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+          <div className="p-3 text-center">
+            <button
+              onClick={() => navigate('/student/history')}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl ring-1 ring-green-200 bg-white hover:bg-green-50 text-slate-700 text-sm"
+            >
+              View full history
             </button>
           </div>
         </div>

@@ -52,7 +52,19 @@ router.post('/add', auth(), async (req, res) => {
     if (!req.student) return res.status(401).json({ message: 'Unauthorized' });
     const amount = Number(req.body.amount);
     if (!Number.isFinite(amount) || amount <= 0) return res.status(400).json({ message: 'Invalid amount' });
-    const instance = getRazorpay();
+    let instance;
+    try {
+      instance = getRazorpay();
+    } catch (e) {
+      const msg = String(e.message || e);
+      if (msg.includes('Missing Razorpay credentials')) {
+        return res.status(503).json({ message: 'Razorpay not configured on server. Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET.' });
+      }
+      if (msg.includes('Razorpay SDK not installed')) {
+        return res.status(503).json({ message: 'Razorpay SDK not installed on server. Run "npm install razorpay" in server/.' });
+      }
+      return res.status(500).json({ message: msg });
+    }
     const order = await instance.orders.create({
       amount: Math.round(amount * 100), // INR paise
       currency: 'INR',
@@ -61,7 +73,7 @@ router.post('/add', auth(), async (req, res) => {
     });
     return res.json({ orderId: order.id, key: process.env.RAZORPAY_KEY_ID, amount: order.amount, currency: order.currency });
   } catch (e) {
-    return res.status(500).json({ message: e.message });
+    return res.status(500).json({ message: e?.response?.data?.message || e.message || 'Internal error' });
   }
 });
 

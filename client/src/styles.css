@@ -16,3 +16,19 @@
   .bg-gradient-primary { @apply bg-gradient-to-br from-green-500 to-green-600; }
   .shadow-soft { @apply shadow-[0_12px_40px_-16px_rgba(34,197,94,0.35)]; }
 }
+
+/* Make horizontal scrollbars clearly visible on scroll areas */
+.scroll-area {
+  scrollbar-color: rgba(0,0,0,0.35) transparent; /* Firefox */
+  scrollbar-width: thin; /* Firefox */
+}
+.scroll-area::-webkit-scrollbar {
+  height: 10px; /* horizontal bar height */
+}
+.scroll-area::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scroll-area::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.35);
+  border-radius: 8px;
+}

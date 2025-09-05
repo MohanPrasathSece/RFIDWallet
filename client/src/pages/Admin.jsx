@@ -124,7 +124,7 @@ export default function Admin() {
         <div className="p-6 space-y-6">
           <h2 className="text-2xl font-semibold">Admin</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-white p-4 rounded shadow">
+            <div className="bg-white p-4 rounded shadow overflow-x-auto">
               <h2 className="text-lg font-semibold mb-3">Add Student (by RFID)</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <input className="border rounded px-3 py-2" placeholder="Name" value={form.name} onChange={e => setForm(v => ({ ...v, name: e.target.value }))} />
@@ -150,48 +150,26 @@ export default function Admin() {
             </div>
 
             <div className="bg-white p-4 rounded shadow">
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-lg font-semibold">Recent Students</h2>
-                <button onClick={loadStudents} className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded">Refresh</button>
-              </div>
-              {students.length === 0 ? (
-                <div className="text-gray-500">No students.</div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full text-sm">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-3 py-2 text-left">Name</th>
-                        <th className="px-3 py-2 text-left">RFID</th>
-                        <th className="px-3 py-2 text-left">Dept</th>
-                        <th className="px-3 py-2 text-left">Modules</th>
-                        <th className="px-3 py-2 text-left">Wallet</th>
-                        <th className="px-3 py-2 text-left">Manage</th>
-                        <th className="px-3 py-2 text-left">Created</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {students.map(s => (
-                        <tr key={s._id} className="border-t">
-                          <td className="px-3 py-2">{s.name}</td>
-                          <td className="px-3 py-2">{s.rfid_uid || '-'}</td>
-                          <td className="px-3 py-2">{s.department || '-'}</td>
-                          <td className="px-3 py-2">{Array.isArray(s.modules) && s.modules.length ? s.modules.join(', ') : '-'}</td>
-                          <td className="px-3 py-2">₹{s.walletBalance ?? 0}</td>
-                          <td className="px-3 py-2">
-                            <div className="flex items-center gap-2">
-                              <input type="number" className="w-28 border rounded px-2 py-1" placeholder="Amount" value={walletInputs[s._id] || ''} onChange={e=>setWalletInputs(v=>({...v,[s._id]:e.target.value}))} />
-                              <button onClick={()=>deposit(s._id)} className="px-2 py-1 text-xs bg-green-600 hover:bg-green-700 text-white rounded">Deposit</button>
-                              <button onClick={()=>withdraw(s._id)} className="px-2 py-1 text-xs bg-amber-600 hover:bg-amber-700 text-white rounded">Withdraw</button>
-                            </div>
-                          </td>
-                          <td className="px-3 py-2">{s.createdAt ? new Date(s.createdAt).toLocaleString() : '-'}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg font-semibold">Recent Students</h2>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 border text-gray-700">{students.length}</span>
                 </div>
-              )}
+                <button onClick={() => navigate('/admin/students')} className="px-3 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded">Open</button>
+              </div>
+              <p className="mt-2 text-sm text-gray-600">Latest added students:</p>
+              <ul className="mt-2 list-disc list-inside text-sm text-gray-800 space-y-1 max-h-40 overflow-auto">
+                {students.slice(0, 8).map(s => (
+                  <li key={s._id}>
+                    <button onClick={() => navigate('/admin/students')} className="text-blue-600 hover:underline">
+                      {s.name}
+                    </button>
+                  </li>
+                ))}
+                {students.length === 0 && (
+                  <li className="text-gray-500 list-none">No students yet.</li>
+                )}
+              </ul>
             </div>
           </div>
         </div>

@@ -1,4 +1,23 @@
-require('dotenv').config();
+const path = require('path');
+const fs = require('fs');
+
+// Robustly find and load .env from server/ or project root
+const serverEnvPath = path.resolve(__dirname, '../.env');
+const rootEnvPath = path.resolve(__dirname, '../../.env');
+
+let envPath;
+if (fs.existsSync(serverEnvPath)) {
+  envPath = serverEnvPath;
+} else if (fs.existsSync(rootEnvPath)) {
+  envPath = rootEnvPath;
+}
+
+if (envPath) {
+  console.log(`Loading environment variables from: ${envPath}`);
+  require('dotenv').config({ path: envPath });
+} else {
+  console.warn('Warning: No .env file found in server/ or project root. Application may not be configured correctly.');
+}
 const express = require('express');
 const http = require('http');
 const cors = require('cors');
@@ -27,6 +46,19 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: { origin: '*', methods: ['GET', 'POST'] }
 });
+
+// Startup config checks (non-fatal warnings)
+(() => {
+  const id = process.env.RAZORPAY_KEY_ID;
+  const secret = process.env.RAZORPAY_KEY_SECRET;
+  const webhook = process.env.RAZORPAY_WEBHOOK_SECRET;
+  if (!id || !secret) {
+    console.warn('[Razorpay] Warning: RAZORPAY_KEY_ID/RAZORPAY_KEY_SECRET not set. Wallet top-ups will be disabled until configured.');
+  }
+  if (!webhook) {
+    console.warn('[Razorpay] Warning: RAZORPAY_WEBHOOK_SECRET not set. Payment confirmations will not be verified.');
+  }
+})();
 
 // Simple Socket.IO hookup
 io.on('connection', (socket) => {
@@ -159,7 +191,9 @@ mongoose.connection.once('connected', async () => {
 
 // Routes
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', time: new Date().toISOString() });
+  const razorpayConfigured = Boolean(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
+  const webhookConfigured = Boolean(process.env.RAZORPAY_WEBHOOK_SECRET);
+  res.json({ status: 'ok', time: new Date().toISOString(), razorpayConfigured, webhookConfigured });
 });
 app.use('/api/auth', authRoutes);
 app.use('/api/items', itemRoutes);

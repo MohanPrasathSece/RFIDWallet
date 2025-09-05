@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { io } from 'socket.io-client';
 
 export default function Library() {
+  const [rollNo, setRollNo] = useState('');
   const [rfid, setRfid] = useState('');
   const [studentId, setStudentId] = useState('');
   const [student, setStudent] = useState(null);
@@ -23,9 +24,10 @@ export default function Library() {
     try {
       setLoading(true);
       setError('');
-      const query = studentId ? { student: studentId } : (rfid ? { rfidNumber: rfid } : null);
+      const sid = student?._id || studentId;
+      const query = sid ? { student: sid } : (rfid ? { rfidNumber: rfid } : null);
       if (!query) {
-        setError('Enter Student ID or RFID Number');
+        setError('Find a student (Roll No or RFID) to load data.');
         setActive([]); setHistory([]); setStudent(null);
         return;
       }
@@ -38,7 +40,7 @@ export default function Library() {
       setHistory(histRes.data || []);
       // Extract student from history if present
       const st = (histRes.data && histRes.data[0]?.student) || null;
-      setStudent(st);
+      if (st) setStudent(st);
     } catch (e) {
       setError(e?.response?.data?.message || e.message || 'Failed to load');
       setActive([]); setHistory([]); setStudent(null);
@@ -47,17 +49,57 @@ export default function Library() {
     }
   };
 
-  const resolveRfid = async () => {
+  const connectRfidReader = async () => {
+    if (!('serial' in navigator)) {
+      setError('Web Serial API not supported in this browser.');
+      return;
+    }
+    try {
+      const port = await navigator.serial.requestPort();
+      await port.open({ baudRate: 9600 });
+      const reader = port.readable.getReader();
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) { reader.releaseLock(); break; }
+        const decoded = new TextDecoder().decode(value).trim();
+        if (decoded) {
+          setRfid(decoded);
+          await findStudent();
+          reader.releaseLock();
+          port.close();
+          break;
+        }
+      }
+    } catch (err) {
+      setError(`Error: ${err.message}`);
+    }
+  };
+
+  const findStudent = async () => {
     try {
       setError('');
-      if (!rfid) { setError('Enter or scan an RFID number'); return; }
-      const { data } = await api.get(`/rfid/resolve/${rfid}`);
+      if (!rollNo && !rfid) {
+        setError('Enter a Roll Number or RFID to find a student.');
+        return;
+      }
+      const params = {};
+      if (rollNo) params.rollNo = rollNo;
+      if (rfid) params.rfid_uid = rfid;
+      const { data } = await api.get('/students/find', { params });
       if (data?._id) {
-        setStudentId(data._id);
         setStudent(data);
+        setStudentId(data._id);
+        setRollNo(data.rollNo || rollNo);
+        setRfid(data.rfid_uid || rfid);
+      } else {
+        setStudent(null);
+        setStudentId('');
+        setError('Student not found.');
       }
     } catch (e) {
-      setError(e?.response?.data?.message || e.message || 'RFID not found');
+      setStudent(null);
+      setStudentId('');
+      setError(e?.response?.data?.message || 'Error finding student.');
     }
   };
 
@@ -93,11 +135,12 @@ export default function Library() {
   const borrowBook = async () => {
     try {
       setError('');
-      if (!studentId) { setError('Enter Student ID (Mongo)'); return; }
+      const sid = student?._id || studentId;
+      if (!sid) { setError('Find a student first'); return; }
       if (!borrowItemId) { setError('Select a book to borrow'); return; }
       // Step 1: create transaction pending
       const createRes = await api.post('/transactions', {
-        student: studentId,
+        student: sid,
         item: borrowItemId,
         module: 'library',
         action: 'borrow',
@@ -129,7 +172,6 @@ export default function Library() {
           <div className="bg-white p-4 rounded shadow">
             <h2 className="text-lg font-semibold mb-3">Borrow Book</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <input className="border rounded px-3 py-2" placeholder="Student ID (Mongo)" value={studentId} onChange={e=>setStudentId(e.target.value)} />
               <select className="border rounded px-3 py-2" value={borrowItemId} onChange={e=>setBorrowItemId(e.target.value)}>
                 <option value="">Select Book</option>
                 {items.map(it => <option value={it._id} key={it._id}>{it.name} (qty {it.quantity})</option>)}
@@ -145,19 +187,22 @@ export default function Library() {
         <div className="bg-white p-4 rounded shadow">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
             <div>
-              <label className="block text-sm text-gray-600 mb-1">RFID Number</label>
-              <input value={rfid} onChange={e => setRfid(e.target.value)} placeholder="Scan or enter RFID"
+              <label className="block text-sm text-gray-600 mb-1">Roll Number</label>
+              <input value={rollNo} onChange={e => setRollNo(e.target.value)} placeholder="Enter Roll Number"
                      className="w-full border rounded px-3 py-2" />
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Student ID (Mongo)</label>
-              <input value={studentId} onChange={e => setStudentId(e.target.value)} placeholder="Optional"
-                     className="w-full border rounded px-3 py-2" />
+              <label className="block text-sm text-gray-600 mb-1">RFID Number</label>
+              <div className="flex items-center gap-2">
+                <input value={rfid} onChange={e => setRfid(e.target.value)} placeholder="Scan or enter RFID"
+                       className="w-full border rounded px-3 py-2" />
+                <button onClick={connectRfidReader} className="px-3 py-2 bg-blue-400 text-white rounded hover:bg-blue-500 text-sm">Scan</button>
+              </div>
             </div>
             <div className="flex gap-2">
-              <button onClick={resolveRfid} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded">Resolve RFID</button>
-              <button onClick={loadData} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">Search</button>
-              <button onClick={() => { setRfid(''); setStudentId(''); setStudent(null); setActive([]); setHistory([]); setError(''); }}
+              <button onClick={findStudent} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded">Find Student</button>
+              <button onClick={loadData} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">Load Data</button>
+              <button onClick={() => { setRfid(''); setRollNo(''); setStudentId(''); setStudent(null); setActive([]); setHistory([]); setError(''); }}
                       className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded">Clear</button>
             </div>
             {loading && <div className="text-gray-500">Loading...</div>}

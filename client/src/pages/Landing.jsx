@@ -42,6 +42,21 @@ export default function Landing() {
     } finally { setAdminLoading(false); }
   };
 
+  // Hoisted to avoid "Cannot access before initialization" when rendering student screen
+  async function onStudentSubmit(e) {
+    e?.preventDefault?.();
+    try {
+      setStudentLoading(true); setStudentError('');
+      await login(studentRoll, studentPassword, 'student');
+      setShowStudent(false);
+      navigate('/student');
+    } catch (err) {
+      setStudentError(err?.response?.data?.message || 'Student login failed');
+    } finally { setStudentLoading(false); }
+  }
+
+  // Centered modals are rendered below in the JSX
+
   const onStudentLogout = async () => {
     try {
       await logout();
@@ -52,17 +67,6 @@ export default function Landing() {
     }
   };
 
-  const onStudentSubmit = async (e) => {
-    e?.preventDefault?.();
-    try {
-      setStudentLoading(true); setStudentError('');
-      await login(studentRoll, studentPassword, 'student');
-      setShowStudent(false);
-      navigate('/student');
-    } catch (err) {
-      setStudentError(err?.response?.data?.message || 'Student login failed');
-    } finally { setStudentLoading(false); }
-  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-green-50 to-white font-sans antialiased">
