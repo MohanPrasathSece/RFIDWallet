@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Student = require('../models/Student');
+const { auth } = require('../middleware/auth');
 
 // Disable public signup: students must be created by admin; admins/users seeded by ops.
 router.post('/signup', async (_req, res) => {
@@ -39,11 +40,25 @@ router.post('/login', async (req, res) => {
       if (!student) return res.status(401).json({ message: 'Invalid credentials' });
       const ok = await bcrypt.compare(password, student.passwordHash);
       if (!ok) return res.status(401).json({ message: 'Invalid credentials' });
+      const jwtSecret = process.env.JWT_SECRET || 'dev';
+      console.log('[Login] Creating student token:', {
+        studentId: student._id,
+        studentName: student.name,
+        studentEmail: student.email,
+        jwtSecret: jwtSecret === 'dev' ? 'using default "dev"' : `${jwtSecret.slice(0, 3)}...${jwtSecret.slice(-3)}`,
+      });
+      
       const token = jwt.sign(
         { studentId: student._id, rfid_uid: student.rfid_uid, name: student.name, email: student.email, role: 'student' },
-        process.env.JWT_SECRET || 'dev',
+        jwtSecret,
         { expiresIn: '7d' }
       );
+      
+      console.log('[Login] Token created successfully:', {
+        tokenLength: token.length,
+        tokenPrefix: token.slice(0, 20) + '...',
+      });
+      
       return res.json({ token, user: { id: student._id, name: student.name, role: 'student', email: student.email, rfid_uid: student.rfid_uid } });
     }
 
@@ -64,3 +79,38 @@ router.post('/login', async (req, res) => {
 });
 
 module.exports = router;
+
+// Return currently authenticated user (student or admin)
+router.get('/me', auth(), async (req, res) => {
+  try {
+    if (req.student) {
+      return res.json({
+        user: {
+          id: req.student._id,
+          name: req.student.name,
+          role: 'student',
+          email: req.student.email,
+          rfid_uid: req.student.rfid_uid,
+        },
+      });
+    }
+
+    const payload = req.user || {};
+    if (payload?.id) {
+      const user = await User.findById(payload.id).lean();
+      if (!user) return res.status(401).json({ message: 'Unauthorized' });
+      return res.json({
+        user: {
+          id: user._id,
+          name: user.name,
+          role: user.role,
+          email: user.email,
+        },
+      });
+    }
+
+    return res.status(401).json({ message: 'Unauthorized' });
+  } catch (e) {
+    return res.status(500).json({ message: e.message });
+  }
+});

@@ -94,15 +94,27 @@ function StudentDashboard() {
         name: brandName,
         description: 'Wallet Top-up',
         order_id: data.orderId,
-        handler: function () {
-          // Webhook will update the balance; show a toast-like message
-          alert('Payment initiated successfully. Balance will update shortly.');
+        handler: async function (response) {
+          // Verify signature server-side as per Standard Checkout integration
+          try {
+            await api.post('/wallet/verify', {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            });
+            alert('Payment successful. Balance will update shortly.');
+          } catch (verr) {
+            alert('Payment verification failed. If amount was deducted, it will be auto-refunded or updated via webhook.');
+          }
         },
-        prefill: {},
+        prefill: { name: profile.name || 'Student' },
         notes: {},
         theme: { color: '#0ea5e9' },
       };
       const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', function (resp) {
+        setError(resp?.error?.description || 'Payment failed. Please try again.');
+      });
       rzp.open();
     } catch (e) {
       setError(e?.response?.data?.message || e.message || 'Failed to initiate payment');

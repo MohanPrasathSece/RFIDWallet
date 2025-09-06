@@ -49,14 +49,36 @@ const io = new Server(server, {
 
 // Startup config checks (non-fatal warnings)
 (() => {
-  const id = process.env.RAZORPAY_KEY_ID;
-  const secret = process.env.RAZORPAY_KEY_SECRET;
-  const webhook = process.env.RAZORPAY_WEBHOOK_SECRET;
+  const rawId = process.env.RAZORPAY_KEY_ID || '';
+  const rawSecret = process.env.RAZORPAY_KEY_SECRET || '';
+  const webhook = process.env.RAZORPAY_WEBHOOK_SECRET || '';
+
+  const id = rawId.trim();
+  const secret = rawSecret.trim();
+
+  const hasWhitespaceId = rawId !== id;
+  const hasWhitespaceSecret = rawSecret !== secret;
+  const quotedId = /^['"].*['"]$/.test(rawId);
+  const quotedSecret = /^['"].*['"]$/.test(rawSecret);
+
   if (!id || !secret) {
     console.warn('[Razorpay] Warning: RAZORPAY_KEY_ID/RAZORPAY_KEY_SECRET not set. Wallet top-ups will be disabled until configured.');
   }
   if (!webhook) {
     console.warn('[Razorpay] Warning: RAZORPAY_WEBHOOK_SECRET not set. Payment confirmations will not be verified.');
+  }
+  if (id && secret) {
+    const kind = id.startsWith('rzp_test_') ? 'TEST' : (id.startsWith('rzp_live_') ? 'LIVE' : 'UNKNOWN');
+    const mask = id.length > 8 ? `${id.slice(0, 8)}…${id.slice(-2)}` : '****';
+    console.log(`[Razorpay] Keys loaded (${kind}). key_id: ${mask}`);
+    if (hasWhitespaceId || hasWhitespaceSecret || quotedId || quotedSecret) {
+      console.warn('[Razorpay] Notice: Detected potential formatting issues in .env values', {
+        hasWhitespaceId,
+        hasWhitespaceSecret,
+        quotedId,
+        quotedSecret,
+      });
+    }
   }
 })();
 
@@ -189,11 +211,40 @@ mongoose.connection.once('connected', async () => {
   }
 });
 
-// Routes
+// Health check endpoint
 app.get('/api/health', (req, res) => {
   const razorpayConfigured = Boolean(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
   const webhookConfigured = Boolean(process.env.RAZORPAY_WEBHOOK_SECRET);
-  res.json({ status: 'ok', time: new Date().toISOString(), razorpayConfigured, webhookConfigured });
+  
+  // Enhanced diagnostics
+  const rawId = process.env.RAZORPAY_KEY_ID || '';
+  const rawSecret = process.env.RAZORPAY_KEY_SECRET || '';
+  const keyId = rawId.trim();
+  const keySecret = rawSecret.trim();
+  
+  const diagnostics = {
+    razorpayKeyId: keyId ? `${keyId.slice(0, 8)}...${keyId.slice(-2)}` : 'not set',
+    razorpayKeySecret: keySecret ? `${keySecret.slice(0, 3)}...${keySecret.slice(-3)}` : 'not set',
+    webhookSecret: process.env.RAZORPAY_WEBHOOK_SECRET ? 'configured' : 'not set',
+    mode: keyId.includes('_test_') ? 'TEST' : keyId.includes('_live_') ? 'LIVE' : 'UNKNOWN',
+    hasWhitespaceId: rawId !== keyId,
+    hasWhitespaceSecret: rawSecret !== keySecret,
+    quotedId: (rawId.startsWith('"') && rawId.endsWith('"')) || (rawId.startsWith("'") && rawId.endsWith("'")),
+    quotedSecret: (rawSecret.startsWith('"') && rawSecret.endsWith('"')) || (rawSecret.startsWith("'") && rawSecret.endsWith("'")),
+    envPath: process.env.NODE_ENV === 'production' ? 'production' : 'development',
+    // Show full key for debugging (remove after fixing)
+    fullKeyId: process.env.RAZORPAY_KEY_ID,
+    fullKeySecret: process.env.RAZORPAY_KEY_SECRET,
+  };
+
+  res.json({
+    status: 'ok',
+    razorpayConfigured,
+    webhookConfigured,
+    mode: diagnostics.mode,
+    keyIdMasked: diagnostics.razorpayKeyId,
+    diagnostics,
+  });
 });
 app.use('/api/auth', authRoutes);
 app.use('/api/items', itemRoutes);

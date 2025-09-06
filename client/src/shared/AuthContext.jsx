@@ -4,12 +4,40 @@ import { api, setAuthToken } from './api';
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    try {
+      const raw = localStorage.getItem('user');
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  });
   const [token, setToken] = useState(localStorage.getItem('token'));
 
+  // Ensure axios has the token on mount and when token changes
   useEffect(() => {
     if (token) setAuthToken(token);
   }, [token]);
+
+  // On first load, if we have a token but no user, fetch current user
+  useEffect(() => {
+    const bootstrap = async () => {
+      if (token && !user) {
+        try {
+          const { data } = await api.get('/auth/me');
+          setUser(data.user);
+          localStorage.setItem('user', JSON.stringify(data.user));
+        } catch (e) {
+          // Token might be invalid/expired
+          if (e?.response?.status === 401) {
+            logout();
+          }
+        }
+      }
+    };
+    bootstrap();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const login = async (identifier, password, as) => {
     // For students, backend uses `identifier` (email or rollNo)
@@ -21,6 +49,7 @@ export function AuthProvider({ children }) {
     setToken(data.token);
     localStorage.setItem('token', data.token);
     setUser(data.user);
+    localStorage.setItem('user', JSON.stringify(data.user));
     return data.user;
   };
 
@@ -29,6 +58,7 @@ export function AuthProvider({ children }) {
     setUser(null);
     setAuthToken(null);
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
   };
 
   const value = useMemo(() => ({ user, token, login, logout, setUser }), [user, token]);

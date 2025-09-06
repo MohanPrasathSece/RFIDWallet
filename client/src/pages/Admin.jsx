@@ -149,27 +149,45 @@ export default function Admin() {
               </div>
             </div>
 
-            <div className="bg-white p-4 rounded shadow">
+            <div className="bg-white p-4 rounded-2xl border shadow-sm">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-semibold">Recent Students</h2>
+                  <h2 className="text-lg font-semibold text-gray-900">Recent Students</h2>
                   <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 border text-gray-700">{students.length}</span>
                 </div>
-                <button onClick={() => navigate('/admin/students')} className="px-3 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded">Open</button>
+                <button
+                  onClick={() => navigate('/admin/students')}
+                  className="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-sm"
+                >
+                  Open
+                </button>
               </div>
               <p className="mt-2 text-sm text-gray-600">Latest added students:</p>
-              <ul className="mt-2 list-disc list-inside text-sm text-gray-800 space-y-1 max-h-40 overflow-auto">
+              <div className="mt-3 max-h-48 overflow-auto divide-y">
                 {students.slice(0, 8).map(s => (
-                  <li key={s._id}>
-                    <button onClick={() => navigate('/admin/students')} className="text-blue-600 hover:underline">
-                      {s.name}
-                    </button>
-                  </li>
+                  <button
+                    key={s._id}
+                    onClick={() => navigate('/admin/students')}
+                    className="w-full text-left px-2 py-2 hover:bg-gray-50 rounded-md transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="h-7 w-7 rounded-full bg-blue-100 text-blue-700 grid place-items-center text-xs font-semibold">
+                          {(s.name || '?').charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <div className="text-sm text-gray-900">{s.name}</div>
+                          <div className="text-xs text-gray-500">{s.rollNo || s.rfid_uid || '—'}</div>
+                        </div>
+                      </div>
+                      <span className="text-xs text-blue-600">View</span>
+                    </div>
+                  </button>
                 ))}
                 {students.length === 0 && (
-                  <li className="text-gray-500 list-none">No students yet.</li>
+                  <div className="px-2 py-3 text-sm text-gray-500">No students yet.</div>
                 )}
-              </ul>
+              </div>
             </div>
           </div>
         </div>
