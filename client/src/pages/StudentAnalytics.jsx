@@ -61,6 +61,8 @@ export default function StudentAnalytics() {
     };
   }, [history]);
 
+  // Removed search from student analytics per request
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 py-8 px-4">
       <div className="max-w-3xl mx-auto">

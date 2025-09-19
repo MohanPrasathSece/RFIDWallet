@@ -103,8 +103,7 @@ export default function Landing() {
         <div className="space-y-6">
           {/* Admin Card */}
           <div className={`${cardBase} ${cardHover}`}>
-            {/* Decorative corner */}
-            <div className="absolute -top-6 -right-6 h-24 w-24 rounded-3xl bg-green-50 border border-green-100" />
+            {/* Decorative corner removed */}
             <div className="p-5 md:p-6">
               <div className="flex items-start gap-3">
                 <span className={pillIcon}>
@@ -126,8 +125,7 @@ export default function Landing() {
 
           {/* Student Card */}
           <div className={`${cardBase} ${cardHover}`}>
-            {/* Decorative corner */}
-            <div className="absolute -top-6 -right-6 h-24 w-24 rounded-3xl bg-green-50 border border-green-100" />
+            {/* Decorative corner removed */}
             <div className="p-5 md:p-6">
               <div className="flex items-start gap-3">
                 <span className={pillIcon}>

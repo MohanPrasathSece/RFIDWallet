@@ -1,5 +1,5 @@
 import Sidebar from '../shared/Sidebar.jsx';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { api } from '../shared/api.js';
 import { io } from 'socket.io-client';
 import { Link } from 'react-router-dom';
@@ -18,6 +18,7 @@ export default function Food() {
 
   // Items for listing
   const [items, setItems] = useState([]);
+  const [itemQuery, setItemQuery] = useState('');
   // Cart state: array of { _id, name, price, qty }
   const [cart, setCart] = useState([]);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -88,6 +89,12 @@ export default function Food() {
   const clearCart = () => setCart([]);
 
   const cartTotal = cart.reduce((sum, it) => sum + (Number(it.price) * it.qty), 0);
+
+  const filteredItems = useMemo(() => {
+    const q = itemQuery.trim().toLowerCase();
+    if (!q) return items;
+    return items.filter(it => (it.name || '').toLowerCase().includes(q));
+  }, [items, itemQuery]);
 
   const printBill = () => {
     const w = window.open('', 'PRINT', 'height=600,width=400');
@@ -338,13 +345,22 @@ export default function Food() {
         <div className="bg-white p-4 rounded shadow">
           <div className="flex items-center justify-between mb-2">
             <h2 className="text-lg font-semibold">Order Food</h2>
-            <span className="text-sm text-gray-500">{student ? 'Ready to order' : 'Find a student to begin.'}</span>
+            <div className="flex items-center gap-2">
+              <input
+                value={itemQuery}
+                onChange={(e) => setItemQuery(e.target.value)}
+                placeholder="Search food items"
+                className="text-sm border rounded px-2 py-1 w-40 md:w-56"
+              />
+              <button onClick={() => setItemQuery(v => v.trim())} className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded">Search</button>
+            </div>
           </div>
+          <div className="text-xs text-gray-500 mb-2">{student ? 'Ready to order' : 'Find a student to begin.'}</div>
           {items.length === 0 ? (
             <div className="text-gray-500">No food items yet. Use "Add Food" to create some.</div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {items.map(it => {
+              {filteredItems.map(it => {
                 const qty = it.quantity ?? 0;
                 const cardClass = `border rounded p-3 flex items-center justify-between ${qty === 0 ? 'opacity-50' : qty <= 5 ? 'bg-red-50 border-red-200' : ''}`;
                 const qtyClass = `text-sm ${qty === 0 ? 'text-gray-400' : qty <= 5 ? 'text-red-600' : 'text-gray-600'}`;
@@ -416,19 +432,27 @@ export default function Food() {
               <div className="max-h-60 overflow-y-auto border rounded">
                 <table className="w-full text-sm">
                   <thead className="bg-gray-50">
-                    <tr><th className="px-2 py-1 text-left">Item</th><th className="px-2 py-1 text-right">Qty</th><th className="px-2 py-1 text-right">Amount</th></tr>
+                    <tr>
+                      <th className="px-2 py-1 text-left">Item</th>
+                      <th className="px-2 py-1 text-right">Qty</th>
+                      <th className="px-2 py-1 text-right">Amount</th>
+                    </tr>
                   </thead>
                   <tbody>
                     {cart.map(c => (
                       <tr key={c._id} className="border-t">
                         <td className="px-2 py-1">{c.name}</td>
                         <td className="px-2 py-1 text-right">{c.qty}</td>
-                        <td className="px-2 py-1 text-right">₹ {(c.qty*c.price).toFixed(2)}</td>
+                        <td className="px-2 py-1 text-right">₹ {(c.qty*Number(c.price)).toFixed(2)}</td>
                       </tr>
                     ))}
                   </tbody>
                   <tfoot>
-                    <tr className="border-t"><td className="px-2 py-1 font-medium">Total</td><td></td><td className="px-2 py-1 text-right font-semibold">₹ {cartTotal.toFixed(2)}</td></tr>
+                    <tr className="border-t">
+                      <td className="px-2 py-1 font-medium">Total</td>
+                      <td></td>
+                      <td className="px-2 py-1 text-right font-semibold">₹ {cartTotal.toFixed(2)}</td>
+                    </tr>
                   </tfoot>
                 </table>
               </div>

@@ -14,7 +14,8 @@ if (fs.existsSync(serverEnvPath)) {
 
 if (envPath) {
   console.log(`Loading environment variables from: ${envPath}`);
-  require('dotenv').config({ path: envPath });
+  // Ensure .env values override any pre-existing env vars (e.g., OS-level)
+  require('dotenv').config({ path: envPath, override: true });
 } else {
   console.warn('Warning: No .env file found in server/ or project root. Application may not be configured correctly.');
 }

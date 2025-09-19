@@ -19,6 +19,7 @@ export default function Library() {
   const [items, setItems] = useState([]);
   const [borrowItemId, setBorrowItemId] = useState('');
   const [borrowNotes, setBorrowNotes] = useState('');
+  const [borrowDueDate, setBorrowDueDate] = useState('');
 
   const loadData = async () => {
     try {
@@ -138,6 +139,8 @@ export default function Library() {
       const sid = student?._id || studentId;
       if (!sid) { setError('Find a student first'); return; }
       if (!borrowItemId) { setError('Select a book to borrow'); return; }
+      // Optional due date
+      const due = borrowDueDate ? new Date(borrowDueDate) : undefined;
       // Step 1: create transaction pending
       const createRes = await api.post('/transactions', {
         student: sid,
@@ -146,17 +149,40 @@ export default function Library() {
         action: 'borrow',
         status: 'pending',
         notes: borrowNotes || undefined,
+        dueDate: due ? due.toISOString() : undefined,
       });
       const txId = createRes.data?._id;
       if (txId) {
         // Step 2: approve to trigger inventory effects
         await api.put(`/transactions/${txId}`, { status: 'approved' });
       }
-      setBorrowItemId(''); setBorrowNotes('');
+      setBorrowItemId(''); setBorrowNotes(''); setBorrowDueDate('');
       // Optionally refresh student data if a student is selected
       if (studentId || rfid) await loadData();
     } catch (e) {
       setError(e?.response?.data?.message || e.message || 'Failed to borrow');
+    }
+  };
+
+  const returnBook = async (itemId) => {
+    try {
+      setError('');
+      const sid = student?._id || studentId;
+      if (!sid) { setError('Find a student first'); return; }
+      if (!itemId) { setError('Invalid item'); return; }
+      const createRes = await api.post('/transactions', {
+        student: sid,
+        item: itemId,
+        module: 'library',
+        action: 'return',
+        status: 'approved',
+        notes: 'Returned by admin',
+      });
+      if (createRes?.data?._id) {
+        await loadData();
+      }
+    } catch (e) {
+      setError(e?.response?.data?.message || e.message || 'Failed to mark return');
     }
   };
 
@@ -176,6 +202,7 @@ export default function Library() {
                 <option value="">Select Book</option>
                 {items.map(it => <option value={it._id} key={it._id}>{it.name} (qty {it.quantity})</option>)}
               </select>
+              <input type="date" className="border rounded px-3 py-2" value={borrowDueDate} onChange={e=>setBorrowDueDate(e.target.value)} />
               <input className="border rounded px-3 py-2 md:col-span-2" placeholder="Notes (optional)" value={borrowNotes} onChange={e=>setBorrowNotes(e.target.value)} />
             </div>
             <div className="mt-3">
@@ -230,15 +257,21 @@ export default function Library() {
                       <th className="px-3 py-2 text-left">Topics</th>
                       <th className="px-3 py-2 text-left">Count</th>
                       <th className="px-3 py-2 text-left">Last Activity</th>
+                      <th className="px-3 py-2 text-left">Due Date</th>
+                      <th className="px-3 py-2 text-left">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {active.map(({ item, count, last }, idx) => (
+                    {active.map(({ item, count, last, dueDate }, idx) => (
                       <tr key={idx} className="border-t">
                         <td className="px-3 py-2">{item?.name || '-'}</td>
                         <td className="px-3 py-2 text-gray-600">{(item?.topics || []).join(', ') || '-'}</td>
                         <td className="px-3 py-2">{count}</td>
                         <td className="px-3 py-2">{last ? new Date(last).toLocaleString() : '-'}</td>
+                        <td className="px-3 py-2">{dueDate ? new Date(dueDate).toLocaleDateString() : '-'}</td>
+                        <td className="px-3 py-2">
+                          <button onClick={() => returnBook(item?._id)} className="px-2 py-1 text-xs bg-emerald-600 hover:bg-emerald-700 text-white rounded">Mark Returned</button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>

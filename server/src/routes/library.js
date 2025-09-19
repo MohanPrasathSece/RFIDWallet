@@ -16,6 +16,17 @@ router.get('/history', auth(), requireRoles('admin'), async (req, res) => {
   }
 });
 
+// Get active borrows for the currently authenticated student
+router.get('/my-active', auth(), async (req, res) => {
+  try {
+    if (!req.student?._id) return res.status(401).json({ message: 'Unauthorized' });
+    const active = await getActiveBorrowsByStudent(req.student._id);
+    return res.json(active);
+  } catch (e) {
+    return res.status(500).json({ message: e.message });
+  }
+});
+
 // Get active borrows for a student (by studentId or rfidNumber)
 router.get('/active', auth(), requireRoles('admin'), async (req, res) => {
   try {

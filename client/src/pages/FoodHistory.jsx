@@ -111,7 +111,7 @@ export default function FoodHistory() {
                       <td className="px-3 py-2 capitalize">{row.action}</td>
                       <td className="px-3 py-2">{row.item?.name || '-'}</td>
                       <td className="px-3 py-2">{row.student?.name || '-'}</td>
-                      <td className="px-3 py-2">{row.student?.rfid || '-'}</td>
+                      <td className="px-3 py-2">{row.student?.rfid_uid || row.student?.rfid || '-'}</td>
                       <td className="px-3 py-2 text-gray-600">{row.notes || '-'}</td>
                     </tr>
                   ))}

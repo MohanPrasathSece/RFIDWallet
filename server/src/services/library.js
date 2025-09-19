@@ -49,19 +49,20 @@ async function getLibraryHistoryByStudent(studentId) {
 
 // Compute currently borrowed items for a student (borrows - returns)
 async function getActiveBorrowsByStudent(studentId) {
-  const txs = await Transaction.find({ module: 'library', student: studentId, status: 'approved' }).select('action item createdAt').populate('item');
+  const txs = await Transaction.find({ module: 'library', student: studentId, status: 'approved' }).select('action item createdAt dueDate').populate('item');
   const counts = new Map();
   for (const tx of txs) {
     const key = String(tx.item?._id || 'none');
-    if (!counts.has(key)) counts.set(key, { item: tx.item, count: 0, last: tx.createdAt });
+    if (!counts.has(key)) counts.set(key, { item: tx.item, count: 0, last: tx.createdAt, dueDate: undefined });
     const rec = counts.get(key);
     if (tx.action === 'borrow') rec.count += 1;
     if (tx.action === 'return') rec.count -= 1;
     if (!rec.last || tx.createdAt > rec.last) rec.last = tx.createdAt;
+    if (tx.action === 'borrow' && tx.dueDate) rec.dueDate = tx.dueDate;
   }
   const active = [];
-  for (const { item, count, last } of counts.values()) {
-    if (count > 0) active.push({ item, count, last });
+  for (const { item, count, last, dueDate } of counts.values()) {
+    if (count > 0) active.push({ item, count, last, dueDate });
   }
   // newest first
   active.sort((a, b) => b.last - a.last);

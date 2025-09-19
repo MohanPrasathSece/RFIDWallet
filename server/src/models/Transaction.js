@@ -10,6 +10,8 @@ const transactionSchema = new mongoose.Schema(
     amount: Number,
     status: { type: String, enum: ['approved', 'rejected', 'pending'], default: 'approved' },
     notes: String,
+    // For library module: optional due date for borrowed items
+    dueDate: { type: Date },
   },
   { timestamps: true }
 );

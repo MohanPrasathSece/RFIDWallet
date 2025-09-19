@@ -134,8 +134,9 @@ function StudentDashboard() {
         {/* Top Bar */}
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h1 className="text-2xl font-semibold text-slate-800">Student Dashboard</h1>
-            <p className="text-xs text-slate-500">Welcome to {brandName}</p>
+            <h1 className="text-3xl font-extrabold leading-tight text-green-700">
+              {`Welcome, ${profile.name || 'Student'}`}
+            </h1>
           </div>
           <div className="relative" ref={menuRef}>
             <button
@@ -149,6 +150,7 @@ function StudentDashboard() {
             {menuOpen && (
               <div className="absolute right-0 mt-2 w-44 rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden z-10">
                 <button className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50" onClick={() => { setMenuOpen(false); navigate('/student/profile'); }}>Profile</button>
+                <button className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50" onClick={() => { setMenuOpen(false); navigate('/student/library'); }}>My Books</button>
                 <button className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50" onClick={() => { setMenuOpen(false); navigate('/student/analytics'); }}>Analytics</button>
                 <div className="h-px bg-slate-100" />
                 <button className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50" onClick={handleLogout}>Logout</button>
