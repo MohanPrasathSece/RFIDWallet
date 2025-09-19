@@ -82,10 +82,17 @@ router.post('/add', auth(), async (req, res) => {
     });
     let order;
     try {
+      // Build a short, unique receipt that complies with Razorpay's 40-char limit
+      const shortStudent = String(req.student._id).slice(-6);
+      const ts36 = Date.now().toString(36);
+      let receipt = `w_${shortStudent}_${ts36}`; // example: w_ab12cd_lh2f0v3
+      if (receipt.length > 40) receipt = receipt.slice(0, 40);
+      console.log('[Razorpay] Using receipt', { receipt, length: receipt.length });
+
       order = await instance.orders.create({
         amount: Math.round(amount * 100), // INR paise
         currency: 'INR',
-        receipt: `wallet_${req.student._id}_${Date.now()}`,
+        receipt,
         notes: { studentId: String(req.student._id), rfid_uid: req.student.rfid_uid },
       });
     } catch (err) {
