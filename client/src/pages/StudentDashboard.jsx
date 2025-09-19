@@ -5,7 +5,7 @@ import { io } from 'socket.io-client';
 import { useAuth } from '../shared/AuthContext.jsx';
 
 function StudentDashboard() {
-  const brandName = import.meta?.env?.VITE_BRAND_NAME || 'Greenfield College Cards';
+  const brandName = import.meta?.env?.VITE_BRAND_NAME || 'Sri Eshwar College of Engineering';
   const navigate = useNavigate();
   const { logout } = useAuth();
   const [profile, setProfile] = useState({ name: '', rfid_uid: '' });

@@ -139,11 +139,17 @@ router.post('/students', async (req, res) => {
     const { name, rollNo, RFIDNumber, password, email, mobileNumber, department } = req.body;
 
     // Validate required fields
-    const required = { name, rollNo, RFIDNumber, password, email };
+    const required = { name, rollNo, RFIDNumber, password, email, mobileNumber };
     for (const [field, value] of Object.entries(required)) {
       if (!value) {
         return res.status(400).json({ message: `${field} is required.` });
       }
+    }
+
+    // Basic mobile validation (+ optional, 7-15 digits)
+    const phone = String(mobileNumber).trim();
+    if (!/^\+?\d{7,15}$/.test(phone)) {
+      return res.status(400).json({ message: 'Invalid mobileNumber format' });
     }
 
     // Check for duplicates using the correct DB field 'rfid_uid'
@@ -162,7 +168,7 @@ router.post('/students', async (req, res) => {
       name,
       rollNo,
       email,
-      mobileNumber: mobileNumber || '',
+      mobileNumber: phone,
       rfid_uid: RFIDNumber, // Map RFIDNumber from form to rfid_uid in DB
       passwordHash,
       department,

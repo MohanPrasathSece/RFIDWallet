@@ -51,7 +51,7 @@ export default function Login() {
   const demoEmail = import.meta?.env?.VITE_DEMO_ADMIN_EMAIL || '';
   const demoPassword = import.meta?.env?.VITE_DEMO_ADMIN_PASSWORD || '';
   const canShowDemo = Boolean(demoEmail);
-  const brandName = import.meta?.env?.VITE_BRAND_NAME || 'Greenfield College Cards';
+  const brandName = import.meta?.env?.VITE_BRAND_NAME || 'Sri Eshwar College of Engineering';
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-green-50 to-white">
@@ -59,7 +59,7 @@ export default function Login() {
       <header className="sticky top-0 z-10 backdrop-blur border-b border-white/60 bg-white/80">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-green-600 to-emerald-500 text-white grid place-items-center font-bold">CC</div>
+            <div className="h-9 px-3 rounded-lg bg-gradient-to-br from-green-600 to-emerald-500 text-white inline-flex items-center justify-center font-bold">SECE</div>
             <div>
               <div className="font-semibold leading-tight text-green-900">{brandName}</div>
               <div className="text-[11px] text-green-700/70 -mt-0.5">RFID Payments • Library • Store</div>

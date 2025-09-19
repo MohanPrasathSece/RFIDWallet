@@ -29,6 +29,53 @@ router.post('/change-password', require('../middleware/auth').auth(), async (req
   }
 });
 
+// Update student profile (self) — allows name, email, mobileNumber
+router.post('/update-profile', auth(), async (req, res) => {
+  try {
+    if (!req.student) return res.status(401).json({ message: 'Unauthorized' });
+    const { name, email, mobileNumber } = req.body || {};
+
+    const update = {};
+    if (typeof name === 'string') update.name = name.trim();
+    if (typeof email === 'string') update.email = email.trim();
+    if (typeof mobileNumber === 'string') {
+      const phone = mobileNumber.trim();
+      // basic validation: digits with optional '+' and 7-15 digits total
+      const ok = /^\+?\d{7,15}$/.test(phone);
+      if (!ok) return res.status(400).json({ message: 'Invalid mobile number format' });
+      update.mobileNumber = phone;
+    }
+
+    if (!Object.keys(update).length) return res.status(400).json({ message: 'No valid fields to update' });
+
+    // apply updates and ensure email uniqueness handled by schema
+    const student = await require('../models/Student').findByIdAndUpdate(
+      req.student._id,
+      { $set: update },
+      { new: true }
+    );
+    if (!student) return res.status(404).json({ message: 'Student not found' });
+
+    return res.json({
+      ok: true,
+      user: {
+        id: student._id,
+        name: student.name,
+        role: 'student',
+        email: student.email,
+        rfid_uid: student.rfid_uid,
+        mobileNumber: student.mobileNumber,
+      }
+    });
+  } catch (e) {
+    // Handle duplicate email errors cleanly
+    if (e?.code === 11000 && e?.keyPattern?.email) {
+      return res.status(400).json({ message: 'Email is already in use' });
+    }
+    return res.status(500).json({ message: e.message });
+  }
+});
+
 router.post('/login', async (req, res) => {
   try {
     const { email, password, as, rollNo, identifier } = req.body;
@@ -59,7 +106,7 @@ router.post('/login', async (req, res) => {
         tokenPrefix: token.slice(0, 20) + '...',
       });
       
-      return res.json({ token, user: { id: student._id, name: student.name, role: 'student', email: student.email, rfid_uid: student.rfid_uid } });
+      return res.json({ token, user: { id: student._id, name: student.name, role: 'student', email: student.email, rfid_uid: student.rfid_uid, mobileNumber: student.mobileNumber } });
     }
 
     // Default: regular user login
@@ -91,6 +138,7 @@ router.get('/me', auth(), async (req, res) => {
           role: 'student',
           email: req.student.email,
           rfid_uid: req.student.rfid_uid,
+          mobileNumber: req.student.mobileNumber,
         },
       });
     }

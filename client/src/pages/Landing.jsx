@@ -5,6 +5,7 @@ import { useAuth } from '../shared/AuthContext.jsx';
 export default function Landing() {
   const { login, logout, token } = useAuth();
   const navigate = useNavigate();
+  const brandName = import.meta?.env?.VITE_BRAND_NAME || 'Sri Eshwar College of Engineering';
   const [mounted, setMounted] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
   const [showStudent, setShowStudent] = useState(false);
@@ -79,9 +80,9 @@ export default function Landing() {
               <path d="M12 2.25c-.26 0-.52.05-.76.16l-6 2.57a1.5 1.5 0 0 0-.89 1.36V11c0 5.05 3.58 8.86 7.39 10.59.15.07.33.07.49 0C16.04 19.86 19.62 16.05 19.62 11V6.34c0-.58-.35-1.11-.89-1.33l-6-2.58a1.8 1.8 0 0 0-.73-.18Z"/>
             </svg>
           </span>
-          <span className="text-sm font-medium text-green-700">EcoCollege Portal</span>
+          <span className="text-sm font-medium text-green-700">{brandName}</span>
         </div>
-        <h1 className="mt-4 text-3xl md:text-4xl font-bold text-green-700">EcoCollege Portal</h1>
+        <h1 className="mt-4 text-3xl md:text-4xl font-bold text-green-700">{brandName}</h1>
         <p className="mt-2 text-sm text-green-700/70">Smart • Secure • Sustainable</p>
         {token && (
           <button

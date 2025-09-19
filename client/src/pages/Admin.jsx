@@ -116,7 +116,7 @@ export default function Admin() {
             <span className="text-sm text-gray-600 hidden md:block">{user?.name || 'Admin'}</span>
             <button
               onClick={() => { logout(); navigate('/'); }}
-              className="px-3 py-1.5 text-sm bg-gray-800 hover:bg-black text-white rounded"
+              className="px-3 py-1.5 text-sm bg-red-600 hover:bg-red-700 text-white rounded"
             >Logout</button>
           </div>
         </div>

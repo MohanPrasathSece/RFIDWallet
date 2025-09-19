@@ -7,7 +7,7 @@ import EcoIcon from '../components/EcoIcon.jsx';
 export default function StudentProfile() {
   const navigate = useNavigate();
   const { user, setUser, logout } = useAuth();
-  const brandName = import.meta?.env?.VITE_BRAND_NAME || 'Greenfield College Cards';
+  const brandName = import.meta?.env?.VITE_BRAND_NAME || 'Sri Eshwar College of Engineering';
 
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
@@ -18,9 +18,12 @@ export default function StudentProfile() {
   const [newPassword, setNewPassword] = useState('');
   const [pwdMsg, setPwdMsg] = useState('');
 
+  const [mobileNumber, setMobileNumber] = useState(user?.mobileNumber || '');
+
   useEffect(() => {
     setName(user?.name || '');
     setEmail(user?.email || '');
+    setMobileNumber(user?.mobileNumber || '');
   }, [user]);
 
   const saveProfile = async (e) => {
@@ -29,8 +32,10 @@ export default function StudentProfile() {
     setSaving(true);
     try {
       // Try update-profile if backend supports it; otherwise show friendly message
-      await api.post('/auth/update-profile', { name, email });
-      setUser({ ...(user || {}), name, email });
+      await api.post('/auth/update-profile', { name, email, mobileNumber });
+      const updated = { ...(user || {}), name, email, mobileNumber };
+      setUser(updated);
+      try { localStorage.setItem('user', JSON.stringify(updated)); } catch {}
       setMsg('Profile updated successfully');
     } catch (err) {
       setMsg(err?.response?.data?.message || 'Profile update not available. Please contact Admin.');
@@ -111,8 +116,18 @@ export default function StudentProfile() {
                   onChange={e=>setEmail(e.target.value)}
                 />
               </div>
+              <div>
+                <label className="sr-only">Mobile Number</label>
+                <input
+                  className="input-sm rounded-xl bg-white placeholder-slate-400 focus:ring-2 focus:ring-green-300"
+                  type="tel"
+                  placeholder="Mobile number (e.g., +919876543210)"
+                  value={mobileNumber}
+                  onChange={e=>setMobileNumber(e.target.value)}
+                />
+              </div>
               <div className="flex gap-2">
-                <button type="button" onClick={()=>{ setName(user?.name || ''); setEmail(user?.email || ''); }} className="flex-1 px-3 py-2 rounded-xl border border-green-200 bg-white text-slate-700 hover:bg-green-50 shadow-sm text-sm">Reset</button>
+                <button type="button" onClick={()=>{ setName(user?.name || ''); setEmail(user?.email || ''); setMobileNumber(user?.mobileNumber || ''); }} className="flex-1 px-3 py-2 rounded-xl border border-green-200 bg-white text-slate-700 hover:bg-green-50 shadow-sm text-sm">Reset</button>
                 <button type="submit" disabled={saving} className="flex-1 rounded-xl bg-green-600 hover:bg-green-700 text-white px-3 py-2 text-sm disabled:opacity-60">{saving ? 'Saving…' : 'Update Profile'}</button>
               </div>
             </form>

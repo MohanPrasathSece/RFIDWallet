@@ -316,8 +316,11 @@ export default function Library() {
 
         <div className="bg-white p-4 rounded shadow">
           <div className="flex items-center justify-between mb-2">
-            <h2 className="text-lg font-semibold">All Scans (Library)</h2>
-            <button onClick={loadAllScans} className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded">Refresh</button>
+            <h2 className="text-lg font-semibold">Recent Scans (Library)</h2>
+            <div className="flex items-center gap-2">
+              <button onClick={loadAllScans} className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded">Refresh</button>
+              <Link to="/library/scans" className="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded">All Scans</Link>
+            </div>
           </div>
           {allHistory.length === 0 ? (
             <div className="text-gray-500">No scans yet.</div>
@@ -335,7 +338,7 @@ export default function Library() {
                   </tr>
                 </thead>
                 <tbody>
-                  {allHistory.map(row => (
+                  {allHistory.slice(0,5).map(row => (
                     <tr key={row._id} className="border-t">
                       <td className="px-3 py-2">{new Date(row.createdAt).toLocaleString()}</td>
                       <td className="px-3 py-2 capitalize">{row.action}</td>

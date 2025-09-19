@@ -58,6 +58,13 @@ router.post('/', async (req, res) => {
     // Default path: create as-is
     const tx = await Transaction.create(body);
     req.app.get('io').emit('transaction:new', tx);
+    // If created directly in approved state, apply effects (e.g., library borrow/return)
+    try {
+      if (tx?.status === 'approved') {
+        const { applyApprovalEffects } = require('../services/approvals');
+        await applyApprovalEffects(tx);
+      }
+    } catch (_) {}
     return res.status(201).json(tx);
   } catch (e) {
     return res.status(400).json({ message: e.message });

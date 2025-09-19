@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import Landing from './pages/Landing.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Library from './pages/Library.jsx';
+import LibraryScans from './pages/LibraryScans.jsx';
 import Food from './pages/Food.jsx';
 import FoodHistory from './pages/FoodHistory.jsx';
 import FoodScans from './pages/FoodScans.jsx';
@@ -24,6 +25,7 @@ export default function App() {
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/library" element={<Library />} />
+      <Route path="/library/scans" element={<LibraryScans />} />
       <Route path="/library/add" element={<AddBook />} />
       <Route path="/food" element={<Food />} />
       <Route path="/food/add" element={<AddFood />} />
