@@ -69,7 +69,7 @@ export default function Login() {
         </div>
       </header>
 
-      <div className="max-w-6xl mx-auto min-h-[calc(100vh-56px)] grid grid-cols-1 md:grid-cols-2">
+      <div className="max-w-6xl mx-auto min-h-[calc(100vh-56px)] grid grid-cols-1 lg:grid-cols-2">
         {/* Left: Admin */}
         <div className="relative flex items-center justify-center p-8 md:p-12 overflow-hidden">
           {/* background gradient block */}

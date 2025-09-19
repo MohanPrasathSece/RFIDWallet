@@ -94,54 +94,58 @@ export default function Landing() {
       </header>
 
       {/* Body */}
-      <main className={`flex-1 px-6 pb-12 mx-auto max-w-3xl w-full transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}>
-        <section className="text-center mb-4">
+      <main className={`flex-1 w-full transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}>
+        {/* Headline for small screens only */}
+        <section className="text-center mb-4 px-6 mx-auto max-w-3xl lg:hidden">
           <h2 className="text-xl font-semibold text-gray-800 font-sans">Choose Your Portal</h2>
           <p className="text-gray-500 font-sans">Select your access level below</p>
         </section>
 
-        <div className="space-y-6">
-          {/* Admin Card */}
-          <div className={`${cardBase} ${cardHover}`}>
-            {/* Decorative corner removed */}
-            <div className="p-5 md:p-6">
-              <div className="flex items-start gap-3">
-                <span className={pillIcon}>
-                  {/* Shield icon */}
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
-                    <path d="M12 2.25c-.26 0-.52.05-.76.16l-6 2.57a1.5 1.5 0 0 0-.89 1.36V11c0 5.05 3.58 8.86 7.39 10.59.15.07.33.07.49 0C16.04 19.86 19.62 16.05 19.62 11V6.34c0-.58-.35-1.11-.89-1.33l-6-2.58a1.8 1.8 0 0 0-.73-.18Z"/>
-                  </svg>
-                </span>
-                <div className="text-left">
-                  <h3 className="text-lg md:text-xl font-semibold text-gray-800 font-sans">Admin Portal</h3>
-                  <p className="text-gray-500 font-sans">Manage users, transactions, and system analytics</p>
+        {/* Split panels on desktop, stacked on mobile */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-0">
+          {/* Left Panel: Admin */}
+          <div className="relative px-6 lg:px-0">
+            <div className={`lg:min-h-[calc(100vh-220px)] lg:rounded-none lg:border-0 lg:shadow-none ${cardBase} ${cardHover} lg:bg-gradient-to-br lg:from-emerald-50 lg:to-white flex items-center justify-center`}>
+              <div className="w-full max-w-md p-5 md:p-6">
+                <div className="flex items-start gap-3">
+                  <span className={pillIcon}>
+                    {/* Shield icon */}
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
+                      <path d="M12 2.25c-.26 0-.52.05-.76.16l-6 2.57a1.5 1.5 0 0 0-.89 1.36V11c0 5.05 3.58 8.86 7.39 10.59.15.07.33.07.49 0C16.04 19.86 19.62 16.05 19.62 11V6.34c0-.58-.35-1.11-.89-1.33l-6-2.58a1.8 1.8 0 0 0-.73-.18Z"/>
+                    </svg>
+                  </span>
+                  <div className="text-left">
+                    <h3 className="text-lg md:text-xl font-semibold text-gray-800 font-sans">Admin Portal</h3>
+                    <p className="text-gray-500 font-sans">Manage users, transactions, and system analytics</p>
+                  </div>
                 </div>
+                <button onClick={() => setShowAdmin(true)} className={ctaBtn}>
+                  Login as Admin
+                </button>
               </div>
-              <button onClick={() => setShowAdmin(true)} className={ctaBtn}>
-                Login as Admin
-              </button>
             </div>
           </div>
 
-          {/* Student Card */}
-          <div className={`${cardBase} ${cardHover}`}>
-            {/* Decorative corner removed */}
-            <div className="p-5 md:p-6">
-              <div className="flex items-start gap-3">
-                <span className={pillIcon}>
-                  {/* Users icon */}
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
-                    <path d="M16 11a4 4 0 1 0-3.2-6.4A5 5 0 0 1 17 9.5c0 .52-.07 1.03-.2 1.5h-.8ZM8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm8 1c-2.2 0-4 1.8-4 4v.5c0 .83.67 1.5 1.5 1.5h5c.83 0 1.5-.67 1.5-1.5V17c0-2.2-1.8-4-4-4Zm-8 0c-2.21 0-4 1.79-4 4v.5C4 18.33 4.67 19 5.5 19h5c.83 0 1.5-.67 1.5-1.5V17c0-2.21-1.79-4-4-4Z"/>
-                  </svg>
-                </span>
-                <div className="text-left">
-                  <h3 className="text-lg md:text-xl font-semibold text-gray-800 font-sans">Student Portal</h3>
-                  <p className="text-gray-500 font-sans">Check balance, recharge, and make RFID payments</p>
+          {/* Right Panel: Student */}
+          <div className="relative px-6 lg:px-0">
+            <div className={`lg:min-h-[calc(100vh-220px)] lg:rounded-none lg:border-0 lg:shadow-none ${cardBase} ${cardHover} lg:bg-gradient-to-br lg:from-green-50 lg:to-white flex items-center justify-center`}>
+              <div className="w-full max-w-md p-5 md:p-6">
+                <div className="flex items-start gap-3">
+                  <span className={pillIcon}>
+                    {/* Users icon */}
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
+                      <path d="M16 11a4 4 0 1 0-3.2-6.4A5 5 0 0 1 17 9.5c0 .52-.07 1.03-.2 1.5h-.8ZM8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm8 1c-2.2 0-4 1.8-4 4v.5c0 .83.67 1.5 1.5 1.5h5c.83 0 1.5-.67 1.5-1.5V17c0-2.2-1.8-4-4-4Zm-8 0c-2.21 0-4 1.79-4 4v.5C4 18.33 4.67 19 5.5 19h5c.83 0 1.5-.67 1.5-1.5V17c0-2.21-1.79-4-4-4Z"/>
+                    </svg>
+                  </span>
+                  <div className="text-left">
+                    <h3 className="text-lg md:text-xl font-semibold text-gray-800 font-sans">Student Portal</h3>
+                    <p className="text-gray-500 font-sans">Check balance, recharge, and make RFID payments</p>
+                  </div>
                 </div>
+                <button onClick={() => setShowStudent(true)} className={ctaBtn}>
+                  Login as Student
+                </button>
               </div>
-              <button onClick={() => setShowStudent(true)} className={ctaBtn}>
-                Login as Student
-              </button>
             </div>
           </div>
         </div>
