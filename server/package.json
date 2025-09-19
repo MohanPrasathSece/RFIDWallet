@@ -14,6 +14,8 @@
     "upsert:admin:id": "node src/scripts/upsertAdminById.js"
   },
   "dependencies": {
+    "@serialport/parser-readline": "^13.0.0",
+    "axios": "^1.12.2",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -23,6 +25,7 @@
     "mongoose": "^8.5.2",
     "node-telegram-bot-api": "^0.66.0",
     "razorpay": "^2.9.6",
+    "serialport": "^13.0.0",
     "socket.io": "^4.7.5"
   },
   "devDependencies": {
