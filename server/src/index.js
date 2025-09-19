@@ -28,6 +28,9 @@ const connectDB = require('./config/db');
 const mongoose = require('mongoose');
 const { initTelegram } = require('./services/telegram');
 const Item = require('./models/Item');
+const { runLibraryDueReminders } = require('./services/library');
+const { sendReportsForMonth } = require('./services/reports');
+const moment = require('moment-timezone');
 
 const authRoutes = require('./routes/auth');
 const itemRoutes = require('./routes/items');
@@ -40,7 +43,7 @@ const foodRoutes = require('./routes/food');
 const storeRoutes = require('./routes/store');
 const { router: walletRoutes, webhookHandler } = require('./routes/wallet');
 const studentRoutes = require('./routes/students');
-const Student = require('./models/Student');
+const reportsRoutes = require('./routes/reports');
 
 const app = express();
 const server = http.createServer(app);
@@ -210,6 +213,37 @@ mongoose.connection.once('connected', async () => {
   } catch (e) {
     console.warn('Food seed skipped:', e.message);
   }
+  // Start periodic library due reminders (runs every hour)
+  try {
+    setInterval(() => {
+      runLibraryDueReminders().catch(() => {});
+    }, 60 * 60 * 1000);
+    // Kick off once on startup (non-blocking)
+    setTimeout(() => { runLibraryDueReminders().catch(() => {}); }, 10_000);
+  } catch (_) {}
+
+  // Monthly reports scheduler: 1st of month at 08:00 IST for previous month
+  try {
+    let lastReportRunKey = null; // e.g., '2025-09'
+    setInterval(async () => {
+      const now = moment.tz('Asia/Kolkata');
+      const day = now.date();
+      const hour = now.hour();
+      if (day !== 1 || hour !== 8) return;
+      const prev = now.clone().subtract(1, 'month');
+      const key = prev.format('YYYY-MM');
+      if (lastReportRunKey === key) return; // already sent this month
+      lastReportRunKey = key;
+      try {
+        const yr = Number(prev.format('YYYY'));
+        const mo = Number(prev.format('M'));
+        const out = await sendReportsForMonth(yr, mo, { includeReceipts: true });
+        console.log(`[Reports] Sent monthly reports for ${key}:`, out);
+      } catch (e) {
+        console.error('[Reports] Monthly send failed:', e.message);
+      }
+    }, 15 * 60 * 1000); // check every 15 minutes
+  } catch (_) {}
 });
 
 // Health check endpoint
@@ -258,6 +292,7 @@ app.use('/api/food', foodRoutes);
 app.use('/api/store', storeRoutes);
 app.use('/api/wallet', walletRoutes);
 app.use('/api/students', studentRoutes);
+app.use('/api/reports', reportsRoutes);
 
 // Initialize Telegram bot integration (webhook or polling)
 initTelegram(app, io);

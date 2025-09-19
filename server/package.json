@@ -22,8 +22,13 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
+    "mailer": "^0.6.7",
+    "moment-timezone": "^0.6.0",
     "mongoose": "^8.5.2",
+    "node": "^24.8.0",
     "node-telegram-bot-api": "^0.66.0",
+    "nodemailer": "^6.10.1",
+    "pdfkit": "^0.17.2",
     "razorpay": "^2.9.6",
     "serialport": "^13.0.0",
     "socket.io": "^4.7.5"

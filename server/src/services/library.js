@@ -2,6 +2,7 @@ const Transaction = require('../models/Transaction');
 const Item = require('../models/Item');
 const Student = require('../models/Student');
 const { sendPlainMessage } = require('./telegram');
+const { sendEmail } = require('./email');
 
 // Notify students when a new library item is added/updated with topics
 // Strategy: find students who have approved 'borrow' transactions for items
@@ -87,4 +88,59 @@ module.exports = {
   getLibraryHistoryByStudent,
   getActiveBorrowsByStudent,
   resolveStudent,
+  runLibraryDueReminders,
 };
+
+// ----------------- Due Reminders -----------------
+// Find approved library borrows that are due soon or overdue and notify students.
+// This implementation sends Telegram messages if telegramUserID is present.
+// You can extend with SMTP to email if desired.
+
+async function runLibraryDueReminders() {
+  const now = new Date();
+  const soonWindowMs = 24 * 60 * 60 * 1000; // 24h
+
+  // Fetch approved borrows with a dueDate
+  const borrows = await Transaction.find({
+    module: 'library',
+    action: 'borrow',
+    status: 'approved',
+    dueDate: { $ne: null },
+  }).populate('student').populate('item');
+
+  for (const tx of borrows) {
+    const due = tx.dueDate ? new Date(tx.dueDate) : null;
+    if (!due) continue;
+    const msLeft = due.getTime() - now.getTime();
+
+    let kind = null;
+    if (msLeft <= 0) kind = 'overdue';
+    else if (msLeft <= soonWindowMs) kind = 'due_soon';
+    else continue;
+
+    const st = tx.student;
+    const item = tx.item;
+    const itemName = item?.name || 'Library Item';
+    const dueStr = due.toLocaleString();
+    const baseMsg = kind === 'overdue'
+      ? `Reminder: Your borrowed book "${itemName}" is OVERDUE. Due on ${dueStr}. Please return it as soon as possible.`
+      : `Reminder: Your borrowed book "${itemName}" is due soon. Due on ${dueStr}. Please return on time.`;
+
+    // Telegram (if available)
+    if (st?.telegramUserID) {
+      try { await sendPlainMessage(st.telegramUserID, baseMsg); } catch (_) {}
+    }
+
+    // Email (if available and SMTP configured)
+    if (st?.email) {
+      try {
+        await sendEmail({
+          to: st.email,
+          subject: kind === 'overdue' ? `OVERDUE: ${itemName} library return` : `Reminder: ${itemName} due soon`,
+          text: baseMsg,
+          html: `<p>${baseMsg}</p>`,
+        });
+      } catch (_) {}
+    }
+  }
+}

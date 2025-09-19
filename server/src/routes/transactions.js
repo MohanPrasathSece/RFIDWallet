@@ -55,6 +55,16 @@ router.post('/', async (req, res) => {
       return res.status(201).json(tx);
     }
 
+    // Library guard: prevent borrowing when quantity is 0/unavailable
+    if (body.module === 'library' && body.action === 'borrow') {
+      if (!body.item) return res.status(400).json({ message: 'item is required' });
+      const libItem = await Item.findById(body.item).select('quantity name');
+      if (!libItem) return res.status(404).json({ message: 'Item not found' });
+      if (!Number.isFinite(libItem.quantity) || libItem.quantity <= 0) {
+        return res.status(400).json({ message: 'Item unavailable (out of stock)' });
+      }
+    }
+
     // Default path: create as-is
     const tx = await Transaction.create(body);
     req.app.get('io').emit('transaction:new', tx);

@@ -200,7 +200,15 @@ export default function Library() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <select className="border rounded px-3 py-2" value={borrowItemId} onChange={e=>setBorrowItemId(e.target.value)}>
                 <option value="">Select Book</option>
-                {items.map(it => <option value={it._id} key={it._id}>{it.name} (qty {it.quantity})</option>)}
+                {items.map(it => (
+                  <option
+                    value={it._id}
+                    key={it._id}
+                    disabled={!(Number.isFinite(it?.quantity) ? it.quantity > 0 : false)}
+                  >
+                    {it.name} {Number(it?.quantity) > 0 ? `(qty ${it.quantity})` : '— Unavailable'}
+                  </option>
+                ))}
               </select>
               <input type="date" className="border rounded px-3 py-2" value={borrowDueDate} onChange={e=>setBorrowDueDate(e.target.value)} />
               <input className="border rounded px-3 py-2 md:col-span-2" placeholder="Notes (optional)" value={borrowNotes} onChange={e=>setBorrowNotes(e.target.value)} />
