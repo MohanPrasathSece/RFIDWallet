@@ -76,12 +76,18 @@ export default function Landing() {
 
 
   return (
-    <div className="h-screen bg-gradient-to-br from-green-50 via-white to-green-100 font-sans antialiased overflow-hidden flex flex-col">
+    <div className="h-screen bg-gradient-to-br from-green-50 via-white to-green-100 font-sans antialiased overflow-hidden flex flex-col relative">
+      {/* College Background Image */}
+      <div className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-50" style={{backgroundImage: 'url(/college-bg.jpg)'}}></div>
+      
+      {/* Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-green-50/70 via-white/80 to-green-100/70"></div>
+      
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-green-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-green-300 rounded-full mix-blend-multiply filter blur-xl opacity-40 animate-blob animation-delay-2000"></div>
-        <div className="absolute top-40 left-40 w-80 h-80 bg-green-100 rounded-full mix-blend-multiply filter blur-xl opacity-50 animate-blob animation-delay-4000"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-green-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-green-300 rounded-full mix-blend-multiply filter blur-xl opacity-25 animate-blob animation-delay-2000"></div>
+        <div className="absolute top-40 left-40 w-80 h-80 bg-green-100 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000"></div>
       </div>
 
       {/* Navigation */}
@@ -106,22 +112,82 @@ export default function Landing() {
 
       {/* Main Content */}
       <main className="relative z-10 flex flex-col lg:flex-row flex-1 overflow-hidden min-h-0">
-        {/* Left Side - Hero Content */}
-        <div className={`flex-1 flex flex-col justify-center px-4 lg:px-6 xl:px-8 transition-all duration-1000 delay-300 ${mounted ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}>
+        
+        {/* Mobile Layout - Minimal Design */}
+        <div className="lg:hidden flex flex-col flex-1 px-4 py-8">
+          
+          {/* Simple Header */}
+          <div className="text-center mb-6">
+            <div className="inline-flex items-center px-4 py-2 bg-white/80 rounded-full border border-green-200 mb-4 shadow-sm">
+              <span className="w-2 h-2 bg-green-500 rounded-full mr-3"></span>
+              <span className="text-green-700 text-sm font-medium">{brandName}</span>
+            </div>
+            
+            <h1 className="text-3xl font-bold text-green-800 mb-3">
+              Next-Gen
+              <span className="block text-green-600">Digital Wallet</span>
+            </h1>
+            
+            {/* Website Description */}
+            <p className="text-green-700 text-sm leading-relaxed px-2 mb-4">
+              Experience the future of campus payments with our secure RFID-enabled digital wallet system. 
+              Fast, secure, and seamlessly integrated for students and administrators.
+            </p>
+          </div>
+
+          {/* Compact Feature Display */}
+          <div className="bg-white/90 rounded-lg p-3 border border-green-200 mb-4 shadow-sm">
+            <div className="text-center">
+              <div className="text-2xl mb-1">{features[currentFeature].icon}</div>
+              <h3 className="text-green-800 font-medium text-sm mb-1">{features[currentFeature].title}</h3>
+              <p className="text-green-600 text-xs">{features[currentFeature].desc}</p>
+            </div>
+            <div className="flex justify-center space-x-1 mt-2">
+              {features.map((_, index) => (
+                <div
+                  key={index}
+                  className={`h-0.5 rounded-full transition-all duration-300 ${
+                    index === currentFeature ? 'bg-green-500 w-3' : 'bg-green-200 w-1'
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Simple Login Buttons */}
+          <div className="space-y-3">
+            <button
+              onClick={() => setShowStudent(true)}
+              className="w-full bg-green-500 text-white font-medium py-3 px-4 rounded-lg"
+            >
+              Student Login
+            </button>
+
+            <button
+              onClick={() => setShowAdmin(true)}
+              className="w-full bg-green-600 text-white font-medium py-3 px-4 rounded-lg"
+            >
+              Admin Login
+            </button>
+          </div>
+        </div>
+
+        {/* Desktop Layout - Left Side - Hero Content */}
+        <div className={`hidden lg:flex flex-1 flex-col justify-center px-6 xl:px-8 transition-all duration-1000 delay-300 ${mounted ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}>
           <div className="max-w-lg">
             <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-50 to-white backdrop-blur-sm rounded-full border border-green-300 mb-1 shadow-md">
               <span className="w-2 h-2 bg-green-500 rounded-full mr-3 animate-pulse"></span>
               <span className="text-green-700 text-sm font-semibold">{brandName}</span>
             </div>
             
-            <h1 className="text-2xl lg:text-4xl font-bold text-green-800 mb-4 leading-loose">
+            <h1 className="text-4xl font-bold text-green-800 mb-4 leading-tight">
               Next-Gen
-              <span className="block bg-gradient-to-r from-green-500 via-green-600 to-green-700 bg-clip-text text-transparent pb-1">
+              <span className="block bg-gradient-to-r from-green-500 via-green-600 to-green-700 bg-clip-text text-transparent">
                 Digital Wallet
               </span>
             </h1>
             
-            <p className="hidden lg:block text-base lg:text-lg text-green-700 mb-4 leading-relaxed font-medium">
+            <p className="text-lg text-green-700 mb-4 leading-relaxed font-medium">
               Experience the future of campus payments with our secure RFID-enabled digital wallet system. 
               Fast, secure, and seamlessly integrated.
             </p>
@@ -147,8 +213,8 @@ export default function Landing() {
               </div>
             </div>
 
-            {/* Stats - Hidden on mobile */}
-            <div className="hidden lg:grid grid-cols-3 gap-3">
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-3">
               <div className="text-center bg-gradient-to-b from-white to-green-50 backdrop-blur-sm rounded-xl p-3 border border-green-200 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105">
                 <div className="text-lg font-bold text-green-800">99.9%</div>
                 <div className="text-green-600 text-sm font-medium">Uptime</div>
@@ -165,19 +231,19 @@ export default function Landing() {
           </div>
         </div>
 
-        {/* Right Side - Login Portals */}
-        <div className={`flex-1 flex flex-col justify-center px-4 lg:px-8 xl:px-12 transition-all duration-1000 delay-500 ${mounted ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
-          <div className="max-w-sm mx-auto w-full space-y-3 lg:space-y-4">
-            <div className="text-center mb-4 lg:mb-6">
-              <h2 className="text-xl lg:text-2xl font-bold text-green-800 mb-1">Access Portal</h2>
+        {/* Desktop Layout - Right Side - Login Portals */}
+        <div className={`hidden lg:flex flex-1 flex-col justify-center px-8 xl:px-12 transition-all duration-1000 delay-500 ${mounted ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
+          <div className="max-w-sm mx-auto w-full space-y-4">
+            <div className="text-center mb-6">
+              <h2 className="text-2xl font-bold text-green-800 mb-1">Access Portal</h2>
               <p className="text-green-600 text-sm">Choose your login method</p>
             </div>
 
             {/* Admin Portal Card */}
             <div className="group relative">
               <div className="absolute -inset-0.5 bg-gradient-to-r from-green-400 to-green-500 rounded-xl blur opacity-30 group-hover:opacity-50 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
-              <div className="relative bg-white/90 backdrop-blur-sm rounded-xl p-4 lg:p-6 border border-green-200 shadow-lg">
-                <div className="flex items-center space-x-3 mb-3 lg:mb-4">
+              <div className="relative bg-white/90 backdrop-blur-sm rounded-xl p-6 border border-green-200 shadow-lg">
+                <div className="flex items-center space-x-3 mb-4">
                   <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center shadow-md">
                     <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
@@ -200,8 +266,8 @@ export default function Landing() {
             {/* Student Portal Card */}
             <div className="group relative">
               <div className="absolute -inset-0.5 bg-gradient-to-r from-green-300 to-green-400 rounded-xl blur opacity-30 group-hover:opacity-50 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
-              <div className="relative bg-white/90 backdrop-blur-sm rounded-xl p-4 lg:p-6 border border-green-200 shadow-lg">
-                <div className="flex items-center space-x-3 mb-3 lg:mb-4">
+              <div className="relative bg-white/90 backdrop-blur-sm rounded-xl p-6 border border-green-200 shadow-lg">
+                <div className="flex items-center space-x-3 mb-4">
                   <div className="w-10 h-10 bg-gradient-to-r from-green-400 to-green-500 rounded-lg flex items-center justify-center shadow-md">
                     <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
