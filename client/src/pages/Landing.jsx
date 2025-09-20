@@ -109,14 +109,14 @@ export default function Landing() {
         {/* Left Side - Hero Content */}
         <div className={`flex-1 flex flex-col justify-center px-4 lg:px-6 xl:px-8 transition-all duration-1000 delay-300 ${mounted ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}>
           <div className="max-w-lg">
-            <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-50 to-white backdrop-blur-sm rounded-full border border-green-300 mb-4 shadow-md">
+            <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-50 to-white backdrop-blur-sm rounded-full border border-green-300 mb-1 shadow-md">
               <span className="w-2 h-2 bg-green-500 rounded-full mr-3 animate-pulse"></span>
               <span className="text-green-700 text-sm font-semibold">{brandName}</span>
             </div>
             
-            <h1 className="text-2xl lg:text-4xl font-bold text-green-800 mb-4 leading-tight">
+            <h1 className="text-2xl lg:text-4xl font-bold text-green-800 mb-4 leading-loose">
               Next-Gen
-              <span className="block bg-gradient-to-r from-green-500 via-green-600 to-green-700 bg-clip-text text-transparent">
+              <span className="block bg-gradient-to-r from-green-500 via-green-600 to-green-700 bg-clip-text text-transparent pb-1">
                 Digital Wallet
               </span>
             </h1>
