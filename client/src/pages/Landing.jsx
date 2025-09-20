@@ -105,7 +105,7 @@ export default function Landing() {
       </nav>
 
       {/* Main Content */}
-      <main className="relative z-10 flex flex-col lg:flex-row flex-1 overflow-hidden">
+      <main className="relative z-10 flex flex-col lg:flex-row flex-1 overflow-hidden min-h-0">
         {/* Left Side - Hero Content */}
         <div className={`flex-1 flex flex-col justify-center px-4 lg:px-6 xl:px-8 transition-all duration-1000 delay-300 ${mounted ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}>
           <div className="max-w-lg">
@@ -121,7 +121,7 @@ export default function Landing() {
               </span>
             </h1>
             
-            <p className="text-base lg:text-lg text-green-700 mb-4 leading-relaxed font-medium">
+            <p className="hidden lg:block text-base lg:text-lg text-green-700 mb-4 leading-relaxed font-medium">
               Experience the future of campus payments with our secure RFID-enabled digital wallet system. 
               Fast, secure, and seamlessly integrated.
             </p>
@@ -147,8 +147,8 @@ export default function Landing() {
               </div>
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-3">
+            {/* Stats - Hidden on mobile */}
+            <div className="hidden lg:grid grid-cols-3 gap-3">
               <div className="text-center bg-gradient-to-b from-white to-green-50 backdrop-blur-sm rounded-xl p-3 border border-green-200 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105">
                 <div className="text-lg font-bold text-green-800">99.9%</div>
                 <div className="text-green-600 text-sm font-medium">Uptime</div>
@@ -166,18 +166,18 @@ export default function Landing() {
         </div>
 
         {/* Right Side - Login Portals */}
-        <div className={`flex-1 flex flex-col justify-center px-6 lg:px-8 xl:px-12 transition-all duration-1000 delay-500 ${mounted ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
-          <div className="max-w-sm mx-auto w-full space-y-4">
-            <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-green-800 mb-1">Access Portal</h2>
+        <div className={`flex-1 flex flex-col justify-center px-4 lg:px-8 xl:px-12 transition-all duration-1000 delay-500 ${mounted ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
+          <div className="max-w-sm mx-auto w-full space-y-3 lg:space-y-4">
+            <div className="text-center mb-4 lg:mb-6">
+              <h2 className="text-xl lg:text-2xl font-bold text-green-800 mb-1">Access Portal</h2>
               <p className="text-green-600 text-sm">Choose your login method</p>
             </div>
 
             {/* Admin Portal Card */}
             <div className="group relative">
               <div className="absolute -inset-0.5 bg-gradient-to-r from-green-400 to-green-500 rounded-xl blur opacity-30 group-hover:opacity-50 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
-              <div className="relative bg-white/90 backdrop-blur-sm rounded-xl p-6 border border-green-200 shadow-lg">
-                <div className="flex items-center space-x-3 mb-4">
+              <div className="relative bg-white/90 backdrop-blur-sm rounded-xl p-4 lg:p-6 border border-green-200 shadow-lg">
+                <div className="flex items-center space-x-3 mb-3 lg:mb-4">
                   <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center shadow-md">
                     <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
@@ -200,8 +200,8 @@ export default function Landing() {
             {/* Student Portal Card */}
             <div className="group relative">
               <div className="absolute -inset-0.5 bg-gradient-to-r from-green-300 to-green-400 rounded-xl blur opacity-30 group-hover:opacity-50 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
-              <div className="relative bg-white/90 backdrop-blur-sm rounded-xl p-6 border border-green-200 shadow-lg">
-                <div className="flex items-center space-x-3 mb-4">
+              <div className="relative bg-white/90 backdrop-blur-sm rounded-xl p-4 lg:p-6 border border-green-200 shadow-lg">
+                <div className="flex items-center space-x-3 mb-3 lg:mb-4">
                   <div className="w-10 h-10 bg-gradient-to-r from-green-400 to-green-500 rounded-lg flex items-center justify-center shadow-md">
                     <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
