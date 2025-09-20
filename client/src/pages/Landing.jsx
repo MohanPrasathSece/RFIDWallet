@@ -17,19 +17,25 @@ export default function Landing() {
   const [studentPassword, setStudentPassword] = useState('');
   const [studentLoading, setStudentLoading] = useState(false);
   const [studentError, setStudentError] = useState('');
+  const [currentFeature, setCurrentFeature] = useState(0);
+
   useEffect(() => {
-    const t = setTimeout(() => setMounted(true), 20);
+    const t = setTimeout(() => setMounted(true), 100);
     return () => clearTimeout(t);
   }, []);
 
-  const cardBase =
-    'relative rounded-2xl border border-green-100 bg-white/90 shadow-sm overflow-hidden transition-all duration-300 ease-out';
-  const cardHover =
-    'hover:shadow-lg hover:-translate-y-0.5 hover:border-green-200';
-  const pillIcon =
-    'inline-flex items-center justify-center h-9 w-9 rounded-full bg-green-500 text-white shadow-sm';
-  const ctaBtn =
-    'mt-3 inline-flex items-center justify-center w-full rounded-lg bg-green-500 text-white font-medium py-2 text-sm transition-all duration-200 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2';
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentFeature((prev) => (prev + 1) % 3);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const features = [
+    { icon: '💳', title: 'Smart Payments', desc: 'Contactless RFID transactions' },
+    { icon: '🔒', title: 'Secure Wallet', desc: 'Advanced encryption & security' },
+    { icon: '📊', title: 'Real-time Analytics', desc: 'Track spending & insights' }
+  ];
 
   const onAdminSubmit = async (e) => {
     e?.preventDefault?.();
@@ -70,81 +76,147 @@ export default function Landing() {
 
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-green-50 to-white font-sans antialiased">
-      {/* Header */}
-      <header className={`relative px-6 pt-12 pb-8 mx-auto max-w-3xl text-center transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'}`}>
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white shadow-sm border border-green-100">
-          <span className="h-6 w-6 inline-flex items-center justify-center rounded-full bg-green-600 text-white">
-            {/* Shield icon */}
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5">
-              <path d="M12 2.25c-.26 0-.52.05-.76.16l-6 2.57a1.5 1.5 0 0 0-.89 1.36V11c0 5.05 3.58 8.86 7.39 10.59.15.07.33.07.49 0C16.04 19.86 19.62 16.05 19.62 11V6.34c0-.58-.35-1.11-.89-1.33l-6-2.58a1.8 1.8 0 0 0-.73-.18Z"/>
+    <div className="h-screen bg-gradient-to-br from-green-50 via-white to-green-100 font-sans antialiased overflow-hidden flex flex-col">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-green-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-green-300 rounded-full mix-blend-multiply filter blur-xl opacity-40 animate-blob animation-delay-2000"></div>
+        <div className="absolute top-40 left-40 w-80 h-80 bg-green-100 rounded-full mix-blend-multiply filter blur-xl opacity-50 animate-blob animation-delay-4000"></div>
+      </div>
+
+      {/* Navigation */}
+      <nav className={`relative z-10 flex items-center justify-between px-4 py-2 transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
+        <div className="flex items-center space-x-2">
+          <div className="w-7 h-7 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center shadow-lg">
+            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
-          </span>
-          <span className="text-sm font-medium text-green-700">{brandName}</span>
+          </div>
+          <span className="text-green-800 font-bold text-base">RFID Wallet</span>
         </div>
-        <h1 className="mt-4 text-3xl md:text-4xl font-bold text-green-700">{brandName}</h1>
-        <p className="mt-2 text-sm text-green-700/70">Smart • Secure • Sustainable</p>
         {token && (
           <button
             onClick={() => { logout(); navigate('/'); }}
-            className="absolute right-6 top-6 text-sm px-3 py-1.5 rounded-md border border-green-200 text-green-700 bg-white/90 hover:bg-green-50 shadow-sm"
+            className="px-2 py-1 bg-white/80 backdrop-blur-sm border border-green-200 rounded-lg text-green-700 hover:bg-white hover:border-green-300 transition-all duration-300 shadow-sm text-xs"
           >
             Logout
           </button>
         )}
-      </header>
+      </nav>
 
-      {/* Body */}
-      <main className={`flex-1 w-full transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}>
-        {/* Headline for small screens only */}
-        <section className="text-center mb-4 px-6 mx-auto max-w-3xl lg:hidden">
-          <h2 className="text-xl font-semibold text-gray-800 font-sans">Choose Your Portal</h2>
-          <p className="text-gray-500 font-sans">Select your access level below</p>
-        </section>
+      {/* Main Content */}
+      <main className="relative z-10 flex flex-col lg:flex-row flex-1 overflow-hidden">
+        {/* Left Side - Hero Content */}
+        <div className={`flex-1 flex flex-col justify-center px-4 lg:px-6 xl:px-8 transition-all duration-1000 delay-300 ${mounted ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}>
+          <div className="max-w-lg">
+            <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-50 to-white backdrop-blur-sm rounded-full border border-green-300 mb-4 shadow-md">
+              <span className="w-2 h-2 bg-green-500 rounded-full mr-3 animate-pulse"></span>
+              <span className="text-green-700 text-sm font-semibold">{brandName}</span>
+            </div>
+            
+            <h1 className="text-2xl lg:text-4xl font-bold text-green-800 mb-4 leading-tight">
+              Next-Gen
+              <span className="block bg-gradient-to-r from-green-500 via-green-600 to-green-700 bg-clip-text text-transparent">
+                Digital Wallet
+              </span>
+            </h1>
+            
+            <p className="text-base lg:text-lg text-green-700 mb-4 leading-relaxed font-medium">
+              Experience the future of campus payments with our secure RFID-enabled digital wallet system. 
+              Fast, secure, and seamlessly integrated.
+            </p>
 
-        {/* Split panels on desktop, stacked on mobile */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-0">
-          {/* Left Panel: Admin */}
-          <div className="relative px-6 lg:px-0">
-            <div className={`lg:min-h-[calc(100vh-220px)] lg:rounded-none lg:border-0 lg:shadow-none ${cardBase} ${cardHover} lg:bg-gradient-to-br lg:from-emerald-50 lg:to-white flex items-center justify-center`}>
-              <div className="w-full max-w-md p-5 md:p-6">
-                <div className="flex items-start gap-3">
-                  <span className={pillIcon}>
-                    {/* Shield icon */}
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
-                      <path d="M12 2.25c-.26 0-.52.05-.76.16l-6 2.57a1.5 1.5 0 0 0-.89 1.36V11c0 5.05 3.58 8.86 7.39 10.59.15.07.33.07.49 0C16.04 19.86 19.62 16.05 19.62 11V6.34c0-.58-.35-1.11-.89-1.33l-6-2.58a1.8 1.8 0 0 0-.73-.18Z"/>
-                    </svg>
-                  </span>
-                  <div className="text-left">
-                    <h3 className="text-lg md:text-xl font-semibold text-gray-800 font-sans">Admin Portal</h3>
-                    <p className="text-gray-500 font-sans">Manage users, transactions, and system analytics</p>
-                  </div>
+            {/* Animated Feature Showcase */}
+            <div className="bg-gradient-to-r from-white to-green-50 backdrop-blur-sm rounded-xl p-4 border border-green-200 mb-4 shadow-lg hover:shadow-xl transition-all duration-300">
+              <div className="flex items-center space-x-4 mb-3">
+                <div className="text-3xl p-2 bg-green-100 rounded-lg">{features[currentFeature].icon}</div>
+                <div>
+                  <h3 className="text-green-800 font-bold text-base">{features[currentFeature].title}</h3>
+                  <p className="text-green-600 text-sm font-medium">{features[currentFeature].desc}</p>
                 </div>
-                <button onClick={() => setShowAdmin(true)} className={ctaBtn}>
-                  Login as Admin
-                </button>
+              </div>
+              <div className="flex space-x-2">
+                {features.map((_, index) => (
+                  <div
+                    key={index}
+                    className={`h-1 rounded-full transition-all duration-500 ${
+                      index === currentFeature ? 'bg-green-500 w-8' : 'bg-green-200 w-2'
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-3">
+              <div className="text-center bg-gradient-to-b from-white to-green-50 backdrop-blur-sm rounded-xl p-3 border border-green-200 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105">
+                <div className="text-lg font-bold text-green-800">99.9%</div>
+                <div className="text-green-600 text-sm font-medium">Uptime</div>
+              </div>
+              <div className="text-center bg-gradient-to-b from-white to-green-50 backdrop-blur-sm rounded-xl p-3 border border-green-200 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105">
+                <div className="text-lg font-bold text-green-800">5000+</div>
+                <div className="text-green-600 text-sm font-medium">Students</div>
+              </div>
+              <div className="text-center bg-gradient-to-b from-white to-green-50 backdrop-blur-sm rounded-xl p-3 border border-green-200 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105">
+                <div className="text-lg font-bold text-green-800">24/7</div>
+                <div className="text-green-600 text-sm font-medium">Support</div>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Right Panel: Student */}
-          <div className="relative px-6 lg:px-0">
-            <div className={`lg:min-h-[calc(100vh-220px)] lg:rounded-none lg:border-0 lg:shadow-none ${cardBase} ${cardHover} lg:bg-gradient-to-br lg:from-green-50 lg:to-white flex items-center justify-center`}>
-              <div className="w-full max-w-md p-5 md:p-6">
-                <div className="flex items-start gap-3">
-                  <span className={pillIcon}>
-                    {/* Users icon */}
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
-                      <path d="M16 11a4 4 0 1 0-3.2-6.4A5 5 0 0 1 17 9.5c0 .52-.07 1.03-.2 1.5h-.8ZM8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm8 1c-2.2 0-4 1.8-4 4v.5c0 .83.67 1.5 1.5 1.5h5c.83 0 1.5-.67 1.5-1.5V17c0-2.2-1.8-4-4-4Zm-8 0c-2.21 0-4 1.79-4 4v.5C4 18.33 4.67 19 5.5 19h5c.83 0 1.5-.67 1.5-1.5V17c0-2.21-1.79-4-4-4Z"/>
+        {/* Right Side - Login Portals */}
+        <div className={`flex-1 flex flex-col justify-center px-6 lg:px-8 xl:px-12 transition-all duration-1000 delay-500 ${mounted ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
+          <div className="max-w-sm mx-auto w-full space-y-4">
+            <div className="text-center mb-6">
+              <h2 className="text-2xl font-bold text-green-800 mb-1">Access Portal</h2>
+              <p className="text-green-600 text-sm">Choose your login method</p>
+            </div>
+
+            {/* Admin Portal Card */}
+            <div className="group relative">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-green-400 to-green-500 rounded-xl blur opacity-30 group-hover:opacity-50 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
+              <div className="relative bg-white/90 backdrop-blur-sm rounded-xl p-6 border border-green-200 shadow-lg">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center shadow-md">
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                     </svg>
-                  </span>
-                  <div className="text-left">
-                    <h3 className="text-lg md:text-xl font-semibold text-gray-800 font-sans">Student Portal</h3>
-                    <p className="text-gray-500 font-sans">Check balance, recharge, and make RFID payments</p>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-green-800">Admin Portal</h3>
+                    <p className="text-green-600 text-sm">System management & analytics</p>
                   </div>
                 </div>
-                <button onClick={() => setShowStudent(true)} className={ctaBtn}>
-                  Login as Student
+                <button
+                  onClick={() => setShowAdmin(true)}
+                  className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold py-2.5 px-4 rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-300 transform hover:scale-105 shadow-md text-sm"
+                >
+                  Admin Login
+                </button>
+              </div>
+            </div>
+
+            {/* Student Portal Card */}
+            <div className="group relative">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-green-300 to-green-400 rounded-xl blur opacity-30 group-hover:opacity-50 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
+              <div className="relative bg-white/90 backdrop-blur-sm rounded-xl p-6 border border-green-200 shadow-lg">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="w-10 h-10 bg-gradient-to-r from-green-400 to-green-500 rounded-lg flex items-center justify-center shadow-md">
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-green-800">Student Portal</h3>
+                    <p className="text-green-600 text-sm">Wallet & payment management</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowStudent(true)}
+                  className="w-full bg-gradient-to-r from-green-400 to-green-500 text-white font-semibold py-2.5 px-4 rounded-lg hover:from-green-500 hover:to-green-600 transition-all duration-300 transform hover:scale-105 shadow-md text-sm"
+                >
+                  Student Login
                 </button>
               </div>
             </div>
@@ -154,25 +226,64 @@ export default function Landing() {
 
       {/* Admin Login Modal */}
       {showAdmin && (
-        <div className="fixed inset-0 z-50 bg-black/40 grid place-items-center p-4">
-          <div className="w-full max-w-md bg-white rounded-2xl shadow p-5">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-lg font-semibold">Admin Login</h3>
-              <button className="text-sm text-gray-500 hover:text-gray-800" onClick={() => setShowAdmin(false)}>Close</button>
+        <div className="fixed inset-0 z-50 bg-green-900/20 backdrop-blur-sm grid place-items-center p-4">
+          <div className="w-full max-w-md bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-6 border border-green-200">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold text-green-800">Admin Login</h3>
+              </div>
+              <button className="text-green-600 hover:text-green-800 transition-colors" onClick={() => setShowAdmin(false)}>
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
-            {adminError && <div className="text-red-600 text-sm mb-2">{adminError}</div>}
-            <form onSubmit={onAdminSubmit} className="space-y-3">
+            {adminError && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                <div className="text-red-600 text-sm">{adminError}</div>
+              </div>
+            )}
+            <form onSubmit={onAdminSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs text-gray-600 font-sans">Email</label>
-                <input className="w-full border rounded px-3 py-2 mt-1 font-sans" value={adminEmail} onChange={e=>setAdminEmail(e.target.value)} placeholder="admin@college.edu" />
+                <label className="block text-sm text-green-700 font-medium mb-2">Email Address</label>
+                <input 
+                  className="w-full bg-green-50/50 border border-green-200 rounded-lg px-4 py-3 text-green-800 placeholder-green-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all" 
+                  value={adminEmail} 
+                  onChange={e=>setAdminEmail(e.target.value)} 
+                  placeholder="admin@college.edu"
+                  type="email"
+                />
               </div>
               <div>
-                <label className="block text-xs text-gray-600 font-sans">Password</label>
-                <input className="w-full border rounded px-3 py-2 mt-1 font-sans" type="password" value={adminPassword} onChange={e=>setAdminPassword(e.target.value)} placeholder="••••••••" />
+                <label className="block text-sm text-green-700 font-medium mb-2">Password</label>
+                <input 
+                  className="w-full bg-green-50/50 border border-green-200 rounded-lg px-4 py-3 text-green-800 placeholder-green-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all" 
+                  type="password" 
+                  value={adminPassword} 
+                  onChange={e=>setAdminPassword(e.target.value)} 
+                  placeholder="••••••••" 
+                />
               </div>
-              <div className="flex items-center justify-end gap-2 pt-1">
-                <button type="button" className="px-3 py-1.5 bg-gray-100 rounded" onClick={()=>setShowAdmin(false)}>Cancel</button>
-                <button type="submit" disabled={adminLoading} className="px-3 py-1.5 rounded bg-green-600 hover:bg-green-700 text-white disabled:opacity-60">{adminLoading ? 'Logging in...' : 'Login'}</button>
+              <div className="flex items-center justify-end gap-3 pt-4">
+                <button 
+                  type="button" 
+                  className="px-6 py-2 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg transition-all duration-200" 
+                  onClick={()=>setShowAdmin(false)}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={adminLoading} 
+                  className="px-6 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
+                >
+                  {adminLoading ? 'Logging in...' : 'Login'}
+                </button>
               </div>
             </form>
           </div>
@@ -181,35 +292,69 @@ export default function Landing() {
 
       {/* Student Login Modal */}
       {showStudent && (
-        <div className="fixed inset-0 z-50 bg-black/40 grid place-items-center p-4">
-          <div className="w-full max-w-md bg-white rounded-2xl shadow p-5">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-lg font-semibold">Student Login</h3>
-              <button className="text-sm text-gray-500 hover:text-gray-800" onClick={() => setShowStudent(false)}>Close</button>
+        <div className="fixed inset-0 z-50 bg-green-900/20 backdrop-blur-sm grid place-items-center p-4">
+          <div className="w-full max-w-md bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-6 border border-green-200">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-gradient-to-r from-green-400 to-green-500 rounded-lg flex items-center justify-center">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold text-green-800">Student Login</h3>
+              </div>
+              <button className="text-green-600 hover:text-green-800 transition-colors" onClick={() => setShowStudent(false)}>
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
-            {studentError && <div className="text-red-600 text-sm mb-2">{studentError}</div>}
-            <form onSubmit={onStudentSubmit} className="space-y-3">
+            {studentError && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                <div className="text-red-600 text-sm">{studentError}</div>
+              </div>
+            )}
+            <form onSubmit={onStudentSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs text-gray-600 font-sans">Roll Number</label>
-                <input className="w-full border rounded px-3 py-2 mt-1 font-sans" value={studentRoll} onChange={e=>setStudentRoll(e.target.value)} placeholder="e.g., 20CS123" />
+                <label className="block text-sm text-green-700 font-medium mb-2">Roll Number</label>
+                <input 
+                  className="w-full bg-green-50/50 border border-green-200 rounded-lg px-4 py-3 text-green-800 placeholder-green-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all" 
+                  value={studentRoll} 
+                  onChange={e=>setStudentRoll(e.target.value)} 
+                  placeholder="e.g., 20CS123" 
+                />
               </div>
               <div>
-                <label className="block text-xs text-gray-600 font-sans">Password</label>
-                <input className="w-full border rounded px-3 py-2 mt-1 font-sans" type="password" value={studentPassword} onChange={e=>setStudentPassword(e.target.value)} placeholder="••••••••" />
+                <label className="block text-sm text-green-700 font-medium mb-2">Password</label>
+                <input 
+                  className="w-full bg-green-50/50 border border-green-200 rounded-lg px-4 py-3 text-green-800 placeholder-green-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all" 
+                  type="password" 
+                  value={studentPassword} 
+                  onChange={e=>setStudentPassword(e.target.value)} 
+                  placeholder="••••••••" 
+                />
               </div>
-              <div className="flex items-center justify-end gap-2 pt-1">
-                <button type="button" className="px-3 py-1.5 bg-gray-100 rounded" onClick={()=>setShowStudent(false)}>Cancel</button>
-                <button type="submit" disabled={studentLoading} className="px-3 py-1.5 rounded bg-green-600 hover:bg-green-700 text-white disabled:opacity-60">{studentLoading ? 'Logging in...' : 'Login'}</button>
+              <div className="flex items-center justify-end gap-3 pt-4">
+                <button 
+                  type="button" 
+                  className="px-6 py-2 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg transition-all duration-200" 
+                  onClick={()=>setShowStudent(false)}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={studentLoading} 
+                  className="px-6 py-2 bg-gradient-to-r from-green-400 to-green-500 hover:from-green-500 hover:to-green-600 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
+                >
+                  {studentLoading ? 'Logging in...' : 'Login'}
+                </button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* Footer */}
-      <footer className={`px-6 pb-8 mx-auto max-w-3xl text-center text-gray-500 text-sm transition-opacity duration-700 ${mounted ? 'opacity-100' : 'opacity-0'} font-sans`}>
-        © {new Date().getFullYear()} EcoCollege Portal • Secure & Reliable
-      </footer>
     </div>
   );
 }
