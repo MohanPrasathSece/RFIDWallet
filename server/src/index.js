@@ -28,9 +28,12 @@ const connectDB = require('./config/db');
 const mongoose = require('mongoose');
 const { initTelegram } = require('./services/telegram');
 const Item = require('./models/Item');
+const Student = require('./models/Student');
 const { runLibraryDueReminders } = require('./services/library');
 const { sendReportsForMonth } = require('./services/reports');
 const moment = require('moment-timezone');
+const ESP32SerialService = require('./services/esp32Serial');
+const ESP32Uploader = require('./services/esp32Uploader');
 
 const authRoutes = require('./routes/auth');
 const itemRoutes = require('./routes/items');
@@ -44,6 +47,7 @@ const storeRoutes = require('./routes/store');
 const { router: walletRoutes, webhookHandler } = require('./routes/wallet');
 const studentRoutes = require('./routes/students');
 const reportsRoutes = require('./routes/reports');
+const esp32Routes = require('./routes/esp32');
 
 const app = express();
 const server = http.createServer(app);
@@ -293,11 +297,76 @@ app.use('/api/store', storeRoutes);
 app.use('/api/wallet', walletRoutes);
 app.use('/api/students', studentRoutes);
 app.use('/api/reports', reportsRoutes);
+app.use('/api/esp32', esp32Routes);
 
 // Initialize Telegram bot integration (webhook or polling)
 initTelegram(app, io);
 
-// TODO: add routes for library, food, store, admin, rfid, items, transactions
+// Initialize ESP32 Auto-Upload and Serial Service
+let esp32Service = null;
+if (process.env.ENABLE_ESP32_SERIAL !== 'false') {
+  esp32Service = new ESP32SerialService({
+    portPath: process.env.SERIAL_PORT || 'COM5',
+    baudRate: parseInt(process.env.SERIAL_BAUD || '115200'),
+    serverUrl: `http://localhost:${process.env.PORT || 5000}`,
+    deviceKey: process.env.DEVICE_API_KEY || 'dev-local-1',
+    io: io
+  });
+  
+  // Make ESP32 service available to routes
+  app.set('esp32Service', esp32Service);
+  
+  // Auto-upload firmware on server startup
+  setTimeout(async () => {
+    console.log('[ESP32] 🚀 Starting ESP32 auto-upload and service initialization...');
+    
+    try {
+      // Create uploader instance
+      const uploader = new ESP32Uploader({
+        portPath: process.env.SERIAL_PORT || 'COM5',
+        esp32Service: esp32Service
+      });
+      
+      // Check if auto-upload is enabled
+      if (process.env.ESP32_AUTO_UPLOAD !== 'false') {
+        console.log('[ESP32] 📤 Auto-uploading firmware on startup...');
+        await uploader.uploadFirmware();
+        console.log('[ESP32] ✅ Auto-upload completed successfully!');
+      } else {
+        console.log('[ESP32] ⏭️  Auto-upload disabled, connecting to existing firmware...');
+        
+        // Try to clean up port first
+        console.log('[ESP32] 🧹 Cleaning up COM port before connection...');
+        await uploader.killPortProcesses();
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        esp32Service.connect().catch(() => {
+          console.log('[ESP32] Initial connection failed, will retry automatically');
+        });
+      }
+    } catch (error) {
+      console.log('[ESP32] ❌ Auto-upload failed:', error.message);
+      console.log('[ESP32] 🔄 Attempting to connect to existing firmware...');
+      esp32Service.connect().catch(() => {
+        console.log('[ESP32] Initial connection failed, will retry automatically');
+      });
+    }
+  }, 3000);
+}
+
+// Graceful shutdown
+process.on('SIGINT', async () => {
+  console.log('\n🛑 Shutting down server...');
+  if (esp32Service) {
+    await esp32Service.disconnect();
+  }
+  process.exit(0);
+});
 
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  if (esp32Service) {
+    console.log('[ESP32] Serial service will attempt to connect to', process.env.SERIAL_PORT || 'COM5');
+  }
+});

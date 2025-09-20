@@ -269,11 +269,32 @@ export default function Food() {
       // refresh student-specific history if a student context is set
       if (student) loadHistory();
     };
+    const onRfidPending = (tx) => {
+      try {
+        // Auto-select student on Food screen when a Food module scan is received
+        if (tx && (tx.module === 'food' || tx.module === 'Food')) {
+          const s = tx.student || null;
+          if (s) {
+            setStudent(s);
+            setRollNo(s.rollNo || '');
+            setRfid(s.RFIDNumber || s.rfid_uid || '');
+          }
+        }
+      } catch (_) {}
+    };
     socket.on('transaction:new', onEvent);
     socket.on('transaction:update', onEvent);
     socket.on('rfid:approved', onEvent);
     socket.on('rfid:pending', onEvent);
-    return () => socket.disconnect();
+    socket.on('rfid:pending', onRfidPending);
+    return () => {
+      socket.off('transaction:new', onEvent);
+      socket.off('transaction:update', onEvent);
+      socket.off('rfid:approved', onEvent);
+      socket.off('rfid:pending', onEvent);
+      socket.off('rfid:pending', onRfidPending);
+      socket.disconnect();
+    };
   }, [student, rfid]);
 
   // Persist student and cart across navigation

@@ -12,7 +12,13 @@ router.post('/scan', auth(), requireRoles('admin', 'staff'), async (req, res) =>
     const { rfidNumber, module, itemId, location = 'Unknown', action } = req.body;
     if (!rfidNumber || !module) return res.status(400).json({ message: 'rfidNumber and module are required' });
 
-    const student = await Student.findOne({ RFIDNumber: rfidNumber });
+    const rfid = String(rfidNumber).trim().toUpperCase();
+    const student = await Student.findOne({
+      $or: [
+        { rfid_uid: rfid },
+        { RFIDNumber: rfid },
+      ],
+    });
     if (!student) return res.status(404).json({ message: 'Student not found for RFID' });
 
     let item = null;
@@ -57,7 +63,17 @@ router.post('/esp32-scan', deviceAuth(), async (req, res) => {
     const { rfidNumber, module, itemId, location = 'Unknown', action } = req.body;
     if (!rfidNumber || !module) return res.status(400).json({ message: 'rfidNumber and module are required' });
 
-    const student = await Student.findOne({ RFIDNumber: rfidNumber });
+    const rfid = String(rfidNumber).trim().toUpperCase();
+    // Ignore placeholder/no-card UIDs
+    if (rfid === 'FFFFFFFF' || rfid === '00000000') {
+      return res.status(400).json({ message: 'Invalid RFID' });
+    }
+    const student = await Student.findOne({
+      $or: [
+        { rfid_uid: rfid },
+        { RFIDNumber: rfid },
+      ],
+    });
     if (!student) return res.status(404).json({ message: 'Student not found for RFID' });
 
     let item = null;
@@ -95,9 +111,15 @@ router.post('/esp32-scan', deviceAuth(), async (req, res) => {
 router.get('/resolve/:rfidNumber', async (req, res) => {
   try {
     const { rfidNumber } = req.params;
-    const student = await Student.findOne({ RFIDNumber: rfidNumber });
+    const rfid = String(rfidNumber).trim().toUpperCase();
+    const student = await Student.findOne({
+      $or: [
+        { rfid_uid: rfid },
+        { RFIDNumber: rfid },
+      ],
+    });
     if (!student) return res.status(404).json({ message: 'Student not found for RFID' });
-    return res.json({ _id: student._id, name: student.name, RFIDNumber: student.RFIDNumber, modules: student.modules, walletBalance: student.walletBalance });
+    return res.json({ _id: student._id, name: student.name, RFIDNumber: student.RFIDNumber || student.rfid_uid, modules: student.modules, walletBalance: student.walletBalance });
   } catch (e) {
     return res.status(500).json({ message: e.message });
   }

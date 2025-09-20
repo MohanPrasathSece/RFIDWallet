@@ -19,6 +19,9 @@ import AddStore from './pages/AddStore.jsx';
 import StudentAnalytics from './pages/StudentAnalytics.jsx';
 import StudentLibrary from './pages/StudentLibrary.jsx';
 import Login from './pages/Login.jsx';
+import RFIDScanner from './pages/RFIDScanner.jsx';
+import AdminRFIDScanner from './pages/AdminRFIDScanner.jsx';
+import ESP32Manager from './pages/ESP32Manager.jsx';
 
 export default function App() {
   return (
@@ -42,6 +45,9 @@ export default function App() {
       <Route path="/student/profile" element={<StudentProfile />} />
       <Route path="/student/library" element={<StudentLibrary />} />
       <Route path="/student/analytics" element={<StudentAnalytics />} />
+      <Route path="/rfid-scanner" element={<RFIDScanner />} />
+      <Route path="/admin/rfid-scanner" element={<AdminRFIDScanner />} />
+      <Route path="/admin/esp32-manager" element={<ESP32Manager />} />
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );
