@@ -11,7 +11,10 @@ export default function Sidebar() {
   const { pathname } = useLocation();
   return (
     <aside className="w-60 bg-white border-r min-h-screen p-4">
-      <div className="text-xl font-bold mb-6">RFID Dashboard</div>
+      <div className="flex items-center gap-2 mb-6">
+        <img src="/logo.png" alt="College Logo" className="w-8 h-8 object-contain" />
+        <div className="text-lg font-bold">RFID Dashboard</div>
+      </div>
       <nav className="space-y-1">
         {links.map(l => (
           <Link key={l.to} to={l.to} className={`flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100 ${pathname===l.to? 'bg-gray-100 font-semibold':''}`}>

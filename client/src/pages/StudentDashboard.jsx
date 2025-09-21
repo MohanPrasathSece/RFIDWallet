@@ -133,7 +133,8 @@ function StudentDashboard() {
       <div className="max-w-3xl mx-auto">
         {/* Top Bar */}
         <div className="flex items-center justify-between mb-5">
-          <div>
+          <div className="flex items-center gap-3">
+            <img src="/logo.png" alt="College Logo" className="w-12 h-12 md:w-16 md:h-16 object-contain" />
             <h1 className="text-3xl font-extrabold leading-tight text-green-700">
               {`Welcome, ${profile.name || 'Student'}`}
             </h1>
