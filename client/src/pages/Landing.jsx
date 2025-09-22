@@ -76,7 +76,7 @@ export default function Landing() {
 
 
   return (
-    <div className="h-screen bg-gradient-to-br from-green-50 via-white to-green-100 font-sans antialiased overflow-hidden flex flex-col relative">
+    <div className="min-h-[100dvh] bg-gradient-to-br from-green-50 via-white to-green-100 font-sans antialiased overflow-y-auto lg:overflow-hidden flex flex-col relative">
       {/* College Background Image */}
       <div className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-50" style={{backgroundImage: 'url(/college-bg.jpg)'}}></div>
       
@@ -90,75 +90,93 @@ export default function Landing() {
         <div className="absolute top-40 left-40 w-80 h-80 bg-green-100 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000"></div>
       </div>
 
-      {/* Navigation */}
-      <nav className={`relative z-10 flex items-center justify-between px-4 py-2 transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
+      {/* Navigation - Desktop Only */}
+      <nav className={`hidden lg:flex relative z-10 items-center justify-between px-4 py-2 transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
         <div className="flex items-center space-x-2">
           <img src="/logo.png" alt="College Logo" className="w-12 h-12 md:w-14 md:h-14 object-contain" />
           <span className="text-green-800 font-bold text-base">RFID Wallet</span>
         </div>
-        {/* No logout button on landing page for any screen size */}
       </nav>
 
       {/* Main Content */}
       <main className="relative z-10 flex flex-col lg:flex-row flex-1 overflow-hidden min-h-0">
         
-        {/* Mobile Layout - Minimal Access Portal */}
-        <div className="lg:hidden flex flex-col flex-1 px-4 py-6 space-y-4">
-          {/* Brand Badge */}
-          <div className="inline-flex self-start items-center px-3 py-1.5 bg-white/80 rounded-full border border-green-200 shadow-sm">
-            <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-            <span className="text-green-700 text-sm font-medium">{brandName}</span>
+        {/* Mobile Layout - Creative Design Like Reference */}
+        <div className="lg:hidden flex-1 flex flex-col px-6 py-8">
+          {/* Logo in Top Left */}
+          <div className="flex items-center mb-8">
+            <img src="/logo.png" alt="College Logo" className="w-12 h-12 object-contain mr-3" />
+            <div>
+              <h1 className="text-lg font-semibold text-green-700">RFID Wallet</h1>
+              <p className="text-sm text-green-600">Digital Payment System</p>
+            </div>
           </div>
 
-          {/* Access Portal only */}
-          <div className="mt-1">
-            <div className="text-center mb-1">
-              <h2 className="text-xl font-bold text-green-800">Access Portal</h2>
-              <p className="text-green-600 text-xs">Choose your login method</p>
+          {/* Brand Badge */}
+          <div className="flex justify-center mb-8">
+            <div className="inline-flex items-center px-4 py-2 bg-white rounded-full border border-green-200 shadow-sm">
+              <span className="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
+              <span className="text-green-700 text-sm font-semibold">EcoCollege Portal</span>
             </div>
+          </div>
 
-            {/* Admin card */}
-            <div className="bg-white/95 backdrop-blur-sm rounded-xl p-4 border border-green-200 shadow-md mb-3">
-              <div className="flex items-center space-x-3 mb-3">
-                <div className="w-9 h-9 bg-green-500 rounded-lg flex items-center justify-center shadow-sm">
-                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          {/* Main Title */}
+          <div className="text-center mb-2">
+            <h1 className="text-3xl font-bold text-green-700 mb-2">EcoCollege Portal</h1>
+            <p className="text-green-600 text-sm font-medium">Smart • Secure • Sustainable</p>
+          </div>
+
+          {/* Portal Selection Header - removed for mobile per request */}
+
+          {/* Portal Cards */}
+          <div className="mt-6 space-y-5 max-w-sm mx-auto w-full">
+            {/* Admin Portal Card */}
+            <div className="bg-white rounded-xl p-5 shadow-md border border-green-100">
+              <div className="flex items-start space-x-3 mb-3">
+                <div className="w-11 h-11 bg-green-500 rounded-full flex items-center justify-center shadow-sm flex-shrink-0">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                   </svg>
                 </div>
-                <div>
-                  <h3 className="text-base font-semibold text-green-800">Admin Portal</h3>
-                  <p className="text-green-600 text-xs">System management & analytics</p>
+                <div className="flex-1">
+                  <h3 className="text-[17px] font-bold text-gray-800 mb-1">Admin Portal</h3>
+                  <p className="text-gray-600 text-xs leading-relaxed">
+                    Manage users, transactions, and system analytics
+                  </p>
                 </div>
               </div>
               <button
                 onClick={() => setShowAdmin(true)}
-                className="w-full bg-green-500 text-white font-semibold py-2 rounded-lg text-sm"
+                className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-lg transition-colors shadow"
               >
-                Admin Login
+                Login as Admin
               </button>
             </div>
 
-            {/* Student card */}
-            <div className="bg-white/95 backdrop-blur-sm rounded-xl p-4 border border-green-200 shadow-md">
-              <div className="flex items-center space-x-3 mb-3">
-                <div className="w-9 h-9 bg-green-500 rounded-lg flex items-center justify-center shadow-sm">
-                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {/* Student Portal Card */}
+            <div className="bg-white rounded-xl p-5 shadow-md border border-green-100">
+              <div className="flex items-start space-x-3 mb-3">
+                <div className="w-11 h-11 bg-green-500 rounded-full flex items-center justify-center shadow-sm flex-shrink-0">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
                   </svg>
                 </div>
-                <div>
-                  <h3 className="text-base font-semibold text-green-800">Student Portal</h3>
-                  <p className="text-green-600 text-xs">Wallet & payment management</p>
+                <div className="flex-1">
+                  <h3 className="text-[17px] font-bold text-gray-800 mb-1">Student Portal</h3>
+                  <p className="text-gray-600 text-xs leading-relaxed">
+                    Check balance, recharge, and make RFID payments
+                  </p>
                 </div>
               </div>
               <button
                 onClick={() => setShowStudent(true)}
-                className="w-full bg-green-500 text-white font-semibold py-2 rounded-lg text-sm"
+                className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-lg transition-colors shadow"
               >
-                Student Login
+                Login as Student
               </button>
             </div>
           </div>
+
         </div>
 
         {/* Desktop Layout - Left Side - Hero Content */}
