@@ -96,75 +96,68 @@ export default function Landing() {
           <img src="/logo.png" alt="College Logo" className="w-12 h-12 md:w-14 md:h-14 object-contain" />
           <span className="text-green-800 font-bold text-base">RFID Wallet</span>
         </div>
-        {token && (
-          <button
-            onClick={() => { logout(); navigate('/'); }}
-            className="px-2 py-1 bg-white/80 backdrop-blur-sm border border-green-200 rounded-lg text-green-700 hover:bg-white hover:border-green-300 transition-all duration-300 shadow-sm text-xs"
-          >
-            Logout
-          </button>
-        )}
+        {/* No logout button on landing page for any screen size */}
       </nav>
 
       {/* Main Content */}
       <main className="relative z-10 flex flex-col lg:flex-row flex-1 overflow-hidden min-h-0">
         
-        {/* Mobile Layout - Minimal Design */}
-        <div className="lg:hidden flex flex-col flex-1 px-4 py-8">
-          
-          {/* Simple Header */}
-          <div className="text-center mb-6">
-            <div className="inline-flex items-center px-4 py-2 bg-white/80 rounded-full border border-green-200 mb-4 shadow-sm">
-              <span className="w-2 h-2 bg-green-500 rounded-full mr-3"></span>
-              <span className="text-green-700 text-sm font-medium">{brandName}</span>
-            </div>
-            
-            <h1 className="text-3xl font-bold text-green-800 mb-3">
-              Next-Gen
-              <span className="block text-green-600">Digital Wallet</span>
-            </h1>
-            
-            {/* Website Description */}
-            <p className="text-green-700 text-sm leading-relaxed px-2 mb-4">
-              Experience the future of campus payments with our secure RFID-enabled digital wallet system. 
-              Fast, secure, and seamlessly integrated for students and administrators.
-            </p>
+        {/* Mobile Layout - Minimal Access Portal */}
+        <div className="lg:hidden flex flex-col flex-1 px-4 py-6 space-y-4">
+          {/* Brand Badge */}
+          <div className="inline-flex self-start items-center px-3 py-1.5 bg-white/80 rounded-full border border-green-200 shadow-sm">
+            <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+            <span className="text-green-700 text-sm font-medium">{brandName}</span>
           </div>
 
-          {/* Compact Feature Display */}
-          <div className="bg-white/90 rounded-lg p-3 border border-green-200 mb-4 shadow-sm">
-            <div className="text-center">
-              <div className="text-2xl mb-1">{features[currentFeature].icon}</div>
-              <h3 className="text-green-800 font-medium text-sm mb-1">{features[currentFeature].title}</h3>
-              <p className="text-green-600 text-xs">{features[currentFeature].desc}</p>
+          {/* Access Portal only */}
+          <div className="mt-1">
+            <div className="text-center mb-1">
+              <h2 className="text-xl font-bold text-green-800">Access Portal</h2>
+              <p className="text-green-600 text-xs">Choose your login method</p>
             </div>
-            <div className="flex justify-center space-x-1 mt-2">
-              {features.map((_, index) => (
-                <div
-                  key={index}
-                  className={`h-0.5 rounded-full transition-all duration-300 ${
-                    index === currentFeature ? 'bg-green-500 w-3' : 'bg-green-200 w-1'
-                  }`}
-                />
-              ))}
+
+            {/* Admin card */}
+            <div className="bg-white/95 backdrop-blur-sm rounded-xl p-4 border border-green-200 shadow-md mb-3">
+              <div className="flex items-center space-x-3 mb-3">
+                <div className="w-9 h-9 bg-green-500 rounded-lg flex items-center justify-center shadow-sm">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-base font-semibold text-green-800">Admin Portal</h3>
+                  <p className="text-green-600 text-xs">System management & analytics</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowAdmin(true)}
+                className="w-full bg-green-500 text-white font-semibold py-2 rounded-lg text-sm"
+              >
+                Admin Login
+              </button>
             </div>
-          </div>
 
-          {/* Simple Login Buttons */}
-          <div className="space-y-3">
-            <button
-              onClick={() => setShowStudent(true)}
-              className="w-full bg-green-500 text-white font-medium py-3 px-4 rounded-lg"
-            >
-              Student Login
-            </button>
-
-            <button
-              onClick={() => setShowAdmin(true)}
-              className="w-full bg-green-600 text-white font-medium py-3 px-4 rounded-lg"
-            >
-              Admin Login
-            </button>
+            {/* Student card */}
+            <div className="bg-white/95 backdrop-blur-sm rounded-xl p-4 border border-green-200 shadow-md">
+              <div className="flex items-center space-x-3 mb-3">
+                <div className="w-9 h-9 bg-green-500 rounded-lg flex items-center justify-center shadow-sm">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-base font-semibold text-green-800">Student Portal</h3>
+                  <p className="text-green-600 text-xs">Wallet & payment management</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowStudent(true)}
+                className="w-full bg-green-500 text-white font-semibold py-2 rounded-lg text-sm"
+              >
+                Student Login
+              </button>
+            </div>
           </div>
         </div>
 
