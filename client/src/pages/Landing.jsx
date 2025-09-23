@@ -107,8 +107,8 @@ export default function Landing() {
           <div className="flex items-center mb-8">
             <img src="/logo.png" alt="College Logo" className="w-12 h-12 object-contain mr-3" />
             <div>
-              <h1 className="text-lg font-semibold text-green-700">RFID Wallet</h1>
-              <p className="text-sm text-green-600">Digital Payment System</p>
+              <h1 className="text-xl font-bold text-green-800 tracking-tight leading-snug">RFID Wallet</h1>
+              <p className="text-sm text-green-700 font-medium">Digital Payment System</p>
             </div>
           </div>
 
