@@ -591,7 +591,6 @@ export default function Store() {
                     <th className="px-3 py-2 text-left">Item</th>
                     <th className="px-3 py-2 text-left">Student</th>
                     <th className="px-3 py-2 text-left">RFID</th>
-                    <th className="px-3 py-2 text-left">Notes</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -602,7 +601,6 @@ export default function Store() {
                       <td className="px-3 py-2">{row.item?.name || '-'}</td>
                       <td className="px-3 py-2">{row.student?.name || '-'}</td>
                       <td className="px-3 py-2">{row.student?.rfid_uid || row.student?.rfid || '-'}</td>
-                      <td className="px-3 py-2 text-gray-600">{row.notes || '-'}</td>
                     </tr>
                   ))}
                 </tbody>

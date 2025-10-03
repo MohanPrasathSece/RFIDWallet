@@ -17,7 +17,7 @@ router.get('/history', auth(), requireRoles('admin'), async (req, res) => {
       action: tx.action,
       status: tx.status,
       item: tx.item ? { _id: tx.item._id, name: tx.item.name } : null,
-      student: tx.student ? { _id: tx.student._id, name: tx.student.name, rfid: tx.student.RFIDNumber } : null,
+      student: tx.student ? { _id: tx.student._id, name: tx.student.name, rfid: (tx.student.rfid_uid || tx.student.RFIDNumber || tx.student.rfid || '') } : null,
       notes: tx.notes || ''
     }));
     return res.json(payload);
