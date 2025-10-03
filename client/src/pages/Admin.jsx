@@ -10,6 +10,7 @@ export default function Admin() {
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ name: '', rollNo: '', email: '', mobileNumber: '', password: '', RFIDNumber: '', department: '' });
+  const [selected, setSelected] = useState(null);
   const [walletInputs, setWalletInputs] = useState({});
   const [rfidReader, setRfidReader] = useState(null);
   // Web Serial state for inline ESP32 connect
@@ -19,6 +20,22 @@ export default function Admin() {
   const socketRef = useRef(null);
   const { logout, user } = useAuth();
   const navigate = useNavigate();
+  // Tabs: 'add' | 'edit'
+  const [activeTab, setActiveTab] = useState('add');
+  // Edit tab find bar
+  const [editRoll, setEditRoll] = useState('');
+  const [editRfid, setEditRfid] = useState('');
+
+  // Fetch full student from admin endpoint for freshest data
+  const fetchStudentFull = async (id) => {
+    try {
+      if (!id) return null;
+      const { data } = await api.get(`/admin/students/${id}`);
+      return data || null;
+    } catch {
+      return null;
+    }
+  };
 
   const loadStudents = async () => {
     try {
@@ -29,7 +46,97 @@ export default function Admin() {
 
   useEffect(() => { loadStudents(); }, []);
 
-  // Setup Socket.IO for server logging
+  // Hydrate selection from last_student (if any)
+  useEffect(() => {
+    try {
+      const last = localStorage.getItem('last_student');
+      if (last) {
+        const p = JSON.parse(last);
+        if (p?.student) {
+          (async () => {
+            const full = await fetchStudentFull(p.student._id);
+            const s = full || p.student;
+            setSelected(s);
+            setActiveTab('edit');
+            setForm(v => ({
+              ...v,
+              name: s.name || v.name,
+              rollNo: p.rollNo || s.rollNo || v.rollNo,
+              RFIDNumber: p.rfid || s.rfid_uid || s.RFIDNumber || v.RFIDNumber,
+              department: s.department || v.department,
+              email: s.email || v.email,
+              mobileNumber: s.mobileNumber || v.mobileNumber,
+            }));
+          })();
+        }
+      }
+    } catch (_) {}
+  }, []);
+
+  // Auto-detect only in Edit tab (for consistency with explicit tab behavior)
+  useEffect(() => {
+    if (activeTab !== 'edit') return; // do nothing in Add tab
+    const h = setTimeout(async () => {
+      try {
+        // Prefer RFID if present
+        const params = {};
+        if (form.RFIDNumber) params.rfid_uid = form.RFIDNumber;
+        else if (form.rollNo) params.rollNo = form.rollNo;
+        if (!Object.keys(params).length) return;
+        const { data } = await api.get('/students/find', { params });
+        if (data?._id) {
+          const full = await fetchStudentFull(data._id) || data;
+          setSelected(full);
+          setError('');
+          setForm(v => ({
+            ...v,
+            name: full.name || v.name,
+            rollNo: full.rollNo || v.rollNo,
+            RFIDNumber: full.rfid_uid || full.RFIDNumber || v.RFIDNumber,
+            department: full.department || v.department,
+            email: full.email || v.email,
+            mobileNumber: full.mobileNumber || v.mobileNumber,
+          }));
+          // silently switched to Edit mode
+        }
+      } catch (_) {
+        // ignore; means not found, keep Add mode
+      }
+    }, 400);
+    return () => clearTimeout(h);
+  }, [form.rollNo, form.RFIDNumber, activeTab]);
+
+  // Find handler for Edit tab
+  const findForEdit = async () => {
+    try {
+      setError('');
+      const params = {};
+      if (editRfid) params.rfid_uid = editRfid;
+      else if (editRoll) params.rollNo = editRoll;
+      if (!Object.keys(params).length) { setError('Enter Roll No or RFID'); return; }
+      const { data } = await api.get('/students/find', { params });
+      if (data?._id) {
+        const full = await fetchStudentFull(data._id) || data;
+        setSelected(full);
+        setForm(v => ({
+          ...v,
+          name: full.name || v.name,
+          rollNo: full.rollNo || v.rollNo,
+          RFIDNumber: full.rfid_uid || full.RFIDNumber || v.RFIDNumber,
+          department: full.department || v.department,
+          email: full.email || v.email,
+          mobileNumber: full.mobileNumber || v.mobileNumber,
+        }));
+      } else {
+        setSelected(null);
+        setError('Student not found');
+      }
+    } catch (e) {
+      setError(e?.response?.data?.message || 'Find failed');
+    }
+  };
+
+  // Setup Socket.IO for server logging and cross-module UI sync
   useEffect(() => {
     const url = import.meta.env.VITE_SOCKET_URL || (window.location.origin.replace(/\/$/, ''));
     const socket = io(url, { transports: ['websocket', 'polling'] });
@@ -43,19 +150,101 @@ export default function Admin() {
           setForm(v => ({ ...v, RFIDNumber: uid }));
         }
         if (s?._id) {
-          setForm(v => ({
-            ...v,
-            name: s.name || v.name,
-            rollNo: s.rollNo || v.rollNo,
-            RFIDNumber: s.RFIDNumber || s.rfid_uid || uid || v.RFIDNumber,
-            department: s.department || v.department,
-            email: s.email || v.email,
-          }));
+          setActiveTab('edit');
+          (async () => {
+            const full = await fetchStudentFull(s._id);
+            const sf = full || s;
+            setSelected(sf);
+            setForm(v => ({
+              ...v,
+              name: sf.name || v.name,
+              rollNo: sf.rollNo || v.rollNo,
+              RFIDNumber: sf.RFIDNumber || sf.rfid_uid || uid || v.RFIDNumber,
+              department: sf.department || v.department,
+              email: sf.email || v.email,
+              mobileNumber: sf.mobileNumber || v.mobileNumber,
+            }));
+          })();
+        }
+        else if (uid) {
+          // No student found for scan yet: stay in Add and prefill RFID
+          setActiveTab('add');
         }
       } catch (_) {}
     };
     socket.on('esp32:rfid-scan', onScan);
+    // Cross-module broadcasts
+    const onUiScan = (p) => {
+      try {
+        const s = p?.student;
+        const uid = p?.uid || p?.rfid;
+        if (s?._id) {
+          (async () => {
+            const full = await fetchStudentFull(s._id);
+            const sf = full || s;
+            setSelected(sf);
+            setForm(v => ({
+              ...v,
+              name: sf.name || v.name,
+              rollNo: sf.rollNo || v.rollNo,
+              RFIDNumber: sf.RFIDNumber || sf.rfid_uid || uid || v.RFIDNumber,
+              department: sf.department || v.department,
+              email: sf.email || v.email,
+              mobileNumber: sf.mobileNumber || v.mobileNumber,
+            }));
+          })();
+        } else if (uid) {
+          setForm(v => ({ ...v, RFIDNumber: uid }));
+          setActiveTab('add');
+        }
+      } catch (_) {}
+    };
+    const onUiClear = () => {
+      setSelected(null);
+      setForm(v => ({ ...v, name: '', rollNo: '', RFIDNumber: '', department: '', email: '' }));
+    };
+    socket.on('ui:rfid-scan', onUiScan);
+    socket.on('ui:rfid-clear', onUiClear);
     return () => { try { socket.disconnect(); } catch {} };
+  }, []);
+
+  // Window-level backup listeners for same-tab sync
+  useEffect(() => {
+    const onWinScan = (e) => {
+      try {
+        const p = e?.detail;
+        const s = p?.student;
+        const uid = p?.uid || p?.rfid;
+        if (s?._id) {
+          (async () => {
+            const full = await fetchStudentFull(s._id);
+            const sf = full || s;
+            setSelected(sf);
+            setForm(v => ({
+              ...v,
+              name: sf.name || v.name,
+              rollNo: sf.rollNo || v.rollNo,
+              RFIDNumber: sf.RFIDNumber || sf.rfid_uid || uid || v.RFIDNumber,
+              department: sf.department || v.department,
+              email: sf.email || v.email,
+              mobileNumber: sf.mobileNumber || v.mobileNumber,
+            }));
+          })();
+        } else if (uid) {
+          setForm(v => ({ ...v, RFIDNumber: uid }));
+        }
+      } catch (_) {}
+    };
+    const onWinClear = () => {
+      setSelected(null);
+      setForm(v => ({ ...v, name: '', rollNo: '', RFIDNumber: '', department: '', email: '' }));
+    };
+    try { window.addEventListener('ui:rfid-scan', onWinScan); } catch {}
+    try { window.addEventListener('ui:rfid-clear', onWinClear); } catch {}
+    return () => {
+      try { window.removeEventListener('ui:rfid-scan', onWinScan); } catch {}
+      try { window.removeEventListener('ui:rfid-clear', onWinClear); } catch {}
+    };
   }, []);
 
   const deposit = async (id) => {
@@ -98,7 +287,34 @@ export default function Admin() {
       setForm({ name: '', rollNo: '', email: '', mobileNumber: '', password: '', RFIDNumber: '', department: '' });
       await loadStudents();
     } catch (e) {
-      setError(e?.response?.data?.message || e.message || 'Failed to add student');
+      const msg = e?.response?.data?.message || e.message || '';
+      // If duplicate, try resolving and switch to Edit mode automatically
+      if (/exists/i.test(msg)) {
+        try {
+          const params = {};
+          if (form.RFIDNumber) params.rfid_uid = form.RFIDNumber;
+          else if (form.rollNo) params.rollNo = form.rollNo;
+          if (Object.keys(params).length) {
+            const { data } = await api.get('/students/find', { params });
+            if (data?._id) {
+              const full = await api.get(`/admin/students/${data._id}`).then(r=>r.data).catch(()=>data);
+              setSelected(full);
+              setForm(v => ({
+                ...v,
+                name: full.name || v.name,
+                rollNo: full.rollNo || v.rollNo,
+                RFIDNumber: full.rfid_uid || full.RFIDNumber || v.RFIDNumber,
+                department: full.department || v.department,
+                email: full.email || v.email,
+                mobileNumber: full.mobileNumber || v.mobileNumber,
+              }));
+              // silently switched to Edit mode
+              return;
+            }
+          }
+        } catch (_) {}
+      }
+      setError(msg || 'Failed to add student');
     } finally { setSaving(false); }
   };
 
@@ -237,13 +453,25 @@ export default function Admin() {
             >Logout</button>
           </div>
         </div>
+        {/* Selected student banner (auto-filled from scans/inputs) */}
+        {selected && (
+          <div className="px-6 py-3 bg-emerald-50 border-b border-emerald-200 flex items-center justify-between">
+            <div className="text-sm text-emerald-900">
+              <span className="font-medium">Student:</span> {selected.name} · <span className="font-medium">Roll:</span> {selected.rollNo || '-'} · <span className="font-medium">RFID:</span> {selected.rfid_uid || selected.RFIDNumber || '-'} · <span className="font-medium">Dept:</span> {selected.department || '-'}
+            </div>
+            <button
+              onClick={() => { setSelected(null); setForm(v => ({ ...v, name: '', rollNo: '', RFIDNumber: '', department: '', email: '' })); try { localStorage.removeItem('last_student'); } catch {}; try { window?.socket?.emit?.('ui:rfid-clear', {}); } catch {}; try { window.dispatchEvent(new CustomEvent('ui:rfid-clear', { detail: {} })); } catch {} }}
+              className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded border"
+            >Clear</button>
+          </div>
+        )}
         {/* Page content */}
         <div className="p-6 space-y-6">
           <h2 className="text-2xl font-semibold">Admin</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-white p-4 rounded shadow overflow-x-auto">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-lg font-semibold">Add Student (by RFID)</h2>
+                <h2 className="text-lg font-semibold">{selected ? 'Edit Student' : 'Add Student (by RFID)'}</h2>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <input className="border rounded px-3 py-2" placeholder="Name" value={form.name} onChange={e => setForm(v => ({ ...v, name: e.target.value }))} />

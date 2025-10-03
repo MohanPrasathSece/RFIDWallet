@@ -14,6 +14,7 @@ import StudentLibrary from './pages/StudentLibrary.jsx';
 import StudentAnalytics from './pages/StudentAnalytics.jsx';
 import StudentPurchaseDetails from './pages/StudentPurchaseDetails.jsx';
 import Store from './pages/Store.jsx';
+import StoreHistory from './pages/StoreHistory.jsx';
 import Admin from './pages/Admin.jsx';
 import RFIDScanner from './pages/RFIDScanner.jsx';
 import AdminRFIDScanner from './pages/AdminRFIDScanner.jsx';
@@ -32,6 +33,7 @@ export default function App() {
       <Route path="/food/history" element={<FoodHistory />} />
       <Route path="/store" element={<Store />} />
       <Route path="/store/add" element={<AddItem />} />
+      <Route path="/store/history" element={<StoreHistory />} />
       <Route path="/admin" element={<Admin />} />
       <Route path="/admin/students" element={<RecentStudents />} />
       <Route path="/login" element={<Login />} />

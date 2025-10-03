@@ -11,6 +11,51 @@ router.get('/students', async (req, res) => {
   return res.json(students);
 });
 
+// Update a student's details (admin)
+router.put('/students/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { name, rollNo, email, mobileNumber, department, RFIDNumber, active } = req.body || {};
+
+    // Build update payload; only set provided fields
+    const update = {};
+    if (typeof name === 'string') update.name = name;
+    if (typeof rollNo === 'string') update.rollNo = rollNo;
+    if (typeof email === 'string') update.email = email;
+    if (typeof department === 'string') update.department = department;
+    if (typeof mobileNumber === 'string' || typeof mobileNumber === 'number') update.mobileNumber = String(mobileNumber).trim();
+    if (typeof RFIDNumber === 'string') update.rfid_uid = RFIDNumber; // map form field to db field
+    if (typeof active === 'boolean') update.active = active;
+
+    // Validate mobile format if provided
+    if (update.mobileNumber && !/^\+?\d{7,15}$/.test(update.mobileNumber)) {
+      return res.status(400).json({ message: 'Invalid mobileNumber format' });
+    }
+
+    // Uniqueness checks (excluding current student)
+    const or = [];
+    if (update.rollNo) or.push({ rollNo: update.rollNo });
+    if (update.rfid_uid) or.push({ rfid_uid: update.rfid_uid });
+    if (update.email) or.push({ email: update.email });
+    if (or.length) {
+      const dup = await Student.findOne({ $and: [ { _id: { $ne: id } }, { $or: or } ] });
+      if (dup) {
+        let message = 'Duplicate value';
+        if (update.rollNo && dup.rollNo === update.rollNo) message = 'Roll No already exists';
+        else if (update.rfid_uid && dup.rfid_uid === update.rfid_uid) message = 'RFID Number already exists';
+        else if (update.email && dup.email === update.email) message = 'Email already exists';
+        return res.status(400).json({ message });
+      }
+    }
+
+    const updated = await Student.findByIdAndUpdate(id, update, { new: true });
+    if (!updated) return res.status(404).json({ message: 'Not found' });
+    return res.json(updated);
+  } catch (e) {
+    return res.status(400).json({ message: e.message });
+  }
+});
+
 // Get single student (includes walletBalance)
 router.get('/students/:id', async (req, res) => {
   try {

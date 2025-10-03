@@ -608,6 +608,26 @@ export default function Store() {
             </div>
           )}
         </div>
+
+        <div className="bg-white p-4 rounded shadow">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">More</h2>
+            <div className="flex gap-2">
+              <Link
+                to={`/store/history${student?.rollNo ? `?rollNo=${encodeURIComponent(student.rollNo)}` : ''}`}
+                className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded"
+              >
+                Purchase History
+              </Link>
+              <Link
+                to="/store/scans"
+                className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded"
+              >
+                Show All Scans
+              </Link>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

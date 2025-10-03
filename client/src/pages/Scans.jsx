@@ -4,7 +4,7 @@ import { api } from '../shared/api.js';
 import { Link, useParams } from 'react-router-dom';
 
 export default function Scans() {
-  const { module } = useParams(); // 'library' or 'food'
+  const { module } = useParams(); // 'library', 'food', or 'store'
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -16,6 +16,8 @@ export default function Scans() {
         endpoint = '/library/history-all';
       } else if (module === 'food') {
         endpoint = '/food/history-all';
+      } else if (module === 'store') {
+        endpoint = '/store/history-all';
       } else {
         setHistory([]);
         return;
@@ -36,17 +38,24 @@ export default function Scans() {
 
   const isLibrary = module === 'library';
   const isFood = module === 'food';
+  const isStore = module === 'store';
 
   const getBackLink = () => {
-    return isLibrary ? '/library' : '/food';
+    if (isLibrary) return '/library';
+    if (isFood) return '/food';
+    if (isStore) return '/store';
+    return '/';
   };
 
   const getBackText = () => {
-    return isLibrary ? 'Back to Library' : 'Back to Food';
+    if (isLibrary) return 'Back to Library';
+    if (isFood) return 'Back to Food';
+    if (isStore) return 'Back to Store';
+    return 'Back';
   };
 
   const getTitle = () => {
-    const moduleName = isLibrary ? 'Library' : 'Food';
+    const moduleName = isLibrary ? 'Library' : isFood ? 'Food' : 'Store';
     return `All Scans (${moduleName})`;
   };
 
@@ -75,7 +84,7 @@ export default function Scans() {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-3 py-2 text-left">When</th>
-                    {isLibrary && <th className="px-3 py-2 text-left">Action</th>}
+                    {(isLibrary || isStore) && <th className="px-3 py-2 text-left">Action</th>}
                     <th className="px-3 py-2 text-left">Item</th>
                     {isFood && <th className="px-3 py-2 text-right">Amount</th>}
                     <th className="px-3 py-2 text-left">Student</th>
@@ -87,7 +96,7 @@ export default function Scans() {
                   {history.map(row => (
                     <tr key={row._id} className="border-t">
                       <td className="px-3 py-2">{new Date(row.createdAt).toLocaleString()}</td>
-                      {isLibrary && <td className="px-3 py-2 capitalize">{row.action}</td>}
+                      {(isLibrary || isStore) && <td className="px-3 py-2 capitalize">{row.action}</td>}
                       <td className="px-3 py-2">{row.item?.name || '-'}</td>
                       {isFood && <td className="px-3 py-2 text-right">₹ {Number(row.item?.price ?? 0).toFixed(2)}</td>}
                       <td className="px-3 py-2">{row.student?.name || '-'}</td>
