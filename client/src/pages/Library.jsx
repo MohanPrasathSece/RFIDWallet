@@ -100,6 +100,20 @@ export default function Library() {
     // initial all scans
     loadAllScans();
 
+    // Hydrate context from global broadcaster cache
+    try {
+      const last = localStorage.getItem('last_student');
+      if (last) {
+        const p = JSON.parse(last);
+        if (p?.student) {
+          setStudent(p.student);
+          setStudentId(p.student._id);
+          setRollNo(p.rollNo || p.student.rollNo || '');
+          setRfid(p.rfid || p.student.rfid_uid || '');
+        }
+      }
+    } catch (_) {}
+
     // setup socket to refresh all scans on changes and react to RFID scans
     const socket = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000');
     const onScan = (payload) => {

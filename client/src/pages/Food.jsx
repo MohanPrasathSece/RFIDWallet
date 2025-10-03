@@ -296,12 +296,21 @@ export default function Food() {
   useEffect(() => {
     try {
       const savedStudent = localStorage.getItem('food_student');
+      // Global fallback from Sidebar broadcaster
+      const last = localStorage.getItem('last_student');
       const savedCart = localStorage.getItem('food_cart');
       if (savedStudent) {
         const s = JSON.parse(savedStudent);
         setStudent(s);
         setRollNo(s?.rollNo || '');
         setRfid(s?.rfid_uid || '');
+      } else if (last) {
+        const p = JSON.parse(last);
+        if (p?.student) {
+          setStudent(p.student);
+          setRollNo(p.rollNo || p.student.rollNo || '');
+          setRfid(p.rfid || p.student.rfid_uid || '');
+        }
       }
       if (savedCart) setCart(JSON.parse(savedCart));
     } catch (_) {}

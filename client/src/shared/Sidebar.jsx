@@ -17,6 +17,7 @@ export default function Sidebar() {
   const [serialStatus, setSerialStatus] = useState('Not connected');
   const [serialPort, setSerialPort] = useState(null);
   const [reader, setReader] = useState(null);
+  const reconnectingRef = useRef(false);
   const socketRef = useRef(null);
 
   // Socket available globally for logging/broadcast
@@ -38,74 +39,105 @@ export default function Sidebar() {
       const port = await navigator.serial.requestPort();
       setSerialStatus('Opening (115200)...');
       try { socketRef.current?.emit('esp32:web-serial', { event: 'opening', extra: { baudRate: 115200 } }); } catch {}
-      await port.open({ baudRate: 115200 });
-      setSerialPort(port);
-      setSerialConnected(true);
-      setSerialStatus('Connected');
-      try { socketRef.current?.emit('esp32:web-serial', { event: 'connected' }); } catch {}
-
-      // Start continuous line-based reading
-      const textDecoder = new TextDecoderStream();
-      port.readable.pipeTo(textDecoder.writable).catch(() => {});
-      const r = textDecoder.readable.getReader();
-      setReader(r);
-      let buffer = '';
-      (async () => {
-        try {
-          while (true) {
-            const { value, done } = await r.read();
-            if (done) break;
-            buffer += value;
-            const lines = buffer.split('\n');
-            buffer = lines.pop();
-            for (const raw of lines) {
-              const line = String(raw).trim();
-              if (!line) continue;
-              // Filter boot noise
-              if (line.includes('clk_drv') || line.includes('load:') || line.includes('entry') || line.includes('esp_image') || line.includes('boot:') || line.includes('ets ') || line.includes('rst:') || line.includes('configsip') || line.includes('mode:DIO')) {
-                continue;
-              }
-              try { socketRef.current?.emit('esp32:web-serial', { event: 'data', message: line }); } catch {}
-              if (line === 'ESP32_BOOT_OK') {
-                setSerialStatus('ESP32 booted');
-              } else if (line === 'RFID_READY') {
-                setSerialStatus('RFID ready');
-              } else if (line === 'RC522_ERROR') {
-                setSerialStatus('RC522 error');
-              }
-              // Prefer RFID:<UID>; fallback to "Card UID: xx xx ..."
-              let uid = null;
-              if (line.startsWith('RFID:')) {
-                uid = line.substring(5).trim();
-              } else if (/^Card UID:/i.test(line)) {
-                const hex = (line.match(/([0-9A-Fa-f]{2}\s+){3,}\b/) || [])[0] || '';
-                if (hex) uid = hex.replace(/\s+/g, '').toUpperCase();
-              }
-              if (uid) {
-                try {
-                  const { data } = await api.get(`/rfid/resolve/${uid}`);
-                  if (data) {
-                    try { socketRef.current?.emit('ui:rfid-scan', { uid, student: data, source: 'sidebar' }); } catch {}
-                  } else {
-                    try { socketRef.current?.emit('ui:rfid-scan', { uid, source: 'sidebar' }); } catch {}
-                  }
-                } catch (_) {
-                  try { socketRef.current?.emit('ui:rfid-scan', { uid, source: 'sidebar' }); } catch {}
-                }
-              }
-            }
-          }
-        } catch (e) {
-          setSerialStatus('Read error');
-          setSerialConnected(false);
-          try { socketRef.current?.emit('esp32:web-serial', { event: 'read-error', message: e.message }); } catch {}
-        }
-      })();
+      await openSelectedPort(port);
     } catch (err) {
       setSerialStatus('Connect failed');
       setSerialConnected(false);
       try { socketRef.current?.emit('esp32:web-serial', { event: 'connect-failed', message: err.message }); } catch {}
     }
+  };
+
+  // Helper to open a granted port and start streaming; used for manual connect and auto-reconnect
+  const openSelectedPort = async (port) => {
+    try {
+      await port.open({ baudRate: 115200 });
+    } catch (e) {
+      // If already open, ignore InvalidStateError
+      const msg = String(e?.message || '');
+      if (!/InvalidStateError|already open/i.test(msg)) throw e;
+    }
+    setSerialPort(port);
+    setSerialConnected(true);
+    setSerialStatus('Connected');
+    try { socketRef.current?.emit('esp32:web-serial', { event: 'connected' }); } catch {}
+
+    const textDecoder = new TextDecoderStream();
+    port.readable?.pipeTo(textDecoder.writable).catch(() => {});
+    const r = textDecoder.readable.getReader();
+    setReader(r);
+    let buffer = '';
+    (async () => {
+      try {
+        while (true) {
+          const { value, done } = await r.read();
+          if (done) break;
+          buffer += value;
+          const lines = buffer.split('\n');
+          buffer = lines.pop();
+          for (const raw of lines) {
+            const line = String(raw).trim();
+            if (!line) continue;
+            // Filter boot noise
+            if (line.includes('clk_drv') || line.includes('load:') || line.includes('entry') || line.includes('esp_image') || line.includes('boot:') || line.includes('ets ') || line.includes('rst:') || line.includes('configsip') || line.includes('mode:DIO')) {
+              continue;
+            }
+            try { socketRef.current?.emit('esp32:web-serial', { event: 'data', message: line }); } catch {}
+            if (line === 'ESP32_BOOT_OK') {
+              setSerialStatus('ESP32 booted');
+            } else if (line === 'RFID_READY') {
+              setSerialStatus('RFID ready');
+            } else if (line === 'RC522_ERROR') {
+              setSerialStatus('RC522 error');
+            }
+            // Prefer RFID:<UID>; fallback to "Card UID: xx xx ..."
+            let uid = null;
+            if (line.startsWith('RFID:')) {
+              uid = line.substring(5).trim();
+            } else if (/^Card UID:/i.test(line)) {
+              const hex = (line.match(/([0-9A-Fa-f]{2}\s+){3,}\b/) || [])[0] || '';
+              if (hex) uid = hex.replace(/\s+/g, '').toUpperCase();
+            }
+            if (uid) {
+              try {
+                // Fetch full student to fill all fields across modules
+                const { data } = await api.get('/students/find', { params: { rfid_uid: uid } });
+                if (data && data._id) {
+                  // Include rollNo and rfid in payload explicitly for convenience
+                  const payload = {
+                    uid,
+                    student: data,
+                    rollNo: data.rollNo,
+                    rfid: data.RFIDNumber || data.rfid_uid || uid,
+                    name: data.name,
+                    walletBalance: data.walletBalance,
+                    department: data.department,
+                    source: 'sidebar'
+                  };
+                  try { socketRef.current?.emit('ui:rfid-scan', payload); } catch {}
+                  // Cache last student globally for pages to restore state after actions/nav
+                  try { localStorage.setItem('last_student', JSON.stringify(payload)); } catch {}
+                } else {
+                  try { socketRef.current?.emit('ui:rfid-scan', { uid, source: 'sidebar' }); } catch {}
+                }
+              } catch (_) {
+                try { socketRef.current?.emit('ui:rfid-scan', { uid, source: 'sidebar' }); } catch {}
+              }
+            }
+          }
+        }
+      } catch (e) {
+        setSerialStatus('Read error, retrying…');
+        try { socketRef.current?.emit('esp32:web-serial', { event: 'read-error', message: e.message }); } catch {}
+        // Attempt auto-reconnect if permission persists
+        if (!reconnectingRef.current) {
+          reconnectingRef.current = true;
+          setTimeout(async () => {
+            try { await openSelectedPort(port); } catch { setSerialStatus('Reconnect failed'); }
+            reconnectingRef.current = false;
+          }, 1200);
+        }
+      }
+    })();
   };
 
   const disconnectESP32 = async () => {
@@ -119,6 +151,36 @@ export default function Sidebar() {
       try { socketRef.current?.emit('esp32:web-serial', { event: 'disconnect-error', message: err.message }); } catch {}
     }
   };
+
+  // Auto-reconnect if permission was previously granted (no prompt)
+  useEffect(() => {
+    if (!('serial' in navigator)) return;
+    let mounted = true;
+    (async () => {
+      try {
+        const ports = await navigator.serial.getPorts();
+        if (mounted && !serialConnected && ports && ports.length > 0) {
+          setSerialStatus('Reconnecting…');
+          try { await openSelectedPort(ports[0]); } catch (e) { setSerialStatus('Reconnect failed'); }
+        }
+      } catch {}
+    })();
+    // Listen to OS-level connect/disconnect events
+    const onConnect = async (e) => {
+      try { if (!serialConnected) await openSelectedPort(e.port); } catch {}
+    };
+    const onDisconnect = () => {
+      setSerialConnected(false);
+      setSerialStatus('Disconnected');
+    };
+    try { navigator.serial.addEventListener('connect', onConnect); } catch {}
+    try { navigator.serial.addEventListener('disconnect', onDisconnect); } catch {}
+    return () => {
+      mounted = false;
+      try { navigator.serial.removeEventListener('connect', onConnect); } catch {}
+      try { navigator.serial.removeEventListener('disconnect', onDisconnect); } catch {}
+    };
+  }, [serialConnected]);
 
   return (
     <>
