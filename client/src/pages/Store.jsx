@@ -24,8 +24,20 @@ export default function Store() {
   const loadHistory = async () => {
     try {
       setLoading(true); setError('');
-      const params = studentId ? { student: studentId } : (rfid ? { rfidNumber: rfid } : null);
-      if (!params) { setError('Enter Student ID or RFID Number'); setHistory([]); return; }
+      let params = studentId ? { student: studentId } : (rfid ? { rfidNumber: rfid } : null);
+      // Fallback: resolve by roll number if available
+      if (!params && rollNo) {
+        try {
+          const { data } = await api.get('/students/find', { params: { rollNo } });
+          if (data?._id) {
+            setStudent(data);
+            setStudentId(data._id);
+            setRfid(data.rfid_uid || rfid || '');
+            params = { student: data._id };
+          }
+        } catch (_) {}
+      }
+      if (!params) { setError('Enter Student ID, RFID Number, or Roll Number'); setHistory([]); return; }
       const res = await api.get('/store/history', { params });
       setHistory(res.data || []);
     } catch (e) {
@@ -201,6 +213,23 @@ export default function Store() {
           setRollNo(data.rollNo || rollNo || '');
           setRfid(data.rfid_uid || rfid || '');
           setWalletBalance(data.walletBalance ?? null);
+          // Persist and broadcast so other modules/pages can reuse current student
+          try {
+            const payload = {
+              student: data,
+              rollNo: data.rollNo || '',
+              rfid: data.rfid_uid || '',
+              walletBalance: data.walletBalance,
+              source: 'store-find'
+            };
+            localStorage.setItem('last_student', JSON.stringify(payload));
+            try { window?.socket?.emit?.('ui:rfid-scan', payload); } catch {}
+          } catch {}
+          // Immediately load history for this student
+          try {
+            const resHist = await api.get('/store/history', { params: { student: data._id } });
+            setHistory(resHist.data || []);
+          } catch (_) {}
           return;
         }
       }
@@ -218,11 +247,29 @@ export default function Store() {
         setRollNo(data.rollNo || rollNo || '');
         setRfid(data.rfid_uid || rfid || '');
         setWalletBalance(data.walletBalance ?? null);
+        // Persist and broadcast selection for cross-module consistency
+        try {
+          const payload = {
+            student: data,
+            rollNo: data.rollNo || '',
+            rfid: data.rfid_uid || '',
+            walletBalance: data.walletBalance,
+            source: 'store-find'
+          };
+          localStorage.setItem('last_student', JSON.stringify(payload));
+          try { window?.socket?.emit?.('ui:rfid-scan', payload); } catch {}
+        } catch {}
+        // Immediately load history for this student
+        try {
+          const resHist = await api.get('/store/history', { params: { student: data._id } });
+          setHistory(resHist.data || []);
+        } catch (_) {}
       } else {
         setStudent(null);
         setStudentId('');
         setWalletBalance(null);
         setError('Student not found.');
+        try { localStorage.removeItem('last_student'); } catch {}
       }
     } catch (e) {
       setStudent(null);
@@ -282,6 +329,7 @@ export default function Store() {
           setRollNo(p.rollNo || p.student.rollNo || '');
           setRfid(p.rfid || p.student.rfid_uid || '');
           if (p.student.walletBalance !== undefined) setWalletBalance(p.student.walletBalance);
+          try { loadHistory(); } catch {}
         }
       }
     } catch (_) {}
@@ -318,6 +366,7 @@ export default function Store() {
           setStudentId(s._id);
           setRollNo(s.rollNo || rn || '');
           setWalletBalance(s.walletBalance ?? null);
+          try { loadHistory(); } catch {}
         } else if (uid) {
           api.get(`/rfid/resolve/${uid}`).then(({ data }) => {
             if (data?._id) {
@@ -325,6 +374,7 @@ export default function Store() {
               setStudentId(data._id);
               setRollNo(data.rollNo || rn || '');
               setWalletBalance(data.walletBalance ?? null);
+              try { loadHistory(); } catch {}
             }
           }).catch(() => {});
         }
@@ -336,6 +386,9 @@ export default function Store() {
     socket.on('rfid:pending', onEvent);
     socket.on('esp32:rfid-scan', onEsp32Scan);
     socket.on('esp32:rfid-clear', onClear);
+    // UI-level broadcasts to sync with other modules
+    socket.on('ui:rfid-scan', onEsp32Scan);
+    socket.on('ui:rfid-clear', onClear);
     return () => {
       socket.off('transaction:new', onEvent);
       socket.off('transaction:update', onEvent);
@@ -343,6 +396,8 @@ export default function Store() {
       socket.off('rfid:pending', onEvent);
       socket.off('esp32:rfid-scan', onEsp32Scan);
       socket.off('esp32:rfid-clear', onClear);
+      socket.off('ui:rfid-scan', onEsp32Scan);
+      socket.off('ui:rfid-clear', onClear);
       socket.disconnect();
     };
   }, [studentId, rfid]);
@@ -462,11 +517,51 @@ export default function Store() {
                 </button>
               </div>
               {showConfirm && (
-                <div className="mt-3 p-3 border rounded bg-emerald-50">
-                  <div className="text-sm text-emerald-800 mb-2">Confirm purchase for ₹ {cartTotal.toFixed(2)}?</div>
-                  <div className="flex gap-2">
-                    <button onClick={confirmAndPurchase} className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded">Confirm</button>
-                    <button onClick={() => setShowConfirm(false)} className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded">Cancel</button>
+                <div className="fixed inset-0 z-50 flex items-center justify-center">
+                  {/* Backdrop */}
+                  <div className="absolute inset-0 bg-black/40" onClick={() => setShowConfirm(false)}></div>
+                  {/* Modal */}
+                  <div className="relative z-10 w-[92%] max-w-xl bg-white rounded-lg shadow-lg">
+                    <div className="px-5 pt-4 pb-2 border-b">
+                      <h3 className="text-xl font-semibold">Confirm Purchase</h3>
+                      <div className="mt-1 text-sm text-gray-700">
+                        Student: <span className="font-medium">{student?.name}</span>
+                        <span className="mx-2">·</span>
+                        RFID: <span className="tabular-nums">{student?.rfid_uid || rfid}</span>
+                      </div>
+                    </div>
+                    <div className="px-5 py-4">
+                      <div className="overflow-x-auto border rounded">
+                        <table className="min-w-full text-sm">
+                          <thead className="bg-gray-50">
+                            <tr>
+                              <th className="px-3 py-2 text-left">Item</th>
+                              <th className="px-3 py-2 text-right">Qty</th>
+                              <th className="px-3 py-2 text-right">Amount</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {cart.map(row => (
+                              <tr key={row._id} className="border-t">
+                                <td className="px-3 py-2">{row.name}</td>
+                                <td className="px-3 py-2 text-right">{row.qty}</td>
+                                <td className="px-3 py-2 text-right">₹ {(Number(row.price) * row.qty).toFixed(2)}</td>
+                              </tr>
+                            ))}
+                            <tr className="border-t bg-gray-50">
+                              <td className="px-3 py-2 font-medium">Total</td>
+                              <td className="px-3 py-2"></td>
+                              <td className="px-3 py-2 text-right font-semibold">₹ {cartTotal.toFixed(2)}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                    <div className="px-5 pb-4 pt-2 flex flex-wrap gap-2 justify-end">
+                      <button onClick={() => setShowConfirm(false)} className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded">Cancel</button>
+                      <button onClick={printBill} className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded">Print Bill</button>
+                      <button onClick={confirmAndPurchase} className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded">Confirm & Purchase</button>
+                    </div>
                   </div>
                 </div>
               )}

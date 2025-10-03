@@ -201,6 +201,18 @@ export default function Food() {
           setStudent(data);
           setRollNo(data.rollNo || rollNo || '');
           setRfid(data.rfid_uid || rfid || '');
+          // Persist and broadcast
+          try {
+            const payload = {
+              student: data,
+              rollNo: data.rollNo || '',
+              rfid: data.rfid_uid || '',
+              walletBalance: data.walletBalance,
+              source: 'food-find'
+            };
+            localStorage.setItem('last_student', JSON.stringify(payload));
+            try { window?.socket?.emit?.('ui:rfid-scan', payload); } catch {}
+          } catch {}
           return;
         }
       }
@@ -216,9 +228,24 @@ export default function Food() {
         setStudent(data);
         setRollNo(data.rollNo || rollNo || '');
         setRfid(data.rfid_uid || rfid || '');
+        // Persist and broadcast
+        try {
+          const payload = {
+            student: data,
+            rollNo: data.rollNo || '',
+            rfid: data.rfid_uid || '',
+            walletBalance: data.walletBalance,
+            source: 'food-find'
+          };
+          localStorage.setItem('last_student', JSON.stringify(payload));
+          try { window?.socket?.emit?.('ui:rfid-scan', payload); } catch {}
+        } catch {}
+        // Auto-load history for this student
+        try { await loadHistory(); } catch {}
       } else {
         setStudent(null);
         setError('Student not found.');
+        try { localStorage.removeItem('last_student'); } catch {}
       }
     } catch (e) {
       setStudent(null);
@@ -308,6 +335,9 @@ export default function Food() {
     const onClear = () => { unscan(); };
     socket.on('esp32:rfid-clear', onClear);
     socket.on('esp32:rfid-scan', onEsp32Scan);
+    // UI-level broadcasts from other modules
+    socket.on('ui:rfid-clear', onClear);
+    socket.on('ui:rfid-scan', onEsp32Scan);
     return () => {
       socket.off('transaction:new', onEvent);
       socket.off('transaction:update', onEvent);
@@ -316,6 +346,8 @@ export default function Food() {
       socket.off('rfid:pending', onRfidPending);
       socket.off('esp32:rfid-clear', onClear);
       socket.off('esp32:rfid-scan', onEsp32Scan);
+      socket.off('ui:rfid-clear', onClear);
+      socket.off('ui:rfid-scan', onEsp32Scan);
       socket.disconnect();
     };
   }, [student, rfid]);
@@ -332,12 +364,14 @@ export default function Food() {
         setStudent(s);
         setRollNo(s?.rollNo || '');
         setRfid(s?.rfid_uid || '');
+        try { loadHistory(); } catch {}
       } else if (last) {
         const p = JSON.parse(last);
         if (p?.student) {
           setStudent(p.student);
           setRollNo(p.rollNo || p.student.rollNo || '');
           setRfid(p.rfid || p.student.rfid_uid || '');
+          try { loadHistory(); } catch {}
         }
       }
       if (savedCart) setCart(JSON.parse(savedCart));

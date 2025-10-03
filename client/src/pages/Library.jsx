@@ -21,12 +21,13 @@ export default function Library() {
   const [borrowNotes, setBorrowNotes] = useState('');
   const [borrowDueDate, setBorrowDueDate] = useState('');
 
-  const loadData = async () => {
+  const loadData = async (overrides = {}) => {
     try {
       setLoading(true);
       setError('');
-      const sid = student?._id || studentId;
-      const query = sid ? { student: sid } : (rfid ? { rfidNumber: rfid } : null);
+      const sid = overrides.studentId || student?._id || studentId;
+      const rfidParam = overrides.rfid || rfid;
+      const query = sid ? { student: sid } : (rfidParam ? { rfidNumber: rfidParam } : null);
       if (!query) {
         setError('Find a student (Roll No or RFID) to load data.');
         setActive([]); setHistory([]); setStudent(null);
@@ -68,10 +69,25 @@ export default function Library() {
         setStudentId(data._id);
         setRollNo(data.rollNo || rollNo);
         setRfid(data.rfid_uid || rfid);
+        // Persist and broadcast to keep selection across modules
+        try {
+          const payload = {
+            student: data,
+            rollNo: data.rollNo || '',
+            rfid: data.rfid_uid || '',
+            walletBalance: data.walletBalance,
+            source: 'library-find'
+          };
+          localStorage.setItem('last_student', JSON.stringify(payload));
+          try { window?.socket?.emit?.('ui:rfid-scan', payload); } catch {}
+        } catch {}
+        // Auto-load borrowed and history for this student (use override id to avoid async state lag)
+        try { await loadData({ studentId: data._id }); } catch {}
       } else {
         setStudent(null);
         setStudentId('');
         setError('Student not found.');
+        try { localStorage.removeItem('last_student'); } catch {}
       }
     } catch (e) {
       setStudent(null);
@@ -110,6 +126,8 @@ export default function Library() {
           setStudentId(p.student._id);
           setRollNo(p.rollNo || p.student.rollNo || '');
           setRfid(p.rfid || p.student.rfid_uid || '');
+          // Auto-load lists for hydrated student (pass id explicitly)
+          try { loadData({ studentId: p.student._id }); } catch {}
         }
       }
     } catch (_) {}
@@ -125,8 +143,8 @@ export default function Library() {
           setStudent(s);
           setStudentId(s._id);
           setRollNo(s.rollNo || '');
-          // refresh lists immediately
-          loadData();
+          // refresh lists immediately with explicit id
+          loadData({ studentId: s._id });
           loadAllScans();
         } else if (uid) {
           api.get(`/rfid/resolve/${uid}`).then(({ data }) => {
@@ -134,7 +152,7 @@ export default function Library() {
               setStudent(data);
               setStudentId(data._id);
               setRollNo(data.rollNo || '');
-              loadData();
+              loadData({ studentId: data._id });
               loadAllScans();
             }
           }).catch(() => {});
@@ -153,6 +171,9 @@ export default function Library() {
     };
     socket.on('esp32:rfid-scan', onScan);
     socket.on('esp32:rfid-clear', onClear);
+    // UI-level broadcasts from other modules
+    socket.on('ui:rfid-scan', onScan);
+    socket.on('ui:rfid-clear', onClear);
     return () => {
       socket.off('transaction:new', loadAllScans);
       socket.off('transaction:update', loadAllScans);
@@ -160,6 +181,8 @@ export default function Library() {
       socket.off('rfid:pending', loadAllScans);
       socket.off('esp32:rfid-scan', onScan);
       socket.off('esp32:rfid-clear', onClear);
+      socket.off('ui:rfid-scan', onScan);
+      socket.off('ui:rfid-clear', onClear);
       socket.disconnect();
     };
   }, []);
