@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { io } from 'socket.io-client';
 import { api } from '../shared/api.js';
 import Sidebar from '../shared/Sidebar.jsx';
 
@@ -14,6 +15,7 @@ export default function AdminRFIDScanner() {
   const [module, setModule] = useState('food');
   const [location, setLocation] = useState('Food Court');
   const logRef = useRef(null);
+  const socketRef = useRef(null);
 
   const addLog = (message, type = 'info') => {
     const timestamp = new Date().toLocaleTimeString();
@@ -25,25 +27,30 @@ export default function AdminRFIDScanner() {
     if (!('serial' in navigator)) {
       setStatus('❌ Web Serial API not supported in this browser');
       addLog('Web Serial API not supported. Use Chrome/Edge.', 'error');
+      try { socketRef.current?.emit('esp32:web-serial', { event: 'unsupported', message: 'Web Serial not supported' }); } catch {}
       return;
     }
 
     try {
       addLog('Requesting serial port...', 'info');
+      try { socketRef.current?.emit('esp32:web-serial', { event: 'request-port' }); } catch {}
       const selectedPort = await navigator.serial.requestPort();
       
       addLog('Opening serial port at 115200 baud...', 'info');
+      try { socketRef.current?.emit('esp32:web-serial', { event: 'opening', extra: { baudRate: 115200 } }); } catch {}
       await selectedPort.open({ baudRate: 115200 });
       
       setPort(selectedPort);
       setIsConnected(true);
       setStatus('✅ ESP32 Connected - Ready for RFID scanning');
       addLog('ESP32 connected successfully!', 'success');
+      try { socketRef.current?.emit('esp32:web-serial', { event: 'connected' }); } catch {}
       
       startReading(selectedPort);
     } catch (error) {
       setStatus('❌ Failed to connect to ESP32');
       addLog(`Connection failed: ${error.message}`, 'error');
+      try { socketRef.current?.emit('esp32:web-serial', { event: 'connect-failed', message: error.message }); } catch {}
     }
   };
 
@@ -81,19 +88,24 @@ export default function AdminRFIDScanner() {
             }
             
             addLog(`ESP32: ${trimmedLine}`, 'esp32');
+            try { socketRef.current?.emit('esp32:web-serial', { event: 'data', message: trimmedLine }); } catch {}
             
             if (trimmedLine === 'ESP32_BOOT_OK') {
               setStatus('🔄 ESP32 booted, initializing RFID...');
               addLog('ESP32 boot successful', 'success');
+              try { socketRef.current?.emit('esp32:web-serial', { event: 'boot-ok' }); } catch {}
             } else if (trimmedLine === 'RFID_READY') {
               setStatus('🎯 ESP32 Ready - Scan an RFID card');
               addLog('ESP32 RFID reader ready', 'success');
+              try { socketRef.current?.emit('esp32:web-serial', { event: 'rfid-ready' }); } catch {}
             } else if (trimmedLine === 'RC522_ERROR') {
               setStatus('❌ RC522 RFID module error - check wiring');
               addLog('RC522 module not detected', 'error');
+              try { socketRef.current?.emit('esp32:web-serial', { event: 'rc522-error' }); } catch {}
             } else if (trimmedLine.startsWith('RFID:')) {
               const uid = trimmedLine.substring(5);
               await handleRFIDScan(uid);
+              try { socketRef.current?.emit('esp32:web-serial', { event: 'rfid-scan', extra: { uid } }); } catch {}
             }
           }
         }
@@ -102,6 +114,7 @@ export default function AdminRFIDScanner() {
       addLog(`Reading error: ${error.message}`, 'error');
       setStatus('❌ Connection lost');
       setIsConnected(false);
+      try { socketRef.current?.emit('esp32:web-serial', { event: 'read-error', message: error.message }); } catch {}
     }
   };
 
@@ -127,6 +140,8 @@ export default function AdminRFIDScanner() {
         setStudent(studentData);
         setStatus(`✅ Student Found: ${studentData.name}`);
         addLog(`Student: ${studentData.name} (Roll: ${studentData.rollNo || 'N/A'})`, 'success');
+        // Broadcast to all dashboards so they auto-fill
+        try { socketRef.current?.emit('ui:rfid-scan', { uid, student: studentData, source: 'admin' }); } catch {}
       }
     } catch (error) {
       if (error.response?.status === 404) {
@@ -177,8 +192,10 @@ export default function AdminRFIDScanner() {
       setIsConnected(false);
       setStatus('Disconnected');
       addLog('ESP32 disconnected', 'info');
+      try { socketRef.current?.emit('esp32:web-serial', { event: 'disconnected' }); } catch {}
     } catch (error) {
       addLog(`Disconnect error: ${error.message}`, 'error');
+      try { socketRef.current?.emit('esp32:web-serial', { event: 'disconnect-error', message: error.message }); } catch {}
     }
   };
 
@@ -193,6 +210,41 @@ export default function AdminRFIDScanner() {
     // Cleanup on unmount
     return () => {
       disconnect();
+      // Close socket connection if opened
+      try { socketRef.current?.disconnect(); } catch {}
+    };
+  }, []);
+
+  // Listen to server-side ESP32 scans over Socket.IO and auto-fill
+  useEffect(() => {
+    const url = import.meta.env.VITE_SOCKET_URL || (window.location.origin.replace(/\/$/, ''));
+    const socket = io(url, { transports: ['websocket', 'polling'] });
+    socketRef.current = socket;
+
+    const onReady = () => {
+      setStatus('🎯 ESP32 Ready (server) - Scan an RFID card');
+      addLog('Server: ESP32 ready for scans', 'success');
+    };
+    const onScan = (payload) => {
+      const uid = payload?.uid || payload?.rfid || payload?.RFIDNumber;
+      if (!uid) return;
+      setLastUID(uid);
+      setRfidInput(uid);
+      addLog(`Server scan: ${uid}`, 'rfid');
+      setStatus(`🏷️ Scanned (server): ${uid} - Auto-filled in form`);
+      // Auto-lookup student via API
+      lookupStudent(uid);
+    };
+
+    socket.on('connect', () => addLog(`Connected to server socket (${socket.id})`, 'success'));
+    socket.on('disconnect', () => addLog('Disconnected from server socket', 'error'));
+    socket.on('esp32:ready', onReady);
+    socket.on('esp32:rfid-scan', onScan);
+
+    return () => {
+      socket.off('esp32:ready', onReady);
+      socket.off('esp32:rfid-scan', onScan);
+      try { socket.disconnect(); } catch {}
     };
   }, []);
 

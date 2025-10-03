@@ -93,6 +93,29 @@ const io = new Server(server, {
 // Simple Socket.IO hookup
 io.on('connection', (socket) => {
   console.log('Client connected', socket.id);
+  // Listen for Web Serial status from admin dashboard and log to server terminal
+  socket.on('esp32:web-serial', (payload = {}) => {
+    try {
+      const evt = payload.event || 'unknown';
+      const msg = payload.message || '';
+      const extra = payload.extra ? JSON.stringify(payload.extra) : '';
+      console.log(`[WebSerial] ${evt} ${msg} ${extra}`.trim());
+      // Broadcast to other clients if needed
+      try { io.emit('esp32:web-serial', { from: socket.id, ...payload }); } catch {}
+    } catch (e) {
+      console.log('[WebSerial] log error:', e.message);
+    }
+  });
+  // Allow client-initiated scans to be broadcast to all dashboards
+  socket.on('ui:rfid-scan', (payload = {}) => {
+    try {
+      // payload may include { uid, student, source: 'admin' }
+      io.emit('esp32:rfid-scan', { from: socket.id, ...payload });
+      console.log('[WebSerial] forwarded ui:rfid-scan', payload?.uid || '');
+    } catch (e) {
+      console.log('[WebSerial] forward error:', e.message);
+    }
+  });
   socket.on('disconnect', () => console.log('Client disconnected', socket.id));
 });
 app.set('io', io);
@@ -304,7 +327,8 @@ initTelegram(app, io);
 
 // Initialize ESP32 Auto-Upload and Serial Service
 let esp32Service = null;
-if (process.env.ENABLE_ESP32_SERIAL !== 'false') {
+// Only initialize ESP32 serial service when explicitly enabled
+if (process.env.ENABLE_ESP32_SERIAL === 'true') {
   esp32Service = new ESP32SerialService({
     portPath: process.env.SERIAL_PORT || 'COM5',
     baudRate: parseInt(process.env.SERIAL_BAUD || '115200'),

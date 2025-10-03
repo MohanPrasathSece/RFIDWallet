@@ -1,14 +1,15 @@
 #include <SPI.h>
 #include <MFRC522.h>
 
-// RC522 wiring for ESP32 (based on your connection diagram)
-#define SS_PIN   5   // SDA/SS -> GPIO 5
-#define RST_PIN  2   // RST -> GPIO 2
+// RC522 wiring for ESP32 (updated to free GPIO 2 for onboard LED)
+#define SS_PIN   5    // SDA/SS -> GPIO 5
+#define RST_PIN  22   // RST -> GPIO 22 (move your RC522 RST wire here)
 
-// LED for visual feedback - using GPIO 4 since GPIO 2 is used for RST
-#define LED_PIN 4   // External LED or use any free GPIO pin
+// Onboard LED is typically on GPIO 2 on many ESP32 dev boards
+#define LED_PIN 2
 
 MFRC522 rfid(SS_PIN, RST_PIN);
+unsigned long lastHeartbeat = 0; // for 2-second LED heartbeat
 
 void blinkSuccess(uint8_t times = 3, uint16_t onMs = 100, uint16_t offMs = 100) {
   for (uint8_t i = 0; i < times; i++) {
@@ -53,6 +54,15 @@ void setup() {
 }
 
 void loop() {
+  // Heartbeat: brief blink every ~2 seconds to show firmware is alive
+  unsigned long now = millis();
+  if (now - lastHeartbeat >= 2000) {
+    lastHeartbeat = now;
+    digitalWrite(LED_PIN, HIGH);
+    delay(50);
+    digitalWrite(LED_PIN, LOW);
+  }
+
   // Look for new cards
   if (!rfid.PICC_IsNewCardPresent() || !rfid.PICC_ReadCardSerial()) {
     delay(30);

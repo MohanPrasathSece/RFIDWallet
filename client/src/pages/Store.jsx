@@ -282,11 +282,41 @@ export default function Store() {
       loadAllScans();
       if (studentId || rfid) loadHistory();
     };
+    const onEsp32Scan = (payload) => {
+      try {
+        const uid = payload?.uid || payload?.rfid || payload?.RFIDNumber;
+        const s = payload?.student;
+        if (uid) setRfid(uid);
+        if (s?._id) {
+          setStudent(s);
+          setStudentId(s._id);
+          setRollNo(s.rollNo || '');
+          setWalletBalance(s.walletBalance ?? null);
+        } else if (uid) {
+          api.get(`/rfid/resolve/${uid}`).then(({ data }) => {
+            if (data?._id) {
+              setStudent(data);
+              setStudentId(data._id);
+              setRollNo(data.rollNo || '');
+              setWalletBalance(data.walletBalance ?? null);
+            }
+          }).catch(() => {});
+        }
+      } catch (_) {}
+    };
     socket.on('transaction:new', onEvent);
     socket.on('transaction:update', onEvent);
     socket.on('rfid:approved', onEvent);
     socket.on('rfid:pending', onEvent);
-    return () => socket.disconnect();
+    socket.on('esp32:rfid-scan', onEsp32Scan);
+    return () => {
+      socket.off('transaction:new', onEvent);
+      socket.off('transaction:update', onEvent);
+      socket.off('rfid:approved', onEvent);
+      socket.off('rfid:pending', onEvent);
+      socket.off('esp32:rfid-scan', onEsp32Scan);
+      socket.disconnect();
+    };
   }, [studentId, rfid]);
 
   return (

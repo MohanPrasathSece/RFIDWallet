@@ -124,13 +124,41 @@ export default function Library() {
     // initial all scans
     loadAllScans();
 
-    // setup socket to refresh all scans on changes
+    // setup socket to refresh all scans on changes and react to RFID scans
     const socket = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000');
+    const onScan = (payload) => {
+      try {
+        const uid = payload?.uid || payload?.rfid || payload?.RFIDNumber;
+        const s = payload?.student;
+        if (uid) setRfid(uid);
+        if (s?._id) {
+          setStudent(s);
+          setStudentId(s._id);
+          setRollNo(s.rollNo || '');
+        } else if (uid) {
+          api.get(`/rfid/resolve/${uid}`).then(({ data }) => {
+            if (data?._id) {
+              setStudent(data);
+              setStudentId(data._id);
+              setRollNo(data.rollNo || '');
+            }
+          }).catch(() => {});
+        }
+      } catch (_) {}
+    };
     socket.on('transaction:new', loadAllScans);
     socket.on('transaction:update', loadAllScans);
     socket.on('rfid:approved', loadAllScans);
     socket.on('rfid:pending', loadAllScans);
-    return () => socket.disconnect();
+    socket.on('esp32:rfid-scan', onScan);
+    return () => {
+      socket.off('transaction:new', loadAllScans);
+      socket.off('transaction:update', loadAllScans);
+      socket.off('rfid:approved', loadAllScans);
+      socket.off('rfid:pending', loadAllScans);
+      socket.off('esp32:rfid-scan', onScan);
+      socket.disconnect();
+    };
   }, []);
 
   const borrowBook = async () => {

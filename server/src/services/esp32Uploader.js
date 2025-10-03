@@ -7,8 +7,10 @@ class ESP32Uploader {
   constructor(options = {}) {
     this.portPath = options.portPath || 'COM5';
     this.baudRate = options.baudRate || 921600; // Upload baud rate
-    this.sketchPath = options.sketchPath || path.resolve(__dirname, '../../esp32/src');
-    this.buildPath = path.resolve(__dirname, '../../esp32/build');
+    // Resolve to project-root/esp32 paths (three levels up from server/src/services)
+    const esp32Root = options.esp32Root || path.resolve(__dirname, '../../../esp32');
+    this.sketchPath = options.sketchPath || path.join(esp32Root, 'src');
+    this.buildPath = path.join(esp32Root, 'build');
     this.esp32Service = options.esp32Service; // Reference to ESP32SerialService
     this.quiet = Boolean(options.quiet); // If true, only log final success/failure
   }
@@ -157,9 +159,14 @@ class ESP32Uploader {
     this.log(`📤 Flashing firmware to ESP32 on ${this.portPath}...`, 'progress');
     
     return new Promise((resolve, reject) => {
-      // Create a simple firmware hex or use pre-built binary
-      const firmwarePath = this.createSimpleFirmware();
-      
+      // Use pre-built firmware if available, otherwise create placeholder
+      const appBin = this.createSimpleFirmware();
+
+      // Optional additional images if present (Arduino/PlatformIO layout)
+      const partitionsBin = path.join(this.buildPath, 'partitions.bin');
+      const bootloaderBin = path.join(this.buildPath, 'bootloader.bin');
+
+      // Build esptool args. App offset should be 0x10000 for ESP32.
       const esptoolArgs = [
         '--chip', 'esp32',
         '--port', this.portPath,
@@ -169,8 +176,19 @@ class ESP32Uploader {
         '--flash_mode', 'dio',
         '--flash_freq', '40m',
         '--flash_size', 'detect',
-        '0x1000', firmwarePath
       ];
+
+      if (fs.existsSync(bootloaderBin) && fs.existsSync(partitionsBin)) {
+        this.log('Detected bootloader.bin and partitions.bin, flashing full set', 'info');
+        esptoolArgs.push(
+          '0x1000', bootloaderBin,
+          '0x8000', partitionsBin,
+          '0x10000', appBin
+        );
+      } else {
+        // Flash app only at 0x10000
+        esptoolArgs.push('0x10000', appBin);
+      }
       
       this.log('🔄 Connecting to ESP32...', 'progress');
       

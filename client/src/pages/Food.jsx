@@ -269,6 +269,26 @@ export default function Food() {
       // refresh student-specific history if a student context is set
       if (student) loadHistory();
     };
+    const onEsp32Scan = (payload) => {
+      try {
+        const uid = payload?.uid || payload?.rfid || payload?.RFIDNumber;
+        const s = payload?.student;
+        if (uid) setRfid(uid);
+        if (s?._id) {
+          setStudent(s);
+          setRollNo(s.rollNo || '');
+          setRfid(s.RFIDNumber || s.rfid_uid || uid || '');
+        } else if (uid) {
+          api.get(`/rfid/resolve/${uid}`).then(({ data }) => {
+            if (data?._id) {
+              setStudent(data);
+              setRollNo(data.rollNo || '');
+              setRfid(data.RFIDNumber || data.rfid_uid || uid);
+            }
+          }).catch(() => {});
+        }
+      } catch (_) {}
+    };
     const onRfidPending = (tx) => {
       try {
         // Auto-select student on Food screen when a Food module scan is received
@@ -287,12 +307,14 @@ export default function Food() {
     socket.on('rfid:approved', onEvent);
     socket.on('rfid:pending', onEvent);
     socket.on('rfid:pending', onRfidPending);
+    socket.on('esp32:rfid-scan', onEsp32Scan);
     return () => {
       socket.off('transaction:new', onEvent);
       socket.off('transaction:update', onEvent);
       socket.off('rfid:approved', onEvent);
       socket.off('rfid:pending', onEvent);
       socket.off('rfid:pending', onRfidPending);
+      socket.off('esp32:rfid-scan', onEsp32Scan);
       socket.disconnect();
     };
   }, [student, rfid]);
