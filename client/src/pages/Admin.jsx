@@ -223,14 +223,6 @@ export default function Admin() {
             <div className="bg-white p-4 rounded shadow overflow-x-auto">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-lg font-semibold">Add Student (by RFID)</h2>
-                <div className="flex items-center gap-2">
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${serialConnected ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>{serialStatus}</span>
-                  {!serialConnected ? (
-                    <button onClick={connectESP32} className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm">Connect ESP32</button>
-                  ) : (
-                    <button onClick={disconnectESP32} className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded text-sm">Disconnect</button>
-                  )}
-                </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <input className="border rounded px-3 py-2" placeholder="Name" value={form.name} onChange={e => setForm(v => ({ ...v, name: e.target.value }))} />

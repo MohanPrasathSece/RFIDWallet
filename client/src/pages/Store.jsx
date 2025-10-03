@@ -181,31 +181,7 @@ export default function Store() {
     } catch (_) {}
   };
 
-  const connectRfidReader = async () => {
-    if (!('serial' in navigator)) {
-      setError('Web Serial API not supported in this browser.');
-      return;
-    }
-    try {
-      const port = await navigator.serial.requestPort();
-      await port.open({ baudRate: 9600 });
-      const reader = port.readable.getReader();
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) { reader.releaseLock(); break; }
-        const decoded = new TextDecoder().decode(value).trim();
-        if (decoded) {
-          setRfid(decoded);
-          await findStudent();
-          reader.releaseLock();
-          port.close();
-          break;
-        }
-      }
-    } catch (err) {
-      setError(`Error: ${err.message}`);
-    }
-  };
+  // Per-page Web Serial scanner removed; use global Connect in Sidebar
 
   const findStudent = async () => {
     try {
@@ -340,7 +316,6 @@ export default function Store() {
               <div className="flex items-center gap-2">
                 <input value={rfid} onChange={e => setRfid(e.target.value)} placeholder="Scan or enter RFID"
                        className="w-full border rounded px-3 py-2" />
-                <button onClick={connectRfidReader} className="px-3 py-2 bg-blue-400 text-white rounded hover:bg-blue-500 text-sm">Scan</button>
               </div>
             </div>
             <div className="flex gap-2">
