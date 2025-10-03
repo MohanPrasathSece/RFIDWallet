@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
+import BrandLogo from '../components/BrandLogo.jsx';
 
 const links = [
   { to: '/library', label: 'Library', icon: '📚' },
@@ -12,7 +13,7 @@ export default function Sidebar() {
   return (
     <aside className="w-60 bg-white border-r min-h-screen p-4">
       <div className="flex items-center gap-2 mb-6">
-        <img src="/logo.png" alt="College Logo" className="w-8 h-8 object-contain" />
+        <BrandLogo size={36} />
         <div className="text-lg font-bold">RFID Dashboard</div>
       </div>
       <nav className="space-y-1">

@@ -51,15 +51,15 @@ export default function Login() {
   const demoEmail = import.meta?.env?.VITE_DEMO_ADMIN_EMAIL || '';
   const demoPassword = import.meta?.env?.VITE_DEMO_ADMIN_PASSWORD || '';
   const canShowDemo = Boolean(demoEmail);
-  const brandName = import.meta?.env?.VITE_BRAND_NAME || 'Sri Eshwar College of Engineering';
+  const brandName = import.meta?.env?.VITE_BRAND_NAME || 'RFID Wallet';
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-green-50 to-white">
-      {/* Branding header */}
+      {/* Branding header (neutral) */}
       <header className="sticky top-0 z-10 backdrop-blur border-b border-white/60 bg-white/80">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="h-9 px-3 rounded-lg bg-gradient-to-br from-green-600 to-emerald-500 text-white inline-flex items-center justify-center font-bold">SECE</div>
+            <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-green-600 to-emerald-500 text-white inline-flex items-center justify-center font-bold">RW</div>
             <div>
               <div className="font-semibold leading-tight text-green-900">{brandName}</div>
               <div className="text-[11px] text-green-700/70 -mt-0.5">RFID Payments • Library • Store</div>
@@ -91,7 +91,7 @@ export default function Login() {
 
             <form onSubmit={onAdminSubmit} className="mt-4">
               <label className="text-xs font-medium text-emerald-900/80">Admin Email</label>
-              <input className="input mt-1 focus:ring-2 focus:ring-emerald-400" placeholder="admin@college.edu" value={adminEmail} onChange={e=>setAdminEmail(e.target.value)} />
+              <input className="input mt-1 focus:ring-2 focus:ring-emerald-400" placeholder="admin@example.com" value={adminEmail} onChange={e=>setAdminEmail(e.target.value)} />
               <label className="text-xs font-medium text-emerald-900/80 mt-3 block">Password</label>
               <div className="relative mt-1">
                 <input className="input pr-10 focus:ring-2 focus:ring-emerald-400" type={adminShowPw ? 'text' : 'password'} placeholder="••••••••" value={adminPassword} onChange={e=>setAdminPassword(e.target.value)} />

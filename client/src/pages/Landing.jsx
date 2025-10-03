@@ -1,11 +1,12 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../shared/AuthContext.jsx';
+import BrandLogo from '../components/BrandLogo.jsx';
 
 export default function Landing() {
   const { login, logout, token } = useAuth();
   const navigate = useNavigate();
-  const brandName = import.meta?.env?.VITE_BRAND_NAME || 'Sri Eshwar College of Engineering';
+  const brandName = import.meta?.env?.VITE_BRAND_NAME || 'RFID Wallet';
   const [mounted, setMounted] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
   const [showStudent, setShowStudent] = useState(false);
@@ -76,12 +77,14 @@ export default function Landing() {
 
 
   return (
-    <div className="min-h-[100dvh] bg-gradient-to-br from-green-50 via-white to-green-100 font-sans antialiased overflow-y-auto lg:overflow-hidden flex flex-col relative">
-      {/* College Background Image */}
-      <div className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-50" style={{backgroundImage: 'url(/college-bg.jpg)'}}></div>
-      
-      {/* Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-green-50/70 via-white/80 to-green-100/70"></div>
+    <div className="min-h-[100dvh] bg-gradient-to-br from-white to-green-50 font-sans antialiased overflow-y-auto lg:overflow-hidden flex flex-col relative">
+      {/* Background Image (from public/bgimage.jpg) */}
+      <div
+        className="absolute inset-0 bg-[url('/bgimage.jpg')] bg-cover bg-center opacity-70"
+        aria-hidden="true"
+      ></div>
+      {/* Background (light green with white) */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/90 to-green-50/80"></div>
       
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
@@ -93,7 +96,7 @@ export default function Landing() {
       {/* Navigation - Desktop Only */}
       <nav className={`hidden lg:flex relative z-10 items-center justify-between px-4 py-2 transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
         <div className="flex items-center space-x-2">
-          <img src="/logo.png" alt="College Logo" className="w-12 h-12 md:w-14 md:h-14 object-contain" />
+          <BrandLogo size={64} />
           <span className="text-green-800 font-bold text-base">RFID Wallet</span>
         </div>
       </nav>
@@ -103,27 +106,27 @@ export default function Landing() {
         
         {/* Mobile Layout - Creative Design Like Reference */}
         <div className="lg:hidden flex-1 flex flex-col px-6 py-8">
-          {/* Logo in Top Left */}
+          {/* Brand in Top Left */}
           <div className="flex items-center mb-8">
-            <img src="/logo.png" alt="College Logo" className="w-12 h-12 object-contain mr-3" />
+            <BrandLogo size={44} className="mr-3" />
             <div>
               <h1 className="text-xl font-bold text-green-800 tracking-tight leading-snug">RFID Wallet</h1>
               <p className="text-sm text-green-700 font-medium">Digital Payment System</p>
             </div>
           </div>
 
-          {/* Brand Badge */}
+          {/* Brand Badge (neutral) */}
           <div className="flex justify-center mb-8">
             <div className="inline-flex items-center px-4 py-2 bg-white rounded-full border border-green-200 shadow-sm">
               <span className="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
-              <span className="text-green-700 text-sm font-semibold">EcoCollege Portal</span>
+              <span className="text-green-700 text-sm font-semibold">Smart Payments Portal</span>
             </div>
           </div>
 
-          {/* Main Title */}
+          {/* Main Title (neutral) */}
           <div className="text-center mb-2">
-            <h1 className="text-3xl font-bold text-green-700 mb-2">EcoCollege Portal</h1>
-            <p className="text-green-600 text-sm font-medium">Smart • Secure • Sustainable</p>
+            <h1 className="text-3xl font-bold text-green-700 mb-2">Cashless Payments Portal</h1>
+            <p className="text-green-600 text-sm font-medium">Smart • Secure • Seamless</p>
           </div>
 
           {/* Portal Selection Header - removed for mobile per request */}
@@ -299,8 +302,8 @@ export default function Landing() {
 
       {/* Admin Login Modal */}
       {showAdmin && (
-        <div className="fixed inset-0 z-50 bg-green-900/20 backdrop-blur-sm grid place-items-center p-4">
-          <div className="w-full max-w-md bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-6 border border-green-200">
+        <div className="fixed inset-0 z-50 bg-green-900/20 grid place-items-center p-4">
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-6 border border-green-200">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center">
@@ -323,19 +326,19 @@ export default function Landing() {
             )}
             <form onSubmit={onAdminSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm text-green-700 font-medium mb-2">Email Address</label>
+                <label className="block text-sm text-slate-700 font-medium mb-2">Email Address</label>
                 <input 
-                  className="w-full bg-green-50/50 border border-green-200 rounded-lg px-4 py-3 text-green-800 placeholder-green-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all" 
+                  className="w-full bg-white border border-slate-200 rounded-lg px-4 py-3 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all" 
                   value={adminEmail} 
                   onChange={e=>setAdminEmail(e.target.value)} 
-                  placeholder="admin@college.edu"
+                  placeholder="admin@example.com"
                   type="email"
                 />
               </div>
               <div>
-                <label className="block text-sm text-green-700 font-medium mb-2">Password</label>
+                <label className="block text-sm text-slate-700 font-medium mb-2">Password</label>
                 <input 
-                  className="w-full bg-green-50/50 border border-green-200 rounded-lg px-4 py-3 text-green-800 placeholder-green-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all" 
+                  className="w-full bg-white border border-slate-200 rounded-lg px-4 py-3 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all" 
                   type="password" 
                   value={adminPassword} 
                   onChange={e=>setAdminPassword(e.target.value)} 
@@ -365,8 +368,8 @@ export default function Landing() {
 
       {/* Student Login Modal */}
       {showStudent && (
-        <div className="fixed inset-0 z-50 bg-green-900/20 backdrop-blur-sm grid place-items-center p-4">
-          <div className="w-full max-w-md bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-6 border border-green-200">
+        <div className="fixed inset-0 z-50 bg-green-900/20 grid place-items-center p-4">
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-6 border border-green-200">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 bg-gradient-to-r from-green-400 to-green-500 rounded-lg flex items-center justify-center">
@@ -389,18 +392,18 @@ export default function Landing() {
             )}
             <form onSubmit={onStudentSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm text-green-700 font-medium mb-2">Roll Number</label>
+                <label className="block text-sm text-slate-700 font-medium mb-2">Roll Number</label>
                 <input 
-                  className="w-full bg-green-50/50 border border-green-200 rounded-lg px-4 py-3 text-green-800 placeholder-green-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all" 
+                  className="w-full bg-white border border-slate-200 rounded-lg px-4 py-3 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all" 
                   value={studentRoll} 
                   onChange={e=>setStudentRoll(e.target.value)} 
                   placeholder="e.g., 20CS123" 
                 />
               </div>
               <div>
-                <label className="block text-sm text-green-700 font-medium mb-2">Password</label>
+                <label className="block text-sm text-slate-700 font-medium mb-2">Password</label>
                 <input 
-                  className="w-full bg-green-50/50 border border-green-200 rounded-lg px-4 py-3 text-green-800 placeholder-green-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all" 
+                  className="w-full bg-white border border-slate-200 rounded-lg px-4 py-3 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all" 
                   type="password" 
                   value={studentPassword} 
                   onChange={e=>setStudentPassword(e.target.value)} 

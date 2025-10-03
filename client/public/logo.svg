@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title>Digital Wallet Logo</title>
+  <desc>Modern minimalist logo for digital wallet app</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#22c55e"/>
+      <stop offset="100%" stop-color="#16a34a"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background Circle -->
+  <circle cx="256" cy="256" r="240" fill="url(#bg)" />
+  
+  <!-- Main Wallet Icon -->
+  <g transform="translate(156, 180)">
+    <!-- Wallet outline (white lines) -->
+    <rect x="0" y="0" width="200" height="120" rx="16" fill="none" stroke="#ffffff" stroke-width="10"/>
+    <!-- Top stripe line -->
+    <line x1="12" y1="20" x2="188" y2="20" stroke="#ffffff" stroke-width="10" stroke-linecap="round"/>
+    <!-- Inner slot lines -->
+    <line x1="20" y1="52" x2="180" y2="52" stroke="#ffffff" stroke-width="6" stroke-linecap="round" opacity="0.85"/>
+    <line x1="20" y1="70" x2="168" y2="70" stroke="#ffffff" stroke-width="6" stroke-linecap="round" opacity="0.65"/>
+    <!-- Card chip lines -->
+    <line x1="130" y1="92" x2="160" y2="92" stroke="#ffffff" stroke-width="8" stroke-linecap="round" opacity="0.9"/>
+    <line x1="130" y1="104" x2="148" y2="104" stroke="#ffffff" stroke-width="8" stroke-linecap="round" opacity="0.9"/>
+    
+    <!-- RFID Symbol (white arcs) -->
+    <g transform="translate(170, -10)" filter="url(#glow)">
+      <circle cx="0" cy="0" r="2" fill="#ffffff"/>
+      <circle cx="0" cy="0" r="8" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.9"/>
+      <circle cx="0" cy="0" r="14" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.7"/>
+      <circle cx="0" cy="0" r="20" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.5"/>
+    </g>
+  </g>
+  
+  <!-- Digital Elements -->
+  <g opacity="0.3">
+    <circle cx="120" cy="120" r="2" fill="#ffffff"/>
+    <circle cx="140" cy="100" r="1.5" fill="#ffffff"/>
+    <circle cx="380" cy="140" r="2" fill="#ffffff"/>
+    <circle cx="360" cy="380" r="1.5" fill="#ffffff"/>
+    <circle cx="100" cy="360" r="2" fill="#ffffff"/>
+  </g>
+  
+  <!-- Brand Text removed to keep icon-only logo per request -->
+</svg>

@@ -15,7 +15,7 @@ router.post('/student-month', async (req, res) => {
     const { buffer, label } = await generateAndSendStudentMonth(studentId, Number(year), Number(month), { includeReceipts, sendEmail: !!email });
     if (email) return res.json({ ok: true, month: label });
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `inline; filename="SECE_Report_${label.replace(/\s+/g, '_')}.pdf"`);
+    res.setHeader('Content-Disposition', `inline; filename="Wallet_Report_${label.replace(/\s+/g, '_')}.pdf"`);
     return res.send(buffer);
   } catch (e) {
     return res.status(500).json({ message: e.message });

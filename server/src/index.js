@@ -321,17 +321,29 @@ if (process.env.ENABLE_ESP32_SERIAL !== 'false') {
     console.log('[ESP32] 🚀 Starting ESP32 auto-upload and service initialization...');
     
     try {
-      // Create uploader instance
+      // Create uploader instance (quiet mode to avoid spam)
       const uploader = new ESP32Uploader({
         portPath: process.env.SERIAL_PORT || 'COM5',
-        esp32Service: esp32Service
+        esp32Service: esp32Service,
+        quiet: (process.env.ESP32_UPLOAD_QUIET || 'true') !== 'false',
       });
       
       // Check if auto-upload is enabled
       if (process.env.ESP32_AUTO_UPLOAD !== 'false') {
-        console.log('[ESP32] 📤 Auto-uploading firmware on startup...');
-        await uploader.uploadFirmware();
-        console.log('[ESP32] ✅ Auto-upload completed successfully!');
+        try {
+          await uploader.uploadFirmware();
+          console.log('[ESP32] ✅ Auto-upload completed successfully!');
+          // Emit single concise status for frontend listeners
+          io.emit('esp32:upload-result', { status: 'success', message: 'ESP32 firmware uploaded successfully' });
+        } catch (e) {
+          console.log('[ESP32] ❌ Auto-upload failed:', e.message);
+          io.emit('esp32:upload-result', { status: 'failed', message: e.message });
+          // Attempt to connect anyway
+          console.log('[ESP32] 🔄 Attempting to connect to existing firmware...');
+          esp32Service.connect().catch(() => {
+            console.log('[ESP32] Initial connection failed, will retry automatically');
+          });
+        }
       } else {
         console.log('[ESP32] ⏭️  Auto-upload disabled, connecting to existing firmware...');
         
@@ -340,12 +352,17 @@ if (process.env.ENABLE_ESP32_SERIAL !== 'false') {
         await uploader.killPortProcesses();
         await new Promise(resolve => setTimeout(resolve, 2000));
         
-        esp32Service.connect().catch(() => {
+        esp32Service.connect().then(() => {
+          // Emit single concise status when connected without upload
+          io.emit('esp32:upload-result', { status: 'success', message: 'ESP32 connected (no upload performed)' });
+        }).catch(() => {
           console.log('[ESP32] Initial connection failed, will retry automatically');
+          io.emit('esp32:upload-result', { status: 'failed', message: 'ESP32 connection failed (no upload performed)' });
         });
       }
     } catch (error) {
-      console.log('[ESP32] ❌ Auto-upload failed:', error.message);
+      console.log('[ESP32] ❌ Auto-upload/setup error:', error.message);
+      io.emit('esp32:upload-result', { status: 'failed', message: error.message });
       console.log('[ESP32] 🔄 Attempting to connect to existing firmware...');
       esp32Service.connect().catch(() => {
         console.log('[ESP32] Initial connection failed, will retry automatically');

@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../shared/api';
 import { io } from 'socket.io-client';
 import { useAuth } from '../shared/AuthContext.jsx';
+import BrandLogo from '../components/BrandLogo.jsx';
 
 function StudentDashboard() {
-  const brandName = import.meta?.env?.VITE_BRAND_NAME || 'Sri Eshwar College of Engineering';
+  const brandName = import.meta?.env?.VITE_BRAND_NAME || 'RFID Wallet';
   const navigate = useNavigate();
   const { logout } = useAuth();
   const [profile, setProfile] = useState({ name: '', rfid_uid: '' });
@@ -128,15 +129,23 @@ function StudentDashboard() {
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     .slice(0, 3);
 
+  // Display only the first word from the student's name (robust and predictable)
+  const firstName = (() => {
+    const full = (profile.name || 'Student').toString().replace(/\s+/g, ' ').trim();
+    if (!full) return 'Student';
+    const spaceIdx = full.indexOf(' ');
+    return spaceIdx === -1 ? full : full.slice(0, spaceIdx);
+  })();
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-green-50/40 py-10 px-4">
       <div className="max-w-3xl mx-auto">
         {/* Top Bar */}
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="College Logo" className="w-12 h-12 md:w-16 md:h-16 object-contain" />
+            <BrandLogo size={48} />
             <h1 className="text-3xl font-extrabold leading-tight text-green-700">
-              {`Welcome, ${profile.name || 'Student'}`}
+              {`Welcome, ${firstName}`}
             </h1>
           </div>
           <div className="relative" ref={menuRef}>
@@ -183,7 +192,7 @@ function StudentDashboard() {
                     {profile.name ? profile.name.split(' ').map(s=>s[0]).slice(0,2).join('') : 'ST'}
                   </div>
                   <div>
-                    <div className="text-sm text-slate-800 font-medium">{profile.name || '—'}</div>
+                    <div className="text-sm text-slate-800 font-medium">{firstName || '—'}</div>
                     <div className="text-[11px] font-mono text-slate-500">RFID: {profile.rfid_uid || '—'}</div>
                   </div>
                 </div>

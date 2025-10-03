@@ -10,9 +10,12 @@ class ESP32Uploader {
     this.sketchPath = options.sketchPath || path.resolve(__dirname, '../../esp32/src');
     this.buildPath = path.resolve(__dirname, '../../esp32/build');
     this.esp32Service = options.esp32Service; // Reference to ESP32SerialService
+    this.quiet = Boolean(options.quiet); // If true, only log final success/failure
   }
 
   log(message, type = 'info') {
+    // In quiet mode, suppress non-critical logs (keep only success/error)
+    if (this.quiet && !(type === 'success' || type === 'error')) return;
     const prefix = '[ESP32-Upload]';
     
     switch (type) {

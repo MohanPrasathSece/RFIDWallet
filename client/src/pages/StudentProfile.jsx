@@ -7,7 +7,7 @@ import EcoIcon from '../components/EcoIcon.jsx';
 export default function StudentProfile() {
   const navigate = useNavigate();
   const { user, setUser, logout } = useAuth();
-  const brandName = import.meta?.env?.VITE_BRAND_NAME || 'Sri Eshwar College of Engineering';
+  const brandName = import.meta?.env?.VITE_BRAND_NAME || 'RFID Wallet';
 
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');

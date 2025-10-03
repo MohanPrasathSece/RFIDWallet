@@ -15,12 +15,40 @@ class ESP32SerialService {
     this.parser = null;
     this.isConnected = false;
     this.reconnectTimeout = null;
+    // Logging controls
+    // Levels: 'error' < 'info' < 'debug'
+    this.logLevel = (options.logLevel || process.env.ESP32_LOG_LEVEL || 'info').toLowerCase();
+    // Map of message -> last timestamp to throttle noisy repeats
+    this._lastLogTimes = new Map();
   }
 
   log(message, type = 'info') {
-    const timestamp = new Date().toLocaleTimeString();
+    // Determine if we should log based on level and throttling
+    const typeLevel = (t) => {
+      if (t === 'error') return 0;
+      if (t === 'data') return 2; // treat raw serial as debug
+      return 1; // info/success/rfid -> info
+    };
+    const currentLevel = (() => {
+      if (this.logLevel === 'error') return 0;
+      if (this.logLevel === 'debug') return 2;
+      return 1; // info
+    })();
+    if (typeLevel(type) > currentLevel) return;
+
+    // Throttle highly repetitive connection messages
+    const throttleMs = 30000; // 30s
+    const shouldThrottle =
+      /Attempting connection|Attempting to reconnect|Failed to open port|Connection failed|ESP32 disconnected/.test(message);
+    const key = shouldThrottle ? `${type}:${message}` : null;
+    if (key) {
+      const now = Date.now();
+      const last = this._lastLogTimes.get(key) || 0;
+      if (now - last < throttleMs) return;
+      this._lastLogTimes.set(key, now);
+    }
+
     const prefix = '[ESP32]';
-    
     switch (type) {
       case 'success':
         console.log(`\x1b[32m${prefix} ✅ ${message}\x1b[0m`);

@@ -33,9 +33,9 @@ async function buildStudentMonthlyPdf({ student, monthLabel, periodStart, period
     doc.on('data', buffers.push.bind(buffers));
     doc.on('end', () => resolve(Buffer.concat(buffers)));
 
-    // Header
+    // Header (neutral)
     doc
-      .fontSize(16).fillColor('#14532d').text('Sri Eshwar College of Engineering', { align: 'center' })
+      .fontSize(16).fillColor('#14532d').text('RFID Wallet', { align: 'center' })
       .moveDown(0.3)
       .fontSize(12).fillColor('#0f766e').text('Monthly Expense Report', { align: 'center' })
       .moveDown(0.2)
@@ -89,9 +89,9 @@ async function buildStudentMonthlyPdf({ student, monthLabel, periodStart, period
     doc.text(`Store: ${money(storeTotal)}`);
     doc.text(`Grand Total: ${money(grand)}`);
 
-    // Footer
+    // Footer (neutral)
     doc.moveDown(1);
-    doc.fillColor('#64748b').fontSize(9).text(`Generated on ${moment().tz(TZ).format('DD MMM YYYY, HH:mm z')} • SECE Cashless Campus`, { align: 'center' });
+    doc.fillColor('#64748b').fontSize(9).text(`Generated on ${moment().tz(TZ).format('DD MMM YYYY, HH:mm z')} • RFID Wallet`, { align: 'center' });
 
     doc.end();
   });
@@ -99,7 +99,7 @@ async function buildStudentMonthlyPdf({ student, monthLabel, periodStart, period
 
 async function emailStudentMonthlyReport({ student, buffer, monthLabel, foodTotal, storeTotal }) {
   if (!student?.email) return false;
-  const subject = `SECE Monthly Report – ${monthLabel}`;
+  const subject = `Monthly Report – ${monthLabel}`;
   const html = `
     <p>Hello ${student.name || 'Student'},</p>
     <p>Please find attached your monthly Food and Store expense report for <b>${monthLabel}</b>.</p>
@@ -107,10 +107,10 @@ async function emailStudentMonthlyReport({ student, buffer, monthLabel, foodTota
       <li>Food total: <b>${money(foodTotal)}</b></li>
       <li>Store total: <b>${money(storeTotal)}</b></li>
     </ul>
-    <p>Regards,<br/>SECE Cashless Campus</p>
+    <p>Regards,<br/>RFID Wallet</p>
   `;
   const filenameSafeName = (student.name || 'Student').replace(/[^a-z0-9\-_ ]/gi, '_');
-  const attachName = `SECE_Report_${monthLabel.replace(/\s+/g, '_')}_${filenameSafeName}.pdf`;
+  const attachName = `Wallet_Report_${monthLabel.replace(/\s+/g, '_')}_${filenameSafeName}.pdf`;
   await sendEmail({
     to: student.email,
     subject,
