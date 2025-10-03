@@ -23,14 +23,31 @@ export default function Food() {
   const [cart, setCart] = useState([]);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  const loadHistory = async () => {
-    if (!student?._id) {
-      setError('Find a student to load their history.');
-      return;
-    }
+  const loadHistory = async (overrides = {}) => {
     try {
-      setLoading(true); setError('');
-      const res = await api.get('/food/history', { params: { student: student._id } });
+      setLoading(true);
+      // Prefer explicit overrides, then current state
+      const sid = overrides.studentId || (student?._id);
+      const rfidParam = overrides.rfid || rfid;
+      let params = sid ? { student: sid } : (rfidParam ? { rfidNumber: rfidParam } : null);
+      if (!params && rollNo) {
+        try {
+          const { data } = await api.get('/students/find', { params: { rollNo } });
+          if (data?._id) {
+            setStudent(data);
+            params = { student: data._id };
+          }
+        } catch (_) {}
+      }
+      if (!params) {
+        if (!overrides.silent) {
+          setError('Find a student to load their history.');
+          setHistory([]);
+        }
+        return;
+      }
+      setError('');
+      const res = await api.get('/food/history', { params });
       setHistory(res.data || []);
     } catch (e) {
       setError(e?.response?.data?.message || e.message || 'Failed to load history');
@@ -221,8 +238,8 @@ export default function Food() {
         return;
       }
       const params = {};
-      if (rollNo) params.rollNo = rollNo;
-      if (rfid) params.rfid_uid = rfid;
+      if (rfid) params.rfid_uid = rfid; // prefer RFID if both provided
+      else if (rollNo) params.rollNo = rollNo;
       const { data } = await api.get('/students/find', { params });
       if (data?._id) {
         setStudent(data);
@@ -240,8 +257,8 @@ export default function Food() {
           localStorage.setItem('last_student', JSON.stringify(payload));
           try { window?.socket?.emit?.('ui:rfid-scan', payload); } catch {}
         } catch {}
-        // Auto-load history for this student
-        try { await loadHistory(); } catch {}
+        // Auto-load history for this student without flashing errors
+        try { await loadHistory({ studentId: data._id, silent: true }); } catch {}
       } else {
         setStudent(null);
         setError('Student not found.');
@@ -278,7 +295,7 @@ export default function Food() {
     // Initial load for recent scans
     loadAllScans();
 
-    const socket = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000');
+    const socket = (typeof window !== 'undefined' && window.socket) ? window.socket : io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000');
     const onEvent = () => {
       loadAllScans();
       // refresh student-specific history if a student context is set
@@ -348,9 +365,40 @@ export default function Food() {
       socket.off('esp32:rfid-scan', onEsp32Scan);
       socket.off('ui:rfid-clear', onClear);
       socket.off('ui:rfid-scan', onEsp32Scan);
-      socket.disconnect();
+      // Do not disconnect shared global socket
+      if (!(typeof window !== 'undefined' && window.socket === socket)) {
+        socket.disconnect();
+      }
     };
   }, [student, rfid]);
+
+  // Clear any stale "find a student" error once a student is present
+  useEffect(() => {
+    if (student) setError('');
+  }, [student]);
+
+  // Listen to window-level UI events to sync across modules in the same tab
+  useEffect(() => {
+    const onUiClear = () => { unscan(); };
+    const onUiScan = (e) => {
+      try {
+        const p = e?.detail;
+        const s = p?.student;
+        if (s?._id) {
+          setStudent(s);
+          setRollNo(p?.rollNo || s.rollNo || '');
+          setRfid(p?.rfid || s.rfid_uid || '');
+          try { loadHistory(); } catch {}
+        }
+      } catch (_) {}
+    };
+    try { window.addEventListener('ui:rfid-clear', onUiClear); } catch {}
+    try { window.addEventListener('ui:rfid-scan', onUiScan); } catch {}
+    return () => {
+      try { window.removeEventListener('ui:rfid-clear', onUiClear); } catch {}
+      try { window.removeEventListener('ui:rfid-scan', onUiScan); } catch {}
+    };
+  }, []);
 
   // Persist student and cart across navigation
   useEffect(() => {

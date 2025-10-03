@@ -238,8 +238,8 @@ export default function Store() {
         return;
       }
       const params = {};
-      if (rollNo) params.rollNo = rollNo;
-      if (rfid) params.rfid_uid = rfid;
+      if (rfid) params.rfid_uid = rfid; // prefer RFID if both provided
+      else if (rollNo) params.rollNo = rollNo;
       const { data } = await api.get('/students/find', { params });
       if (data?._id) {
         setStudent(data);
@@ -402,6 +402,11 @@ export default function Store() {
     };
   }, [studentId, rfid]);
 
+  // Clear any stale error once a student context is present
+  useEffect(() => {
+    if (student || studentId) setError('');
+  }, [student, studentId]);
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <Sidebar />
@@ -437,7 +442,7 @@ export default function Store() {
               <div>
                 <span className="font-medium">Student:</span> {student.name} | <span className="font-medium">Wallet Balance:</span> ₹{student.walletBalance}
               </div>
-              <button onClick={() => { setError(''); clearCart(); setStudent(null); setStudentId(''); setRollNo(''); setRfid(''); setWalletBalance(null); try { localStorage.removeItem('last_student'); } catch {}; try { window?.socket?.emit?.('ui:rfid-clear', {}); } catch {} }} className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded border border-gray-200">Cancel</button>
+              <button onClick={() => { setError(''); clearCart(); setStudent(null); setStudentId(''); setRollNo(''); setRfid(''); setWalletBalance(null); try { localStorage.removeItem('last_student'); localStorage.removeItem('food_student'); } catch {}; try { window?.socket?.emit?.('ui:rfid-clear', {}); } catch {}; try { window.dispatchEvent(new CustomEvent('ui:rfid-clear', { detail: {} })); } catch {} }} className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded border border-gray-200">Cancel</button>
             </div>
           )}
         </div>
