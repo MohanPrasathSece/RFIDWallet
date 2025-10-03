@@ -152,6 +152,9 @@ export default function Food() {
       // Print/save receipt first
       printBill();
       saveBillPdf();
+      // Optimistic wallet update for instant UI refresh
+      const spend = cartTotal;
+      setStudent(s => s ? { ...s, walletBalance: Math.max(0, Number(s.walletBalance || 0) - Number(spend)) } : s);
       // Process items sequentially with a single receiptId for this purchase
       const receiptId = `FOOD-${Date.now()}-${Math.random().toString(36).slice(2,6)}`;
       for (const c of cart) {
@@ -191,20 +194,28 @@ export default function Food() {
   const findStudent = async () => {
     try {
       setError('');
+      // Prefer fetching by id for freshest wallet balance
+      if (student?._id) {
+        const { data } = await api.get(`/admin/students/${student._id}`);
+        if (data?._id) {
+          setStudent(data);
+          setRollNo(data.rollNo || rollNo || '');
+          setRfid(data.rfid_uid || rfid || '');
+          return;
+        }
+      }
       if (!rollNo && !rfid) {
         setError('Enter a Roll Number or RFID to find a student.');
         return;
       }
-
       const params = {};
       if (rollNo) params.rollNo = rollNo;
       if (rfid) params.rfid_uid = rfid;
-
       const { data } = await api.get('/students/find', { params });
       if (data?._id) {
         setStudent(data);
-        setRollNo(data.rollNo);
-        setRfid(data.rfid_uid);
+        setRollNo(data.rollNo || rollNo || '');
+        setRfid(data.rfid_uid || rfid || '');
       } else {
         setStudent(null);
         setError('Student not found.');
@@ -221,6 +232,10 @@ export default function Food() {
     setRfid('');
     clearCart();
     // localStorage cleared by effect below
+    try {
+      localStorage.removeItem('food_student');
+      localStorage.removeItem('last_student');
+    } catch (_) {}
   };
 
   // Per-page Web Serial scanner removed; use global Connect in Sidebar
@@ -240,7 +255,11 @@ export default function Food() {
     const onEvent = () => {
       loadAllScans();
       // refresh student-specific history if a student context is set
-      if (student) loadHistory();
+      if (student) {
+        loadHistory();
+        // Also refresh student to update wallet balance instantly
+        findStudent();
+      }
     };
     const onEsp32Scan = (payload) => {
       try {
@@ -251,12 +270,18 @@ export default function Food() {
           setStudent(s);
           setRollNo(s.rollNo || '');
           setRfid(s.RFIDNumber || s.rfid_uid || uid || '');
+          // Immediately refresh details and history
+          findStudent();
+          loadHistory();
         } else if (uid) {
           api.get(`/rfid/resolve/${uid}`).then(({ data }) => {
             if (data?._id) {
               setStudent(data);
               setRollNo(data.rollNo || '');
               setRfid(data.RFIDNumber || data.rfid_uid || uid);
+              // Immediately refresh details and history
+              findStudent();
+              loadHistory();
             }
           }).catch(() => {});
         }
@@ -280,6 +305,8 @@ export default function Food() {
     socket.on('rfid:approved', onEvent);
     socket.on('rfid:pending', onEvent);
     socket.on('rfid:pending', onRfidPending);
+    const onClear = () => { unscan(); };
+    socket.on('esp32:rfid-clear', onClear);
     socket.on('esp32:rfid-scan', onEsp32Scan);
     return () => {
       socket.off('transaction:new', onEvent);
@@ -287,6 +314,7 @@ export default function Food() {
       socket.off('rfid:approved', onEvent);
       socket.off('rfid:pending', onEvent);
       socket.off('rfid:pending', onRfidPending);
+      socket.off('esp32:rfid-clear', onClear);
       socket.off('esp32:rfid-scan', onEsp32Scan);
       socket.disconnect();
     };
@@ -361,7 +389,7 @@ export default function Food() {
               <div>
                 <span className="font-medium">Student:</span> {student.name} | <span className="font-medium">Wallet Balance:</span> ₹{student.walletBalance}
               </div>
-              <button onClick={unscan} className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded border border-gray-200">Cancel</button>
+              <button onClick={() => { unscan(); try { window?.socket?.emit?.('ui:rfid-clear', {}); } catch {} }} className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded border border-gray-200">Cancel</button>
             </div>
           )}
         </div>

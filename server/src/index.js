@@ -116,6 +116,15 @@ io.on('connection', (socket) => {
       console.log('[WebSerial] forward error:', e.message);
     }
   });
+  // Allow any module to clear the current RFID context across dashboards
+  socket.on('ui:rfid-clear', (payload = {}) => {
+    try {
+      io.emit('esp32:rfid-clear', { from: socket.id, ...payload });
+      console.log('[WebSerial] forwarded ui:rfid-clear');
+    } catch (e) {
+      console.log('[WebSerial] forward error:', e.message);
+    }
+  });
   socket.on('disconnect', () => console.log('Client disconnected', socket.id));
 });
 app.set('io', io);

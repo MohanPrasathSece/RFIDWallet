@@ -34,6 +34,27 @@ export default function Admin() {
     const url = import.meta.env.VITE_SOCKET_URL || (window.location.origin.replace(/\/$/, ''));
     const socket = io(url, { transports: ['websocket', 'polling'] });
     socketRef.current = socket;
+    // Listen for RFID scans from global connector and auto-fill form
+    const onScan = (payload) => {
+      try {
+        const uid = payload?.uid || payload?.rfid || payload?.RFIDNumber;
+        const s = payload?.student;
+        if (uid) {
+          setForm(v => ({ ...v, RFIDNumber: uid }));
+        }
+        if (s?._id) {
+          setForm(v => ({
+            ...v,
+            name: s.name || v.name,
+            rollNo: s.rollNo || v.rollNo,
+            RFIDNumber: s.RFIDNumber || s.rfid_uid || uid || v.RFIDNumber,
+            department: s.department || v.department,
+            email: s.email || v.email,
+          }));
+        }
+      } catch (_) {}
+    };
+    socket.on('esp32:rfid-scan', onScan);
     return () => { try { socket.disconnect(); } catch {} };
   }, []);
 

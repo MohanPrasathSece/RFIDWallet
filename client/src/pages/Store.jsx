@@ -148,6 +148,13 @@ export default function Store() {
       }
       printBill();
       saveBillPdf();
+      // Optimistic wallet update for instant UI feedback
+      const spend = cartTotal;
+      setWalletBalance(prev => {
+        const base = (prev != null) ? prev : Number(student?.walletBalance || 0);
+        return Math.max(0, Number(base) - Number(spend));
+      });
+      setStudent(s => s ? { ...s, walletBalance: Math.max(0, Number(s.walletBalance || 0) - Number(spend)) } : s);
       const receiptId = `STORE-${Date.now()}-${Math.random().toString(36).slice(2,6)}`;
       for (const c of cart) {
         for (let i = 0; i < c.qty; i += 1) {
@@ -186,6 +193,17 @@ export default function Store() {
   const findStudent = async () => {
     try {
       setError('');
+      // Prefer fetching by id for freshest wallet balance
+      if (studentId) {
+        const { data } = await api.get(`/admin/students/${studentId}`);
+        if (data?._id) {
+          setStudent(data);
+          setRollNo(data.rollNo || rollNo || '');
+          setRfid(data.rfid_uid || rfid || '');
+          setWalletBalance(data.walletBalance ?? null);
+          return;
+        }
+      }
       if (!rollNo && !rfid) {
         setError('Enter a Roll Number or RFID to find a student.');
         return;
@@ -197,8 +215,8 @@ export default function Store() {
       if (data?._id) {
         setStudent(data);
         setStudentId(data._id);
-        setRollNo(data.rollNo || rollNo);
-        setRfid(data.rfid_uid || rfid);
+        setRollNo(data.rollNo || rollNo || '');
+        setRfid(data.rfid_uid || rfid || '');
         setWalletBalance(data.walletBalance ?? null);
       } else {
         setStudent(null);
@@ -253,27 +271,59 @@ export default function Store() {
       } catch (_) {}
     })();
     loadAllScans();
+    // Hydrate from global broadcaster cache
+    try {
+      const last = localStorage.getItem('last_student');
+      if (last) {
+        const p = JSON.parse(last);
+        if (p?.student) {
+          setStudent(p.student);
+          setStudentId(p.student._id);
+          setRollNo(p.rollNo || p.student.rollNo || '');
+          setRfid(p.rfid || p.student.rfid_uid || '');
+          if (p.student.walletBalance !== undefined) setWalletBalance(p.student.walletBalance);
+        }
+      }
+    } catch (_) {}
     const socket = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000');
     const onEvent = () => {
       loadAllScans();
-      if (studentId || rfid) loadHistory();
+      if (studentId || rfid) {
+        loadHistory();
+        // Also refresh current student to update wallet instantly
+        findStudent();
+      }
+    };
+    const onClear = () => {
+      setError('');
+      clearCart();
+      setStudent(null);
+      setStudentId('');
+      setRollNo('');
+      setRfid('');
+      setWalletBalance(null);
+      try { localStorage.removeItem('last_student'); } catch {}
     };
     const onEsp32Scan = (payload) => {
       try {
         const uid = payload?.uid || payload?.rfid || payload?.RFIDNumber;
         const s = payload?.student;
+        const rn = payload?.rollNo;
         if (uid) setRfid(uid);
+        // New scan: reset UI cart/errors to switch context cleanly
+        setError('');
+        clearCart();
         if (s?._id) {
           setStudent(s);
           setStudentId(s._id);
-          setRollNo(s.rollNo || '');
+          setRollNo(s.rollNo || rn || '');
           setWalletBalance(s.walletBalance ?? null);
         } else if (uid) {
           api.get(`/rfid/resolve/${uid}`).then(({ data }) => {
             if (data?._id) {
               setStudent(data);
               setStudentId(data._id);
-              setRollNo(data.rollNo || '');
+              setRollNo(data.rollNo || rn || '');
               setWalletBalance(data.walletBalance ?? null);
             }
           }).catch(() => {});
@@ -285,12 +335,14 @@ export default function Store() {
     socket.on('rfid:approved', onEvent);
     socket.on('rfid:pending', onEvent);
     socket.on('esp32:rfid-scan', onEsp32Scan);
+    socket.on('esp32:rfid-clear', onClear);
     return () => {
       socket.off('transaction:new', onEvent);
       socket.off('transaction:update', onEvent);
       socket.off('rfid:approved', onEvent);
       socket.off('rfid:pending', onEvent);
       socket.off('esp32:rfid-scan', onEsp32Scan);
+      socket.off('esp32:rfid-clear', onClear);
       socket.disconnect();
     };
   }, [studentId, rfid]);
@@ -330,7 +382,7 @@ export default function Store() {
               <div>
                 <span className="font-medium">Student:</span> {student.name} | <span className="font-medium">Wallet Balance:</span> ₹{student.walletBalance}
               </div>
-              <button onClick={() => { setStudent(null); setStudentId(''); setRollNo(''); setRfid(''); setWalletBalance(null); }} className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded border border-gray-200">Cancel</button>
+              <button onClick={() => { setError(''); clearCart(); setStudent(null); setStudentId(''); setRollNo(''); setRfid(''); setWalletBalance(null); try { localStorage.removeItem('last_student'); } catch {}; try { window?.socket?.emit?.('ui:rfid-clear', {}); } catch {} }} className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded border border-gray-200">Cancel</button>
             </div>
           )}
         </div>

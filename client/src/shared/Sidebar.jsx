@@ -25,6 +25,7 @@ export default function Sidebar() {
     const url = import.meta.env.VITE_SOCKET_URL || (window.location.origin.replace(/\/$/, ''));
     const socket = io(url, { transports: ['websocket', 'polling'] });
     socketRef.current = socket;
+    try { window.socket = socket; } catch {}
     return () => { try { socket.disconnect(); } catch {} };
   }, []);
 

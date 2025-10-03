@@ -125,28 +125,41 @@ export default function Library() {
           setStudent(s);
           setStudentId(s._id);
           setRollNo(s.rollNo || '');
+          // refresh lists immediately
+          loadData();
+          loadAllScans();
         } else if (uid) {
           api.get(`/rfid/resolve/${uid}`).then(({ data }) => {
             if (data?._id) {
               setStudent(data);
               setStudentId(data._id);
               setRollNo(data.rollNo || '');
+              loadData();
+              loadAllScans();
             }
           }).catch(() => {});
         }
       } catch (_) {}
     };
-    socket.on('transaction:new', loadAllScans);
-    socket.on('transaction:update', loadAllScans);
-    socket.on('rfid:approved', loadAllScans);
-    socket.on('rfid:pending', loadAllScans);
+    const onClear = () => {
+      setStudent(null);
+      setStudentId('');
+      setRollNo('');
+      setRfid('');
+      setActive([]);
+      setHistory([]);
+      setError('');
+      try { localStorage.removeItem('last_student'); } catch {}
+    };
     socket.on('esp32:rfid-scan', onScan);
+    socket.on('esp32:rfid-clear', onClear);
     return () => {
       socket.off('transaction:new', loadAllScans);
       socket.off('transaction:update', loadAllScans);
       socket.off('rfid:approved', loadAllScans);
       socket.off('rfid:pending', loadAllScans);
       socket.off('esp32:rfid-scan', onScan);
+      socket.off('esp32:rfid-clear', onClear);
       socket.disconnect();
     };
   }, []);
@@ -254,7 +267,7 @@ export default function Library() {
             <div className="flex gap-2">
               <button onClick={findStudent} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded">Find Student</button>
               <button onClick={loadData} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">Load Data</button>
-              <button onClick={() => { setRfid(''); setRollNo(''); setStudentId(''); setStudent(null); setActive([]); setHistory([]); setError(''); }}
+              <button onClick={() => { setRfid(''); setRollNo(''); setStudentId(''); setStudent(null); setActive([]); setHistory([]); setError(''); try { localStorage.removeItem('last_student'); } catch {}; try { window?.socket?.emit?.('ui:rfid-clear', {}); } catch {} }}
                       className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded">Clear</button>
             </div>
             {loading && <div className="text-gray-500">Loading...</div>}
