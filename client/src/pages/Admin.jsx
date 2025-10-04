@@ -1,4 +1,7 @@
-import Sidebar from '../shared/Sidebar.jsx';
+import AdminLayout from '../shared/ui/AdminLayout.jsx';
+import Button from '../shared/ui/Button.jsx';
+import Card from '../shared/ui/Card.jsx';
+import StatCard from '../shared/ui/StatCard.jsx';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../shared/AuthContext.jsx';
@@ -503,38 +506,31 @@ export default function Admin() {
   return (
     // Guard: only admins may access this page
     !user || user.role !== 'admin' ? <Navigate to="/login" replace /> : (
-    <div className="min-h-screen bg-gray-50 flex">
-      <Sidebar />
-      <div className="flex-1 p-0">
-        {/* Top bar */}
-        <div className="w-full flex items-center justify-between px-6 py-3 bg-white border-b">
-          <h1 className="text-xl font-semibold">Admin Dashboard</h1>
-          <div className="flex items-center gap-3">
-            <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 border text-gray-700 uppercase">{user?.role || 'user'}</span>
-            <span className="text-sm text-gray-600 hidden md:block">{user?.name || 'Admin'}</span>
-            <button
-              onClick={() => { logout(); navigate('/'); }}
-              className="px-3 py-1.5 text-sm bg-red-600 hover:bg-red-700 text-white rounded"
-            >Logout</button>
+    <AdminLayout title="Admin Dashboard" subtitle="Manage students, wallets and RFID">
+      {/* Selected student banner */}
+      {selected && (
+        <div className="px-4 py-3 bg-green-50 border border-green-200 rounded flex items-center justify-between">
+          <div className="text-sm text-green-900">
+            <span className="font-medium">Student:</span> {selected.name} · <span className="font-medium">Roll:</span> {selected.rollNo || '-'} · <span className="font-medium">RFID:</span> {selected.rfid_uid || selected.RFIDNumber || '-'} · <span className="font-medium">Dept:</span> {selected.department || '-'}
           </div>
+          <button
+            onClick={() => { setSelected(null); setForm(v => ({ ...v, name: '', rollNo: '', RFIDNumber: '', department: '', email: '' })); try { localStorage.removeItem('last_student'); } catch {}; try { window?.socket?.emit?.('ui:rfid-clear', {}); } catch {}; try { window.dispatchEvent(new CustomEvent('ui:rfid-clear', { detail: {} })); } catch {} }}
+            className="px-2 py-1 text-xs bg-white hover:bg-gray-50 rounded border border-green-200 text-green-800"
+          >Clear</button>
         </div>
-        {/* Selected student banner (auto-filled from scans/inputs) */}
-        {selected && (
-          <div className="px-6 py-3 bg-emerald-50 border-b border-emerald-200 flex items-center justify-between">
-            <div className="text-sm text-emerald-900">
-              <span className="font-medium">Student:</span> {selected.name} · <span className="font-medium">Roll:</span> {selected.rollNo || '-'} · <span className="font-medium">RFID:</span> {selected.rfid_uid || selected.RFIDNumber || '-'} · <span className="font-medium">Dept:</span> {selected.department || '-'}
-            </div>
-            <button
-              onClick={() => { setSelected(null); setForm(v => ({ ...v, name: '', rollNo: '', RFIDNumber: '', department: '', email: '' })); try { localStorage.removeItem('last_student'); } catch {}; try { window?.socket?.emit?.('ui:rfid-clear', {}); } catch {}; try { window.dispatchEvent(new CustomEvent('ui:rfid-clear', { detail: {} })); } catch {} }}
-              className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded border"
-            >Clear</button>
-          </div>
-        )}
-        {/* Page content */}
-        <div className="p-6 space-y-6">
-          <h2 className="text-2xl font-semibold">Admin</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-white p-4 rounded shadow overflow-x-auto">
+      )}
+      <div className="space-y-6 mt-4">
+        {/* KPI Stat Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <StatCard title="Total Students" value={students.length} icon="👥" />
+          <StatCard title="Wallet Total" value={`₹ ${(
+            (Array.isArray(students)?students:[]).reduce((sum, s) => sum + Number(s.walletBalance || 0), 0)
+          ).toFixed(2)}`} hint="Sum of balances" icon="💰" />
+          <StatCard title="Selected Balance" value={`₹ ${Number(selected?.walletBalance ?? 0)}`} hint={selected?.name || '—'} icon="🪪" />
+          <StatCard title="ESP32" value={serialConnected ? 'Connected' : 'Not connected'} hint={serialStatus} icon="🔌" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-white p-4 rounded border border-green-100 shadow-sm overflow-x-auto">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-lg font-semibold">{selected ? 'Edit Student' : 'Add Student (by RFID)'}</h2>
               </div>
@@ -558,13 +554,9 @@ export default function Admin() {
               <div className="mt-3 flex items-center gap-2 flex-wrap">
                 {selected ? (
                   <>
-                    <button
-                      disabled={saving}
-                      onClick={updateStudent}
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded disabled:opacity-60"
-                    >
+                    <Button disabled={saving} onClick={updateStudent}>
                       {saving ? 'Saving...' : 'Save Changes'}
-                    </button>
+                    </Button>
                     {/* Inline password reset */}
                     <div className="flex items-center gap-2">
                       <input
@@ -583,32 +575,23 @@ export default function Admin() {
                         Reset Password
                       </button>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => { setSelected(null); setActiveTab('add'); setForm({ name: '', rollNo: '', email: '', mobileNumber: '', password: '', RFIDNumber: '', department: '' }); }}
-                      className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded border"
-                    >
+                    <Button type="button" variant="outline" onClick={() => { setSelected(null); setActiveTab('add'); setForm({ name: '', rollNo: '', email: '', mobileNumber: '', password: '', RFIDNumber: '', department: '' }); }}>
                       Add New
-                    </button>
+                    </Button>
                   </>
                 ) : (
-                  <button disabled={saving} onClick={addStudent} className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded disabled:opacity-60">{saving ? 'Saving...' : 'Add Student'}</button>
+                  <Button disabled={saving} onClick={addStudent}>{saving ? 'Saving...' : 'Add Student'}</Button>
                 )}
               </div>
             </div>
 
-            <div className="bg-white p-4 rounded-2xl border shadow-sm">
+            <div className="bg-white p-4 rounded border border-green-100 shadow-sm">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <h2 className="text-lg font-semibold text-gray-900">Recent Students</h2>
                   <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 border text-gray-700">{students.length}</span>
                 </div>
-                <button
-                  onClick={() => navigate('/admin/students')}
-                  className="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-sm"
-                >
-                  Open
-                </button>
+                <Button variant="outline" onClick={() => navigate('/admin/students')}>Open</Button>
               </div>
               <p className="mt-2 text-sm text-gray-600">Latest added students:</p>
               <div className="mt-3 max-h-48 overflow-auto divide-y">
@@ -638,9 +621,8 @@ export default function Admin() {
               </div>
             </div>
           </div>
-        </div>
       </div>
-    </div>
+    </AdminLayout>
     )
   );
 }

@@ -201,7 +201,7 @@ export default function Sidebar() {
         </div>
         <nav className="space-y-1">
           {links.map(l => (
-            <Link key={l.to} to={l.to} className={`flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100 ${pathname===l.to? 'bg-gray-100 font-semibold':''}`}>
+            <Link key={l.to} to={l.to} className={`flex items-center gap-2 px-3 py-2 rounded hover:bg-green-50 ${pathname===l.to? 'bg-green-50 text-green-800 font-semibold border border-green-200':'text-gray-700'}`}>
               <span>{l.icon}</span>
               <span>{l.label}</span>
             </Link>
