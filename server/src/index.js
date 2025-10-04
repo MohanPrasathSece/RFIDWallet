@@ -130,8 +130,24 @@ io.on('connection', (socket) => {
 app.set('io', io);
 
 // Middleware
-const allowedOrigin = process.env.CLIENT_URL || '*';
-app.use(cors({ origin: allowedOrigin, credentials: true }));
+// Allow multiple origins via CLIENT_URLS (comma separated) or single CLIENT_URL
+const allowedOrigins = (process.env.CLIENT_URLS || process.env.CLIENT_URL || '')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+
+app.use(cors({
+  origin: (origin, cb) => {
+    // Allow same-origin or non-browser requests (no Origin header)
+    if (!origin) return cb(null, true);
+    // If no allowed origins configured, allow all (dev-friendly)
+    if (allowedOrigins.length === 0) return cb(null, true);
+    // Explicit allow-list match
+    if (allowedOrigins.includes(origin)) return cb(null, true);
+    return cb(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+}));
 // Razorpay webhook needs raw body to verify signature
 app.post('/api/wallet/webhook', express.raw({ type: '*/*' }), webhookHandler);
 app.use(express.json());

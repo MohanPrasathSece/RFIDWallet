@@ -1,6 +1,6 @@
 import Sidebar from '../shared/Sidebar.jsx';
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../shared/AuthContext.jsx';
 import { api } from '../shared/api.js';
 import { io } from 'socket.io-client';
@@ -11,6 +11,7 @@ export default function Admin() {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ name: '', rollNo: '', email: '', mobileNumber: '', password: '', RFIDNumber: '', department: '' });
   const [selected, setSelected] = useState(null);
+  const [newStudentPassword, setNewStudentPassword] = useState('');
   const [walletInputs, setWalletInputs] = useState({});
   const [rfidReader, setRfidReader] = useState(null);
   // Web Serial state for inline ESP32 connect
@@ -32,16 +33,65 @@ export default function Admin() {
       if (!id) return null;
       const { data } = await api.get(`/admin/students/${id}`);
       return data || null;
-    } catch {
+    } catch (e) {
+      // Non-fatal: return null and surface error softly to callers that care
+      console.warn('fetchStudentFull failed', e);
       return null;
     }
   };
 
+  // Load latest students list (for sidebar widgets and recent list)
   const loadStudents = async () => {
     try {
       const res = await api.get('/admin/students');
       setStudents(res.data || []);
-    } catch (_) {}
+    } catch (e) {
+      setError(e?.response?.data?.message || e.message || 'Failed to load students');
+    }
+  };
+
+  // Update selected student with current form values
+  const updateStudent = async () => {
+    if (!selected?._id) { setError('No student selected'); return; }
+    try {
+      setError('');
+      setSaving(true);
+      const payload = {
+        name: form.name,
+        rollNo: form.rollNo,
+        email: form.email,
+        mobileNumber: form.mobileNumber,
+        RFIDNumber: form.RFIDNumber,
+        department: form.department,
+      };
+      const { data } = await api.put(`/admin/students/${selected._id}`, payload);
+      const full = data || (await fetchStudentFull(selected._id)) || selected;
+      setSelected(full);
+      // Refresh list silently
+      try { await loadStudents(); } catch {}
+      // Remember last selection
+      try { localStorage.setItem('last_student', JSON.stringify({ student: full, rollNo: full.rollNo, rfid: full.rfid_uid || full.RFIDNumber })); } catch {}
+    } catch (e) {
+      setError(e?.response?.data?.message || e.message || 'Failed to update');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Reset password for selected student
+  const resetStudentPassword = async () => {
+    if (!selected?._id) { setError('No student selected'); return; }
+    if (!newStudentPassword || newStudentPassword.length < 4) { setError('Enter a new password (min 4 chars)'); return; }
+    try {
+      setError('');
+      setSaving(true);
+      await api.post(`/admin/students/${selected._id}/reset-password`, { newPassword: newStudentPassword });
+      setNewStudentPassword('');
+    } catch (e) {
+      setError(e?.response?.data?.message || e.message || 'Failed to reset password');
+    } finally {
+      setSaving(false);
+    }
   };
 
   useEffect(() => { loadStudents(); }, []);
@@ -253,6 +303,12 @@ export default function Admin() {
       const amt = Number(walletInputs[id] || 0);
       if (!amt || amt <= 0) { setError('Enter a positive amount'); return; }
       await api.post('/admin/wallet/deposit', { studentId: id, amount: amt });
+      // Refresh students and broadcast wallet update
+      try {
+        const { data: s } = await api.get(`/admin/students/${id}`);
+        try { socketRef.current?.emit('wallet:updated', { studentId: id, walletBalance: s?.walletBalance }); } catch {}
+        try { window.dispatchEvent(new CustomEvent('wallet:updated', { detail: { studentId: id, walletBalance: s?.walletBalance } })); } catch {}
+      } catch (_) {}
       await loadStudents();
       setWalletInputs(v => ({ ...v, [id]: '' }));
     } catch (e) {
@@ -266,6 +322,12 @@ export default function Admin() {
       const amt = Number(walletInputs[id] || 0);
       if (!amt || amt <= 0) { setError('Enter a positive amount'); return; }
       await api.post('/admin/wallet/withdraw', { studentId: id, amount: amt });
+      // Refresh students and broadcast wallet update
+      try {
+        const { data: s } = await api.get(`/admin/students/${id}`);
+        try { socketRef.current?.emit('wallet:updated', { studentId: id, walletBalance: s?.walletBalance }); } catch {}
+        try { window.dispatchEvent(new CustomEvent('wallet:updated', { detail: { studentId: id, walletBalance: s?.walletBalance } })); } catch {}
+      } catch (_) {}
       await loadStudents();
       setWalletInputs(v => ({ ...v, [id]: '' }));
     } catch (e) {
@@ -439,6 +501,8 @@ export default function Admin() {
   };
 
   return (
+    // Guard: only admins may access this page
+    !user || user.role !== 'admin' ? <Navigate to="/login" replace /> : (
     <div className="min-h-screen bg-gray-50 flex">
       <Sidebar />
       <div className="flex-1 p-0">
@@ -446,6 +510,7 @@ export default function Admin() {
         <div className="w-full flex items-center justify-between px-6 py-3 bg-white border-b">
           <h1 className="text-xl font-semibold">Admin Dashboard</h1>
           <div className="flex items-center gap-3">
+            <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 border text-gray-700 uppercase">{user?.role || 'user'}</span>
             <span className="text-sm text-gray-600 hidden md:block">{user?.name || 'Admin'}</span>
             <button
               onClick={() => { logout(); navigate('/'); }}
@@ -478,7 +543,7 @@ export default function Admin() {
                 <input className="border rounded px-3 py-2" placeholder="Roll No" value={form.rollNo} onChange={e => setForm(v => ({ ...v, rollNo: e.target.value }))} />
                 <input type="email" className="border rounded px-3 py-2" placeholder="Email ID" value={form.email} onChange={e => setForm(v => ({ ...v, email: e.target.value }))} />
                 <input className="border rounded px-3 py-2" placeholder="Mobile Number" value={form.mobileNumber} onChange={e => setForm(v => ({ ...v, mobileNumber: e.target.value }))} />
-                <input type="password" className="border rounded px-3 py-2" placeholder="New Password" value={form.password} onChange={e => setForm(v => ({ ...v, password: e.target.value }))} />
+                <input type="text" className="border rounded px-3 py-2" placeholder="New Password" value={form.password} onChange={e => setForm(v => ({ ...v, password: e.target.value }))} />
                 <input className="border rounded px-3 py-2" placeholder="Department" value={form.department} onChange={e => setForm(v => ({ ...v, department: e.target.value }))} />
                 <div className="flex items-center gap-2">
                   <input
@@ -490,8 +555,45 @@ export default function Admin() {
                 </div>
               </div>
               {error && <div className="mt-2 text-red-600 text-sm">{error}</div>}
-              <div className="mt-3">
-                <button disabled={saving} onClick={addStudent} className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded disabled:opacity-60">{saving ? 'Saving...' : 'Add Student'}</button>
+              <div className="mt-3 flex items-center gap-2 flex-wrap">
+                {selected ? (
+                  <>
+                    <button
+                      disabled={saving}
+                      onClick={updateStudent}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded disabled:opacity-60"
+                    >
+                      {saving ? 'Saving...' : 'Save Changes'}
+                    </button>
+                    {/* Inline password reset */}
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        placeholder="Set new password"
+                        value={newStudentPassword}
+                        onChange={e=>setNewStudentPassword(e.target.value)}
+                        className="border rounded px-3 py-2 text-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={resetStudentPassword}
+                        className="px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded text-sm"
+                        disabled={saving}
+                      >
+                        Reset Password
+                      </button>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => { setSelected(null); setActiveTab('add'); setForm({ name: '', rollNo: '', email: '', mobileNumber: '', password: '', RFIDNumber: '', department: '' }); }}
+                      className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded border"
+                    >
+                      Add New
+                    </button>
+                  </>
+                ) : (
+                  <button disabled={saving} onClick={addStudent} className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded disabled:opacity-60">{saving ? 'Saving...' : 'Add Student'}</button>
+                )}
               </div>
             </div>
 
@@ -539,5 +641,6 @@ export default function Admin() {
         </div>
       </div>
     </div>
+    )
   );
 }

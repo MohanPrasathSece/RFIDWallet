@@ -305,6 +305,17 @@ export default function Food() {
         findStudent();
       }
     };
+    const onWalletUpdated = (p) => {
+      try {
+        const sid = p?.studentId;
+        if (!sid) return;
+        if (student?._id && sid === student._id) {
+          api.get(`/admin/students/${sid}`).then(({ data }) => {
+            if (data?._id) setStudent(data);
+          }).catch(()=>{});
+        }
+      } catch (_) {}
+    };
     const onEsp32Scan = (payload) => {
       try {
         const uid = payload?.uid || payload?.rfid || payload?.RFIDNumber;
@@ -354,6 +365,7 @@ export default function Food() {
     socket.on('esp32:rfid-scan', onEsp32Scan);
     // UI-level broadcasts from other modules
     socket.on('ui:rfid-clear', onClear);
+    socket.on('wallet:updated', onWalletUpdated);
     socket.on('ui:rfid-scan', onEsp32Scan);
     return () => {
       socket.off('transaction:new', onEvent);
@@ -476,85 +488,91 @@ export default function Food() {
           )}
         </div>
 
-        <div className="bg-white p-4 rounded shadow">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-lg font-semibold">Order Food</h2>
-            <div className="flex items-center gap-2">
-              <input
-                value={itemQuery}
-                onChange={(e) => setItemQuery(e.target.value)}
-                placeholder="Search food items"
-                className="text-sm border rounded px-2 py-1 w-40 md:w-56"
-              />
-              <button onClick={() => setItemQuery(v => v.trim())} className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded">Search</button>
-            </div>
-          </div>
-          <div className="text-xs text-gray-500 mb-2">{student ? 'Ready to order' : 'Find a student to begin.'}</div>
-          {items.length === 0 ? (
-            <div className="text-gray-500">No food items yet. Use "Add Food" to create some.</div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {filteredItems.map(it => {
-                const qty = it.quantity ?? 0;
-                const cardClass = `border rounded p-3 flex items-center justify-between ${qty === 0 ? 'opacity-50' : qty <= 5 ? 'bg-red-50 border-red-200' : ''}`;
-                const qtyClass = `text-sm ${qty === 0 ? 'text-gray-400' : qty <= 5 ? 'text-red-600' : 'text-gray-600'}`;
-                return (
-                  <div key={it._id} className={cardClass} title={qty === 0 ? 'Out of stock' : qty <= 5 ? 'Low stock' : undefined}>
-                    <div>
-                      <div className="font-medium">{it.name}</div>
-                      <div className={qtyClass}>₹{it.price ?? '-'} · Qty {qty}</div>
-                    </div>
-                    <button
-                      disabled={!student || qty === 0}
-                      onClick={() => addToCart(it)}
-                      className="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded disabled:opacity-60"
-                    >
-                      Add to Cart
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* Cart Panel */}
-        <div className="bg-white p-4 rounded shadow">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-lg font-semibold">Cart</h2>
-            <div className="text-sm text-gray-600">Total: <span className="font-medium">₹ {cartTotal.toFixed(2)}</span></div>
-          </div>
-          {cart.length === 0 ? (
-            <div className="text-gray-500">No items in cart.</div>
-          ) : (
-            <div className="space-y-2">
-              {cart.map(c => (
-                <div key={c._id} className="flex items-center justify-between border rounded p-2">
-                  <div>
-                    <div className="font-medium">{c.name}</div>
-                    <div className="text-sm text-gray-600">₹ {c.price} each</div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button className="px-2 py-1 bg-gray-100 rounded" onClick={() => updateQty(c._id, -1)}>-</button>
-                    <span className="w-6 text-center">{c.qty}</span>
-                    <button className="px-2 py-1 bg-gray-100 rounded" onClick={() => updateQty(c._id, 1)}>+</button>
-                    <button className="px-2 py-1 bg-red-100 text-red-700 rounded" onClick={() => removeFromCart(c._id)}>Remove</button>
-                  </div>
-                </div>
-              ))}
-              <div className="flex items-center justify-end gap-2 pt-2">
-                <button className="px-3 py-1 bg-gray-100 rounded" onClick={clearCart}>Clear</button>
-                <button disabled={!student || cart.length===0 || cartTotal > Number(student?.walletBalance || 0)}
-                        onClick={() => setShowConfirm(true)}
-                        className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded disabled:opacity-60">
-                  Proceed
-                </button>
+        {/* Items + Cart layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4">
+          {/* Items */}
+          <div className="bg-white p-4 rounded shadow">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-lg font-semibold">Order Food</h2>
+              <div className="flex items-center gap-2">
+                <input
+                  value={itemQuery}
+                  onChange={(e) => setItemQuery(e.target.value)}
+                  placeholder="Search food items"
+                  className="text-sm border rounded px-2 py-1 w-40 md:w-56"
+                />
+                <button onClick={() => setItemQuery(v => v.trim())} className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded">Search</button>
               </div>
-              {student && cart.length>0 && cartTotal > Number(student?.walletBalance || 0) && (
-                <div className="mt-2 text-sm text-red-600">Insufficient wallet balance. Remove items or reduce quantities.</div>
-              )}
             </div>
-          )}
+            <div className="text-xs text-gray-500 mb-2">{student ? 'Ready to order' : 'Find a student to begin.'}</div>
+            {items.length === 0 ? (
+              <div className="text-gray-500">No food items yet. Use "Add Food" to create some.</div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                {filteredItems.map(it => {
+                  const qty = it.quantity ?? 0;
+                  const cardClass = `border rounded p-3 flex items-center justify-between ${qty === 0 ? 'opacity-50' : qty <= 5 ? 'bg-red-50 border-red-200' : ''}`;
+                  const qtyClass = `text-sm ${qty === 0 ? 'text-gray-400' : qty <= 5 ? 'text-red-600' : 'text-gray-600'}`;
+                  return (
+                    <div key={it._id} className={cardClass} title={qty === 0 ? 'Out of stock' : qty <= 5 ? 'Low stock' : undefined}>
+                      <div>
+                        <div className="font-medium">{it.name}</div>
+                        <div className={qtyClass}>₹{it.price ?? '-'} · Qty {qty}</div>
+                      </div>
+                      <button
+                        disabled={!student || qty === 0}
+                        onClick={() => addToCart(it)}
+                        className="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded disabled:opacity-60"
+                      >
+                        Add to Cart
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Cart Sidebar */}
+          <aside className="bg-white p-3 rounded shadow lg:sticky lg:top-4 h-fit max-h-[75vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-base font-semibold">Cart</h2>
+              <div className="text-xs text-gray-600">Total: <span className="font-medium">₹ {cartTotal.toFixed(2)}</span></div>
+            </div>
+            {cart.length === 0 ? (
+              <div className="text-gray-500 text-sm">No items in cart.</div>
+            ) : (
+              <div className="space-y-2">
+                {cart.map(c => (
+                  <div key={c._id} className="flex items-center justify-between border rounded px-2 py-1">
+                    <div>
+                      <div className="font-medium text-sm">{c.name}</div>
+                      <div className="text-xs text-gray-600">₹ {c.price} each</div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button className="px-2 py-0.5 bg-gray-100 rounded" onClick={() => updateQty(c._id, -1)}>-</button>
+                      <span className="w-6 text-center text-sm">{c.qty}</span>
+                      <button className="px-2 py-0.5 bg-gray-100 rounded" onClick={() => updateQty(c._id, 1)}>+</button>
+                      <button className="px-2 py-0.5 bg-red-100 text-red-700 rounded" onClick={() => removeFromCart(c._id)}>x</button>
+                    </div>
+                  </div>
+                ))}
+                <div className="flex items-center justify-end gap-2 pt-2">
+                  <button className="px-2 py-1 text-xs bg-gray-100 rounded" onClick={clearCart}>Clear</button>
+                  <button
+                    disabled={!student || cart.length===0 || cartTotal > Number(student?.walletBalance || 0)}
+                    onClick={() => setShowConfirm(true)}
+                    className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-sm disabled:opacity-60"
+                  >
+                    Proceed
+                  </button>
+                </div>
+                {student && cart.length>0 && cartTotal > Number(student?.walletBalance || 0) && (
+                  <div className="mt-1 text-xs text-red-600">Insufficient wallet balance. Remove items or reduce quantities.</div>
+                )}
+              </div>
+            )}
+          </aside>
         </div>
 
         {/* Confirm Modal */}

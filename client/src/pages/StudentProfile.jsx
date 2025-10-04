@@ -19,12 +19,27 @@ export default function StudentProfile() {
   const [pwdMsg, setPwdMsg] = useState('');
 
   const [mobileNumber, setMobileNumber] = useState(user?.mobileNumber || '');
+  const [rollNo, setRollNo] = useState(user?.rollNo || '');
 
   useEffect(() => {
     setName(user?.name || '');
     setEmail(user?.email || '');
     setMobileNumber(user?.mobileNumber || '');
+    setRollNo(user?.rollNo || '');
   }, [user]);
+
+  // Fetch full student to get roll number (not included in /auth/me response for student)
+  useEffect(() => {
+    const loadRoll = async () => {
+      try {
+        const uid = user?.rfid_uid;
+        if (!uid) return;
+        const { data } = await api.get('/students/find', { params: { rfid_uid: uid } });
+        if (data?.rollNo) setRollNo(data.rollNo);
+      } catch (_) {}
+    };
+    loadRoll();
+  }, [user?.rfid_uid]);
 
   const saveProfile = async (e) => {
     e.preventDefault();
@@ -97,6 +112,16 @@ export default function StudentProfile() {
             )}
 
             <form onSubmit={saveProfile} className="space-y-2.5">
+              <div>
+                <label className="sr-only">Roll Number</label>
+                <input
+                  className="input-sm rounded-xl bg-gray-100 text-slate-700 placeholder-slate-400"
+                  placeholder="Roll Number"
+                  value={rollNo || ''}
+                  readOnly
+                  disabled
+                />
+              </div>
               <div>
                 <label className="sr-only">Full Name</label>
                 <input

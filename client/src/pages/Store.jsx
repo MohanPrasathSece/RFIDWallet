@@ -342,6 +342,21 @@ export default function Store() {
         findStudent();
       }
     };
+    const onWalletUpdated = (p) => {
+      try {
+        const sid = p?.studentId;
+        if (!sid) return;
+        if (sid === (student?._id || studentId)) {
+          // Fetch latest balance and update
+          api.get(`/admin/students/${sid}`).then(({ data }) => {
+            if (data?._id) {
+              setStudent(data);
+              if (data.walletBalance !== undefined) setWalletBalance(data.walletBalance);
+            }
+          }).catch(()=>{});
+        }
+      } catch (_) {}
+    };
     const onClear = () => {
       setError('');
       clearCart();
@@ -385,6 +400,7 @@ export default function Store() {
     socket.on('rfid:approved', onEvent);
     socket.on('rfid:pending', onEvent);
     socket.on('esp32:rfid-scan', onEsp32Scan);
+    socket.on('wallet:updated', onWalletUpdated);
     socket.on('esp32:rfid-clear', onClear);
     // UI-level broadcasts to sync with other modules
     socket.on('ui:rfid-scan', onEsp32Scan);
@@ -398,9 +414,30 @@ export default function Store() {
       socket.off('esp32:rfid-clear', onClear);
       socket.off('ui:rfid-scan', onEsp32Scan);
       socket.off('ui:rfid-clear', onClear);
+      socket.off('wallet:updated', onWalletUpdated);
       socket.disconnect();
     };
   }, [studentId, rfid]);
+
+  // Same-tab wallet update listener
+  useEffect(() => {
+    const onWalletUpdatedWin = (e) => {
+      try {
+        const sid = e?.detail?.studentId;
+        if (!sid) return;
+        if (sid === (student?._id || studentId)) {
+          api.get(`/admin/students/${sid}`).then(({ data }) => {
+            if (data?._id) {
+              setStudent(data);
+              if (data.walletBalance !== undefined) setWalletBalance(data.walletBalance);
+            }
+          }).catch(()=>{});
+        }
+      } catch (_) {}
+    };
+    try { window.addEventListener('wallet:updated', onWalletUpdatedWin); } catch {}
+    return () => { try { window.removeEventListener('wallet:updated', onWalletUpdatedWin); } catch {} };
+  }, [student, studentId]);
 
   // Clear any stale error once a student context is present
   useEffect(() => {
@@ -447,131 +484,91 @@ export default function Store() {
           )}
         </div>
 
-        <div className="bg-white p-4 rounded shadow">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-lg font-semibold">Order Item</h2>
-            <div className="flex items-center gap-2">
-              <input
-                value={itemQuery}
-                onChange={(e) => setItemQuery(e.target.value)}
-                placeholder="Search store items"
-                className="text-sm border rounded px-2 py-1 w-40 md:w-56"
-              />
-              <button onClick={() => setItemQuery(v => v.trim())} className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded">Search</button>
-            </div>
-          </div>
-          <div className="text-xs text-gray-500 mb-2">{(student || studentId || rfid) ? 'Ready to order' : 'Find a student to begin.'}</div>
-          {items.length === 0 ? (
-            <div className="text-gray-500">No store items yet. Use "Add Store Item" to create some.</div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {filteredItems.map(it => {
-                const qty = it.quantity ?? 0;
-                const cardClass = `border rounded p-3 flex items-center justify-between ${qty === 0 ? 'opacity-50' : qty <= 5 ? 'bg-red-50 border-red-200' : ''}`;
-                const qtyClass = `text-sm ${qty === 0 ? 'text-gray-400' : qty <= 5 ? 'text-red-600' : 'text-gray-600'}`;
-                return (
-                  <div key={it._id} className={cardClass} title={qty === 0 ? 'Out of stock' : qty <= 5 ? 'Low stock' : undefined}>
-                    <div>
-                      <div className="font-medium">{it.name}</div>
-                      <div className={qtyClass}>₹{it.price ?? '-'} · Qty {qty}</div>
-                    </div>
-                    <button
-                      disabled={!student || qty === 0}
-                      onClick={() => addToCart(it)}
-                      className="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded disabled:opacity-60"
-                    >
-                      Add to Cart
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* Cart Panel */}
-        <div className="bg-white p-4 rounded shadow">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-lg font-semibold">Cart</h2>
-            <div className="text-sm text-gray-600">Total: <span className="font-medium">₹ {cartTotal.toFixed(2)}</span></div>
-          </div>
-          {cart.length === 0 ? (
-            <div className="text-gray-500">No items in cart.</div>
-          ) : (
-            <div className="space-y-2">
-              {cart.map(c => (
-                <div key={c._id} className="flex items-center justify-between border rounded p-2">
-                  <div>
-                    <div className="font-medium">{c.name}</div>
-                    <div className="text-sm text-gray-600">₹ {c.price} each</div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button className="px-2 py-1 bg-gray-100 rounded" onClick={() => updateQty(c._id, -1)}>-</button>
-                    <span className="w-6 text-center">{c.qty}</span>
-                    <button className="px-2 py-1 bg-gray-100 rounded" onClick={() => updateQty(c._id, 1)}>+</button>
-                    <button className="px-2 py-1 bg-red-100 text-red-700 rounded" onClick={() => removeFromCart(c._id)}>Remove</button>
-                  </div>
-                </div>
-              ))}
-              <div className="flex items-center justify-end gap-2 pt-2">
-                <button className="px-3 py-1 bg-gray-100 rounded" onClick={clearCart}>Clear</button>
-                <button disabled={!student || cart.length===0 || cartTotal > currentBalance}
-                        onClick={() => setShowConfirm(true)}
-                        className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded disabled:opacity-60">
-                  Proceed
-                </button>
+        {/* Items + Cart layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4">
+          {/* Items */}
+          <div className="bg-white p-4 rounded shadow">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-lg font-semibold">Order Item</h2>
+              <div className="flex items-center gap-2">
+                <input
+                  value={itemQuery}
+                  onChange={(e) => setItemQuery(e.target.value)}
+                  placeholder="Search store items"
+                  className="text-sm border rounded px-2 py-1 w-40 md:w-56"
+                />
+                <button onClick={() => setItemQuery(v => v.trim())} className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded">Search</button>
               </div>
-              {showConfirm && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center">
-                  {/* Backdrop */}
-                  <div className="absolute inset-0 bg-black/40" onClick={() => setShowConfirm(false)}></div>
-                  {/* Modal */}
-                  <div className="relative z-10 w-[92%] max-w-xl bg-white rounded-lg shadow-lg">
-                    <div className="px-5 pt-4 pb-2 border-b">
-                      <h3 className="text-xl font-semibold">Confirm Purchase</h3>
-                      <div className="mt-1 text-sm text-gray-700">
-                        Student: <span className="font-medium">{student?.name}</span>
-                        <span className="mx-2">·</span>
-                        RFID: <span className="tabular-nums">{student?.rfid_uid || rfid}</span>
+            </div>
+            <div className="text-xs text-gray-500 mb-2">{(student || studentId || rfid) ? 'Ready to order' : 'Find a student to begin.'}</div>
+            {items.length === 0 ? (
+              <div className="text-gray-500">No store items yet. Use "Add Store Item" to create some.</div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                {filteredItems.map(it => {
+                  const qty = it.quantity ?? 0;
+                  const cardClass = `border rounded p-3 flex items-center justify-between ${qty === 0 ? 'opacity-50' : qty <= 5 ? 'bg-red-50 border-red-200' : ''}`;
+                  const qtyClass = `text-sm ${qty === 0 ? 'text-gray-400' : qty <= 5 ? 'text-red-600' : 'text-gray-600'}`;
+                  return (
+                    <div key={it._id} className={cardClass} title={qty === 0 ? 'Out of stock' : qty <= 5 ? 'Low stock' : undefined}>
+                      <div>
+                        <div className="font-medium">{it.name}</div>
+                        <div className={qtyClass}>₹{it.price ?? '-'} · Qty {qty}</div>
                       </div>
+                      <button
+                        disabled={(!student && !studentId) || qty === 0}
+                        onClick={() => addToCart(it)}
+                        className="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded disabled:opacity-60"
+                      >
+                        Add to Cart
+                      </button>
                     </div>
-                    <div className="px-5 py-4">
-                      <div className="overflow-x-auto border rounded">
-                        <table className="min-w-full text-sm">
-                          <thead className="bg-gray-50">
-                            <tr>
-                              <th className="px-3 py-2 text-left">Item</th>
-                              <th className="px-3 py-2 text-right">Qty</th>
-                              <th className="px-3 py-2 text-right">Amount</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {cart.map(row => (
-                              <tr key={row._id} className="border-t">
-                                <td className="px-3 py-2">{row.name}</td>
-                                <td className="px-3 py-2 text-right">{row.qty}</td>
-                                <td className="px-3 py-2 text-right">₹ {(Number(row.price) * row.qty).toFixed(2)}</td>
-                              </tr>
-                            ))}
-                            <tr className="border-t bg-gray-50">
-                              <td className="px-3 py-2 font-medium">Total</td>
-                              <td className="px-3 py-2"></td>
-                              <td className="px-3 py-2 text-right font-semibold">₹ {cartTotal.toFixed(2)}</td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Cart Sidebar */}
+          <aside className="bg-white p-3 rounded shadow lg:sticky lg:top-4 h-fit max-h-[75vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-base font-semibold">Cart</h2>
+              <div className="text-xs text-gray-600">Total: <span className="font-medium">₹ {cartTotal.toFixed(2)}</span></div>
+            </div>
+            {cart.length === 0 ? (
+              <div className="text-gray-500 text-sm">No items in cart.</div>
+            ) : (
+              <div className="space-y-2">
+                {cart.map(c => (
+                  <div key={c._id} className="flex items-center justify-between border rounded px-2 py-1">
+                    <div>
+                      <div className="font-medium text-sm">{c.name}</div>
+                      <div className="text-xs text-gray-600">₹ {c.price} each</div>
                     </div>
-                    <div className="px-5 pb-4 pt-2 flex flex-wrap gap-2 justify-end">
-                      <button onClick={() => setShowConfirm(false)} className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded">Cancel</button>
-                      <button onClick={printBill} className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded">Print Bill</button>
-                      <button onClick={confirmAndPurchase} className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded">Confirm & Purchase</button>
+                    <div className="flex items-center gap-1">
+                      <button className="px-2 py-0.5 bg-gray-100 rounded" onClick={() => updateQty(c._id, -1)}>-</button>
+                      <span className="w-6 text-center text-sm">{c.qty}</span>
+                      <button className="px-2 py-0.5 bg-gray-100 rounded" onClick={() => updateQty(c._id, 1)}>+</button>
+                      <button className="px-2 py-0.5 bg-red-100 text-red-700 rounded" onClick={() => removeFromCart(c._id)}>x</button>
                     </div>
                   </div>
+                ))}
+                <div className="flex items-center justify-end gap-2 pt-2">
+                  <button className="px-2 py-1 text-xs bg-gray-100 rounded" onClick={clearCart}>Clear</button>
+                  <button
+                    disabled={(!student && !studentId) || cart.length===0 || cartTotal > currentBalance}
+                    onClick={() => setShowConfirm(true)}
+                    className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-sm disabled:opacity-60"
+                  >
+                    Proceed
+                  </button>
                 </div>
-              )}
-            </div>
-          )}
+                {cart.length>0 && cartTotal > currentBalance && (
+                  <div className="mt-1 text-xs text-red-600">Insufficient wallet balance. Remove items or reduce quantities.</div>
+                )}
+              </div>
+            )}
+          </aside>
         </div>
 
         <div className="bg-white p-4 rounded shadow">

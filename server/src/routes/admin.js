@@ -4,6 +4,7 @@ const Transaction = require('../models/Transaction');
 const { auth, requireRoles } = require('../middleware/auth');
 const bcrypt = require('bcryptjs');
 const Student = require('../models/Student');
+const WalletTransaction = require('../models/WalletTransaction');
 
 // Public: list students (basic) without auth for local testing
 router.get('/students', async (req, res) => {
@@ -145,6 +146,18 @@ router.post('/wallet/deposit', async (req, res) => {
     if (!studentId || !Number.isFinite(amt) || amt <= 0) return res.status(400).json({ message: 'studentId and positive amount are required' });
     const student = await Student.findByIdAndUpdate(studentId, { $inc: { walletBalance: amt } }, { new: true });
     if (!student) return res.status(404).json({ message: 'Student not found' });
+    // Record wallet transaction (credit)
+    try {
+      await WalletTransaction.create({
+        studentId: student._id,
+        rfid_uid: student.rfid_uid,
+        amount: amt,
+        type: 'credit',
+        itemName: 'Admin deposit',
+      });
+    } catch (_) {}
+    // Emit socket update for real-time UI refresh
+    try { req.app.get('io').emit('wallet:updated', { studentId: String(student._id), balance: student.walletBalance }); } catch {}
     return res.json({ ok: true, walletBalance: student.walletBalance });
   } catch (e) {
     return res.status(400).json({ message: e.message });
@@ -163,6 +176,18 @@ router.post('/wallet/withdraw', async (req, res) => {
       { new: true }
     );
     if (!student) return res.status(400).json({ message: 'Insufficient wallet balance or student not found' });
+    // Record wallet transaction (debit)
+    try {
+      await WalletTransaction.create({
+        studentId: student._id,
+        rfid_uid: student.rfid_uid,
+        amount: amt,
+        type: 'debit',
+        itemName: 'Admin withdrawal',
+      });
+    } catch (_) {}
+    // Emit socket update for real-time UI refresh
+    try { req.app.get('io').emit('wallet:updated', { studentId: String(student._id), balance: student.walletBalance }); } catch {}
     return res.json({ ok: true, walletBalance: student.walletBalance });
   } catch (e) {
     return res.status(400).json({ message: e.message });
