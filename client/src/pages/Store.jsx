@@ -518,7 +518,7 @@ export default function Store() {
                       <button
                         disabled={(!student && !studentId) || qty === 0}
                         onClick={() => addToCart(it)}
-                        className="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded disabled:opacity-60"
+                        className="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded disabled:opacity-60 flex-shrink-0"
                       >
                         Add to Cart
                       </button>

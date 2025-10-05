@@ -29,6 +29,8 @@ export default function Admin() {
   // Edit tab find bar
   const [editRoll, setEditRoll] = useState('');
   const [editRfid, setEditRfid] = useState('');
+  const [todaysFoodSales, setTodaysFoodSales] = useState(0);
+  const [todaysStoreSales, setTodaysStoreSales] = useState(0);
 
   // Fetch full student from admin endpoint for freshest data
   const fetchStudentFull = async (id) => {
@@ -97,7 +99,22 @@ export default function Admin() {
     }
   };
 
-  useEffect(() => { loadStudents(); }, []);
+  useEffect(() => {
+    loadStudents();
+    const fetchSales = async () => {
+      try {
+        const [foodRes, storeRes] = await Promise.all([
+          api.get('/admin/sales/today?module=food'),
+          api.get('/admin/sales/today?module=store'),
+        ]);
+        setTodaysFoodSales(foodRes.data.totalSales || 0);
+        setTodaysStoreSales(storeRes.data.totalSales || 0);
+      } catch (e) {
+        console.error('Failed to fetch sales data', e);
+      }
+    };
+    fetchSales();
+  }, []);
 
   // Hydrate selection from last_student (if any)
   useEffect(() => {
@@ -523,10 +540,8 @@ export default function Admin() {
         {/* KPI Stat Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <StatCard title="Total Students" value={students.length} icon="👥" />
-          <StatCard title="Wallet Total" value={`₹ ${(
-            (Array.isArray(students)?students:[]).reduce((sum, s) => sum + Number(s.walletBalance || 0), 0)
-          ).toFixed(2)}`} hint="Sum of balances" icon="💰" />
-          <StatCard title="Selected Balance" value={`₹ ${Number(selected?.walletBalance ?? 0)}`} hint={selected?.name || '—'} icon="🪪" />
+          <StatCard title="Today's Food Sales" value={`₹ ${todaysFoodSales.toFixed(2)}`} hint="Food Court" icon="🍔" />
+          <StatCard title="Today's Store Sales" value={`₹ ${todaysStoreSales.toFixed(2)}`} hint="Store" icon="🛍️" />
           <StatCard title="ESP32" value={serialConnected ? 'Connected' : 'Not connected'} hint={serialStatus} icon="🔌" />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -207,29 +207,31 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      <div className="mt-6 pt-4 border-t border-gray-700/50">
-        <div className="flex items-center justify-between gap-2">
-          <span
-            className={`text-xs px-2.5 py-1 rounded-full ${serialConnected ? 'bg-green-500/20 text-green-400' : 'bg-gray-700 text-gray-400'}`}>
-            {serialStatus}
-          </span>
-          {!serialConnected ? (
-            <button
-              onClick={connectESP32}
-              title="Connect ESP32"
-              className="px-4 py-1.5 text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white rounded-lg shadow-md transition-colors">
-              Connect
-            </button>
-          ) : (
-            <button
-              onClick={disconnectESP32}
-              title="Disconnect ESP32"
-              className="px-4 py-1.5 text-xs font-semibold bg-red-600 hover:bg-red-500 text-white rounded-lg shadow-md transition-colors">
-              Disconnect
-            </button>
-          )}
+      {pathname.startsWith('/admin') && (
+        <div className="mt-6 pt-4 border-t border-gray-700/50">
+          <div className="flex items-center justify-between gap-2">
+            <span
+              className={`text-xs px-2.5 py-1 rounded-full ${serialConnected ? 'bg-green-500/20 text-green-400' : 'bg-gray-700 text-gray-400'}`}>
+              {serialStatus}
+            </span>
+            {!serialConnected ? (
+              <button
+                onClick={connectESP32}
+                title="Connect ESP32"
+                className="px-4 py-1.5 text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white rounded-lg shadow-md transition-colors">
+                Connect
+              </button>
+            ) : (
+              <button
+                onClick={disconnectESP32}
+                title="Disconnect ESP32"
+                className="px-4 py-1.5 text-xs font-semibold bg-red-600 hover:bg-red-500 text-white rounded-lg shadow-md transition-colors">
+                Disconnect
+              </button>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </aside>
   );
 }

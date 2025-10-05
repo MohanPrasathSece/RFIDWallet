@@ -200,6 +200,51 @@ router.get('/transactions', async (req, res) => {
   res.json(txs);
 });
 
+// Get today's total sales for a given module (food or store)
+router.get('/sales/today', async (req, res) => {
+  try {
+    const { module } = req.query;
+    if (!['food', 'store'].includes(module)) {
+      return res.status(400).json({ message: 'Invalid module specified' });
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const sales = await Transaction.aggregate([
+      {
+        $match: {
+          module: module,
+          action: 'purchase',
+          createdAt: { $gte: today },
+        },
+      },
+      {
+        $lookup: {
+          from: 'items',
+          localField: 'item',
+          foreignField: '_id',
+          as: 'itemDetails',
+        },
+      },
+      {
+        $unwind: '$itemDetails',
+      },
+      {
+        $group: {
+          _id: null,
+          totalSales: { $sum: '$itemDetails.price' },
+        },
+      },
+    ]);
+
+    const totalSales = sales.length > 0 ? sales[0].totalSales : 0;
+    res.json({ totalSales });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+});
+
 module.exports = router;
 
 // Students: create and list
