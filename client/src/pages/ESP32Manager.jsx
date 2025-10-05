@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { api } from '../shared/api.js';
-import Sidebar from '../shared/Sidebar.jsx';
+import AdminLayout from '../shared/ui/AdminLayout.jsx';
 
 export default function ESP32Manager() {
   const [status, setStatus] = useState(null);
@@ -79,22 +79,21 @@ export default function ESP32Manager() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      <Sidebar />
-      <div className="flex-1 p-6 space-y-6">
+    <AdminLayout title="ESP32 Manager" subtitle="Manage firmware and connection status for ESP32">
+      <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold">ESP32 Manager</h1>
+          <h1 className="text-xl font-semibold">Connection & Firmware</h1>
           <button
             onClick={fetchStatus}
             disabled={loading}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50"
+            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md disabled:opacity-50"
           >
             {loading ? 'Refreshing...' : 'Refresh Status'}
           </button>
         </div>
 
         {/* ESP32 Status */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded border border-emerald-100 shadow-sm p-6">
           <h2 className="text-lg font-semibold mb-4">ESP32 Status</h2>
           
           {status ? (
@@ -127,11 +126,11 @@ export default function ESP32Manager() {
         </div>
 
         {/* Firmware Management */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded border border-emerald-100 shadow-sm p-6">
           <h2 className="text-lg font-semibold mb-4">Firmware Management</h2>
           
           <div className="space-y-4">
-            <div className="p-4 bg-yellow-50 rounded-lg">
+            <div className="p-4 bg-yellow-50 rounded border border-yellow-200">
               <h3 className="font-medium text-yellow-800 mb-2">⚠️ Upload New Firmware</h3>
               <p className="text-sm text-yellow-700 mb-3">
                 This will disconnect the ESP32, upload new RFID firmware, and restart the service.
@@ -140,13 +139,13 @@ export default function ESP32Manager() {
               <button
                 onClick={uploadFirmware}
                 disabled={uploading}
-                className="px-6 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg disabled:opacity-50"
+                className="px-6 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-md disabled:opacity-50"
               >
                 {uploading ? '📤 Uploading...' : '📤 Upload Firmware'}
               </button>
             </div>
             
-            <div className="p-4 bg-blue-50 rounded-lg">
+            <div className="p-4 bg-blue-50 rounded border border-blue-200">
               <h3 className="font-medium text-blue-800 mb-2">🔄 Restart Service</h3>
               <p className="text-sm text-blue-700 mb-3">
                 Restart the ESP32 connection service without uploading firmware.
@@ -154,7 +153,7 @@ export default function ESP32Manager() {
               </p>
               <button
                 onClick={restartService}
-                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+                className="px-6 py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 rounded-md border border-emerald-300"
               >
                 🔄 Restart Service
               </button>
@@ -163,7 +162,7 @@ export default function ESP32Manager() {
         </div>
 
         {/* Current Firmware Info */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded border border-emerald-100 shadow-sm p-6">
           <h2 className="text-lg font-semibold mb-4">Current Firmware</h2>
           <div className="space-y-2 text-sm">
             <div><span className="font-medium">Version:</span> RFID Scanner v1.0</div>
@@ -174,7 +173,7 @@ export default function ESP32Manager() {
         </div>
 
         {/* Activity Logs */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded border border-emerald-100 shadow-sm p-6">
           <h2 className="text-lg font-semibold mb-4">Activity Logs</h2>
           <div className="h-64 overflow-y-auto bg-gray-900 text-green-400 p-4 rounded font-mono text-sm">
             {logs.map((log, index) => (
@@ -193,7 +192,7 @@ export default function ESP32Manager() {
         </div>
 
         {/* Instructions */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded border border-emerald-100 shadow-sm p-6">
           <h2 className="text-lg font-semibold mb-4">Instructions</h2>
           <div className="space-y-3 text-sm">
             <div>
@@ -211,6 +210,6 @@ export default function ESP32Manager() {
           </div>
         </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 }

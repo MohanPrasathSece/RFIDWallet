@@ -1,14 +1,15 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
+import { FiBook, FiCoffee, FiShoppingCart, FiSettings } from 'react-icons/fi';
 import { api } from './api.js';
 import BrandLogo from '../components/BrandLogo.jsx';
 
 const links = [
-  { to: '/library', label: 'Library', icon: '📚' },
-  { to: '/food', label: 'Food Court', icon: '🍔' },
-  { to: '/store', label: 'Store', icon: '🛍️' },
-  { to: '/admin', label: 'Admin', icon: '🛠️' },
+  { to: '/library', label: 'Library', icon: <FiBook size={18} /> },
+  { to: '/food', label: 'Food Court', icon: <FiCoffee size={18} /> },
+  { to: '/store', label: 'Store', icon: <FiShoppingCart size={18} /> },
+  { to: '/admin', label: 'Admin', icon: <FiSettings size={18} /> },
 ];
 
 export default function Sidebar() {
@@ -184,30 +185,51 @@ export default function Sidebar() {
   }, [serialConnected]);
 
   return (
-    <>
-      {/* Fixed top-right connect controls (non-blocking overlay) */}
-      <div className="fixed bottom-3 left-3 z-50 flex items-center gap-2 pointer-events-none select-none">
-        <span className={`text-[10px] px-2 py-0.5 rounded border shadow-sm ${serialConnected ? 'bg-green-100 text-green-700 border-green-200' : 'bg-gray-100 text-gray-700 border-gray-200'}`}>{serialStatus}</span>
-        {!serialConnected ? (
-          <button onClick={connectESP32} title="Connect ESP32" className="px-2.5 py-1 text-[11px] bg-blue-600 hover:bg-blue-700 text-white rounded shadow pointer-events-auto">Connect</button>
-        ) : (
-          <button onClick={disconnectESP32} title="Disconnect ESP32" className="px-2.5 py-1 text-[11px] bg-red-600 hover:bg-red-700 text-white rounded shadow pointer-events-auto">Disconnect</button>
-        )}
+    <aside className="w-64 bg-gray-900 text-gray-200 flex flex-col min-h-screen p-4">
+      <div className="flex items-center gap-3 mb-8 px-2">
+        <BrandLogo size={38} />
+        <div className="text-xl font-bold tracking-tight">RFID Dashboard</div>
       </div>
-      <aside className="w-60 bg-white border-r min-h-screen p-4">
-        <div className="flex items-center gap-2 mb-6">
-          <BrandLogo size={36} />
-          <div className="text-lg font-bold">RFID Dashboard</div>
+
+      <nav className="flex-grow space-y-2">
+        {links.map(l => (
+          <Link
+            key={l.to}
+            to={l.to}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
+              pathname === l.to
+                ? 'bg-green-600 text-white font-semibold'
+                : 'text-gray-400 hover:bg-gray-800 hover:text-gray-100'
+            }`}>
+            <span className="w-6 text-center">{l.icon}</span>
+            <span>{l.label}</span>
+          </Link>
+        ))}
+      </nav>
+
+      <div className="mt-6 pt-4 border-t border-gray-700/50">
+        <div className="flex items-center justify-between gap-2">
+          <span
+            className={`text-xs px-2.5 py-1 rounded-full ${serialConnected ? 'bg-green-500/20 text-green-400' : 'bg-gray-700 text-gray-400'}`}>
+            {serialStatus}
+          </span>
+          {!serialConnected ? (
+            <button
+              onClick={connectESP32}
+              title="Connect ESP32"
+              className="px-4 py-1.5 text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white rounded-lg shadow-md transition-colors">
+              Connect
+            </button>
+          ) : (
+            <button
+              onClick={disconnectESP32}
+              title="Disconnect ESP32"
+              className="px-4 py-1.5 text-xs font-semibold bg-red-600 hover:bg-red-500 text-white rounded-lg shadow-md transition-colors">
+              Disconnect
+            </button>
+          )}
         </div>
-        <nav className="space-y-1">
-          {links.map(l => (
-            <Link key={l.to} to={l.to} className={`flex items-center gap-2 px-3 py-2 rounded hover:bg-green-50 ${pathname===l.to? 'bg-green-50 text-green-800 font-semibold border border-green-200':'text-gray-700'}`}>
-              <span>{l.icon}</span>
-              <span>{l.label}</span>
-            </Link>
-          ))}
-        </nav>
-      </aside>
-    </>
+      </div>
+    </aside>
   );
 }

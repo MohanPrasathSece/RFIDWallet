@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { api } from '../shared/api.js';
-import Sidebar from '../shared/Sidebar.jsx';
+import AdminLayout from '../shared/ui/AdminLayout.jsx';
 
 export default function AdminRFIDScanner() {
   const [isConnected, setIsConnected] = useState(false);
@@ -249,15 +249,11 @@ export default function AdminRFIDScanner() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      <Sidebar />
-      <div className="flex-1 p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold">Admin RFID Scanner</h1>
-        </div>
+    <AdminLayout title="Admin RFID Scanner" subtitle="Connect ESP32 and scan RFID cards">
+      <div className="space-y-6">
 
         {/* Connection Status */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded border border-emerald-100 shadow-sm p-6">
           <div className="flex items-center gap-4 mb-4">
             <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
             <span className="text-lg">{status}</span>
@@ -266,14 +262,14 @@ export default function AdminRFIDScanner() {
           {!isConnected ? (
             <button
               onClick={connectESP32}
-              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium"
+              className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md font-medium"
             >
               Connect ESP32
             </button>
           ) : (
             <button
               onClick={disconnect}
-              className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium"
+              className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md font-medium"
             >
               Disconnect
             </button>
@@ -281,7 +277,7 @@ export default function AdminRFIDScanner() {
         </div>
 
         {/* Manual RFID Input */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded border border-emerald-100 shadow-sm p-6">
           <h2 className="text-lg font-semibold mb-4">RFID Scanning</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
@@ -292,7 +288,7 @@ export default function AdminRFIDScanner() {
                 value={rfidInput}
                 onChange={(e) => setRfidInput(e.target.value.toUpperCase())}
                 placeholder="Scan card or enter manually"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-emerald-200 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
             
@@ -301,7 +297,7 @@ export default function AdminRFIDScanner() {
               <select
                 value={module}
                 onChange={(e) => setModule(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-emerald-200 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
               >
                 <option value="food">Food Court</option>
                 <option value="library">Library</option>
@@ -315,20 +311,20 @@ export default function AdminRFIDScanner() {
                 type="text"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-emerald-200 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
             
             <div className="flex items-end gap-2">
               <button
                 onClick={() => lookupStudent()}
-                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md"
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md"
               >
                 Lookup
               </button>
               <button
                 onClick={manualScan}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md"
+                className="px-4 py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 rounded-md border border-emerald-300"
               >
                 Scan
               </button>
@@ -337,7 +333,7 @@ export default function AdminRFIDScanner() {
 
           {/* Student Info */}
           {student && (
-            <div className="p-4 bg-green-50 rounded-lg">
+            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded">
               <h3 className="font-semibold text-green-800 mb-2">Student Found</h3>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
@@ -358,7 +354,7 @@ export default function AdminRFIDScanner() {
         </div>
 
         {/* Logs */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded border border-emerald-100 shadow-sm p-6">
           <h2 className="text-lg font-semibold mb-4">ESP32 Logs</h2>
           <div 
             ref={logRef}
@@ -380,6 +376,6 @@ export default function AdminRFIDScanner() {
           </div>
         </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 }
