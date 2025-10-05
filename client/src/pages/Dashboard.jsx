@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import Sidebar from '../shared/Sidebar.jsx';
 import { api } from '../shared/api.js';
 import { io } from 'socket.io-client';
 import PendingApprovals from '../shared/PendingApprovals.jsx';
@@ -37,31 +36,28 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      <Sidebar />
-      <div className="flex-1 p-6">
-        <h1 className="text-2xl font-semibold mb-6">Dashboard</h1>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="p-4 bg-white rounded shadow">
-            <div className="text-sm text-gray-500">Today</div>
-            <div className="text-2xl font-semibold">{stats.today ?? 0}</div>
-          </div>
-          <div className="p-4 bg-white rounded shadow">
-            <div className="text-sm text-gray-500">Pending</div>
-            <div className="text-2xl font-semibold">{stats.pending ?? 0}</div>
-          </div>
-          <div className="p-4 bg-white rounded shadow">
-            <div className="text-sm text-gray-500">Approved</div>
-            <div className="text-2xl font-semibold">{stats.approved ?? 0}</div>
-          </div>
-          <div className="p-4 bg-white rounded shadow">
-            <div className="text-sm text-gray-500">Rejected</div>
-            <div className="text-2xl font-semibold">{stats.rejected ?? 0}</div>
-          </div>
+    <div className="p-6 space-y-6">
+      <h1 className="text-2xl font-semibold">Dashboard</h1>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="p-4 bg-white rounded shadow">
+          <div className="text-sm text-gray-500">Today</div>
+          <div className="text-2xl font-semibold">{stats.today ?? 0}</div>
         </div>
-
-        <PendingApprovals />
+        <div className="p-4 bg-white rounded shadow">
+          <div className="text-sm text-gray-500">Pending</div>
+          <div className="text-2xl font-semibold">{stats.pending ?? 0}</div>
+        </div>
+        <div className="p-4 bg-white rounded shadow">
+          <div className="text-sm text-gray-500">Approved</div>
+          <div className="text-2xl font-semibold">{stats.approved ?? 0}</div>
+        </div>
+        <div className="p-4 bg-white rounded shadow">
+          <div className="text-sm text-gray-500">Rejected</div>
+          <div className="text-2xl font-semibold">{stats.rejected ?? 0}</div>
+        </div>
       </div>
+
+      <PendingApprovals />
     </div>
   );
 }

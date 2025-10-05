@@ -1,4 +1,3 @@
-import Sidebar from '../shared/Sidebar.jsx';
 import { useEffect, useState } from 'react';
 import { api } from '../shared/api.js';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -235,69 +234,66 @@ export default function AddItem() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      <Sidebar />
-      <div className="flex-1 p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold">{getTitle()}</h1>
-          <Link to={getBackLink()} className="text-blue-600 hover:underline">{getBackText()}</Link>
-        </div>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">{getTitle()}</h1>
+        <Link to={getBackLink()} className="text-blue-600 hover:underline">{getBackText()}</Link>
+      </div>
 
+      <div className="bg-white p-4 rounded shadow">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {renderFormFields()}
+        </div>
+        {error && <div className="mt-2 text-red-600 text-sm">{error}</div>}
+        <div className="mt-4">
+          <button
+            disabled={saving}
+            onClick={handleSubmit}
+            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded disabled:opacity-60"
+          >
+            {getButtonText()}
+          </button>
+        </div>
+      </div>
+
+      {/* Food-specific existing items management */}
+      {module === 'food' && (
         <div className="bg-white p-4 rounded shadow">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {renderFormFields()}
-          </div>
-          {error && <div className="mt-2 text-red-600 text-sm">{error}</div>}
-          <div className="mt-4">
-            <button
-              disabled={saving}
-              onClick={handleSubmit}
-              className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded disabled:opacity-60"
+          <h2 className="text-lg font-semibold mb-3">Increase Quantity of Existing Food</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
+            <select
+              className="border rounded px-3 py-2"
+              value={selectedItemId}
+              onChange={e => setSelectedItemId(e.target.value)}
             >
-              {getButtonText()}
+              <option value="">Select food…</option>
+              {items.map(item => (
+                <option key={item._id} value={item._id}>
+                  {item.name} — Qty {item.quantity ?? 0} — ₹{item.price ?? '-'}
+                </option>
+              ))}
+            </select>
+            <input
+              className="border rounded px-3 py-2"
+              type="number"
+              min="1"
+              placeholder="Add quantity"
+              value={incQty}
+              onChange={e => setIncQty(e.target.value)}
+            />
+            <button
+              disabled={updating}
+              onClick={increaseQuantity}
+              className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded disabled:opacity-60"
+            >
+              {updating ? 'Updating…' : 'Add to Quantity'}
             </button>
           </div>
-        </div>
-
-        {/* Food-specific existing items management */}
-        {module === 'food' && (
-          <div className="bg-white p-4 rounded shadow">
-            <h2 className="text-lg font-semibold mb-3">Increase Quantity of Existing Food</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
-              <select
-                className="border rounded px-3 py-2"
-                value={selectedItemId}
-                onChange={e => setSelectedItemId(e.target.value)}
-              >
-                <option value="">Select food…</option>
-                {items.map(item => (
-                  <option key={item._id} value={item._id}>
-                    {item.name} — Qty {item.quantity ?? 0} — ₹{item.price ?? '-'}
-                  </option>
-                ))}
-              </select>
-              <input
-                className="border rounded px-3 py-2"
-                type="number"
-                min="1"
-                placeholder="Add quantity"
-                value={incQty}
-                onChange={e => setIncQty(e.target.value)}
-              />
-              <button
-                disabled={updating}
-                onClick={increaseQuantity}
-                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded disabled:opacity-60"
-              >
-                {updating ? 'Updating…' : 'Add to Quantity'}
-              </button>
-            </div>
-            <div className="text-xs text-gray-500 mt-2">
-              This will increase the selected food's quantity by the amount specified.
-            </div>
+          <div className="text-xs text-gray-500 mt-2">
+            This will increase the selected food's quantity by the amount specified.
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

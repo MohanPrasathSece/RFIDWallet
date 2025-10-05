@@ -1,4 +1,3 @@
-import Sidebar from '../shared/Sidebar.jsx';
 import { useEffect, useState } from 'react';
 import { api } from '../shared/api.js';
 import { Link } from 'react-router-dom';
@@ -241,9 +240,7 @@ export default function Library() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      <Sidebar />
-      <div className="flex-1 p-6 space-y-6">
+    <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold">Library</h1>
           <Link to="/library/add" className="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded">Add Book</Link>
@@ -414,7 +411,6 @@ export default function Library() {
             </div>
           )}
         </div>
-      </div>
     </div>
   );
 }
