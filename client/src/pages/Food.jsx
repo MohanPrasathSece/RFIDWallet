@@ -22,6 +22,7 @@ export default function Food() {
   // Cart state: array of { _id, name, price, qty }
   const [cart, setCart] = useState([]);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [todaysSales, setTodaysSales] = useState(0);
 
   const loadHistory = async (overrides = {}) => {
     try {
@@ -291,6 +292,14 @@ export default function Food() {
         setItems(res.data || []);
       } catch (_) {}
     })();
+    (async () => {
+      try {
+        const { data } = await api.get('/admin/sales/today?module=food');
+        setTodaysSales(data.totalSales || 0);
+      } catch (e) {
+        console.error("Failed to fetch today's sales", e);
+      }
+    })();
 
     // Initial load for recent scans
     loadAllScans();
@@ -453,7 +462,12 @@ export default function Food() {
       <Sidebar />
       <div className="flex-1 p-6 space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold">Food Court</h1>
+          <div className="flex items-center gap-4">
+            <h1 className="text-2xl font-semibold">Food Court</h1>
+            <div className="text-sm font-medium text-gray-600 bg-gray-100 px-3 py-1 rounded-md">
+              Today's Sales: <span className="font-bold text-green-700">₹{todaysSales.toFixed(2)}</span>
+            </div>
+          </div>
           <Link to="/food/add" className="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded">Add Food</Link>
         </div>
         

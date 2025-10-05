@@ -20,6 +20,7 @@ export default function Store() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [walletBalance, setWalletBalance] = useState(null);
+  const [todaysSales, setTodaysSales] = useState(0);
 
   const loadHistory = async () => {
     try {
@@ -317,6 +318,14 @@ export default function Store() {
         setItems(data || []);
       } catch (_) {}
     })();
+    (async () => {
+      try {
+        const { data } = await api.get('/admin/sales/today?module=store');
+        setTodaysSales(data.totalSales || 0);
+      } catch (e) {
+        console.error("Failed to fetch today's sales", e);
+      }
+    })();
     loadAllScans();
     // Hydrate from global broadcaster cache
     try {
@@ -449,7 +458,12 @@ export default function Store() {
       <Sidebar />
       <div className="flex-1 p-6 space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold">Store</h1>
+          <div className="flex items-center gap-4">
+            <h1 className="text-2xl font-semibold">Store</h1>
+            <div className="text-sm font-medium text-gray-600 bg-gray-100 px-3 py-1 rounded-md">
+              Today's Sales: <span className="font-bold text-green-700">₹{todaysSales.toFixed(2)}</span>
+            </div>
+          </div>
           <Link to="/store/add" className="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded">Add Store Item</Link>
         </div>
 
