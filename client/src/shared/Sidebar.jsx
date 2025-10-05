@@ -1,9 +1,10 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 import { FiBook, FiCoffee, FiShoppingCart, FiSettings } from 'react-icons/fi';
 import { api } from './api.js';
 import BrandLogo from '../components/BrandLogo.jsx';
+import { useAuth } from './AuthContext.jsx';
 
 const links = [
   { to: '/library', label: 'Library', icon: <FiBook size={18} /> },
@@ -14,6 +15,8 @@ const links = [
 
 export default function Sidebar() {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const { logout } = useAuth() || {};
   const [serialConnected, setSerialConnected] = useState(false);
   const [serialStatus, setSerialStatus] = useState('Not connected');
   const [serialPort, setSerialPort] = useState(null);
@@ -230,6 +233,11 @@ export default function Sidebar() {
               </button>
             )}
           </div>
+          <button
+            onClick={() => { try { logout?.(); } catch {} navigate('/login'); }}
+            className="mt-4 w-full px-3 py-2 text-sm bg-gray-800 hover:bg-gray-700 text-gray-100 rounded-lg">
+            Logout
+          </button>
         </div>
       )}
     </aside>
