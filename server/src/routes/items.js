@@ -1,20 +1,13 @@
 const router = require('express').Router();
 const Item = require('../models/Item');
 const { auth, requireRoles } = require('../middleware/auth');
-const { notifyLibraryNewItem } = require('../services/library');
-const { notifyNewCommerceItem } = require('../services/commerce');
+// Notifications disabled: no imports
 
 // Create item (public for local use)
 router.post('/', async (req, res) => {
   try {
     const item = await Item.create(req.body);
-    // Notify students if this is a library item with topics
-    if (item?.type === 'library') {
-      try { await notifyLibraryNewItem(item); } catch (_) {}
-    }
-    if (item?.type === 'food' || item?.type === 'store') {
-      try { await notifyNewCommerceItem(item); } catch (_) {}
-    }
+    // Notifications disabled
     return res.status(201).json(item);
   } catch (e) {
     return res.status(400).json({ message: e.message });
@@ -43,12 +36,7 @@ router.put('/:id', auth(), requireRoles('admin'), async (req, res) => {
   try {
     const item = await Item.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!item) return res.status(404).json({ message: 'Not found' });
-    if (item?.type === 'library') {
-      try { await notifyLibraryNewItem(item); } catch (_) {}
-    }
-    if (item?.type === 'food' || item?.type === 'store') {
-      try { await notifyNewCommerceItem(item); } catch (_) {}
-    }
+    // Notifications disabled
     return res.json(item);
   } catch (e) {
     return res.status(400).json({ message: e.message });
