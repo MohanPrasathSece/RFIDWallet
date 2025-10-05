@@ -10,7 +10,6 @@ const studentSchema = new mongoose.Schema(
     rfid_uid: { type: String, required: true, unique: true, index: true },
     RFIDNumber: { type: String, unique: true, sparse: true },
     mobileNumber: { type: String },
-    telegramUserID: { type: String },
     department: { type: String },
     walletBalance: { type: Number, default: 0 },
     // Student can belong to multiple modules; default to all

@@ -1,4 +1,3 @@
-import Sidebar from '../shared/Sidebar.jsx';
 import { useEffect, useMemo, useState } from 'react';
 import { api } from '../shared/api.js';
 import { io } from 'socket.io-client';
@@ -454,9 +453,7 @@ export default function Store() {
   }, [student, studentId]);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      <Sidebar />
-      <div className="flex-1 p-6 space-y-6">
+    <>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <h1 className="text-2xl font-semibold">Store</h1>
@@ -639,7 +636,6 @@ export default function Store() {
             </div>
           </div>
         </div>
-      </div>
-    </div>
+    </>
   );
 }

@@ -1,4 +1,3 @@
-import AdminLayout from '../shared/ui/AdminLayout.jsx';
 import Button from '../shared/ui/Button.jsx';
 import Card from '../shared/ui/Card.jsx';
 import StatCard from '../shared/ui/StatCard.jsx';
@@ -523,7 +522,8 @@ export default function Admin() {
   return (
     // Guard: only admins may access this page
     !user || user.role !== 'admin' ? <Navigate to="/login" replace /> : (
-    <AdminLayout title="Admin Dashboard" subtitle="Manage students, wallets and RFID">
+    <>
+
       {/* Selected student banner */}
       {selected && (
         <div className="px-4 py-3 bg-green-50 border border-green-200 rounded flex items-center justify-between">
@@ -637,7 +637,7 @@ export default function Admin() {
             </div>
           </div>
       </div>
-    </AdminLayout>
-    )
+    </>
+  )
   );
 }

@@ -1,7 +1,6 @@
 const Transaction = require('../models/Transaction');
 const Item = require('../models/Item');
 const Student = require('../models/Student');
-const { sendPlainMessage } = require('./telegram');
 const { sendEmail } = require('./email');
 
 // Notify students when a new library item is added/updated with topics
@@ -24,15 +23,7 @@ async function notifyLibraryNewItem(item) {
       item: { $in: relatedIds },
     }).select('student').populate('student');
 
-    const notified = new Set();
-    for (const b of borrows) {
-      const st = b.student;
-      if (!st || !st.telegramUserID) continue;
-      if (notified.has(st.telegramUserID)) continue;
-      notified.add(st.telegramUserID);
-      const text = `New library item added: ${item.name}. Topics: ${(item.topics || []).join(', ')}. Check it out!`;
-      try { await sendPlainMessage(st.telegramUserID, text); } catch (_) {}
-    }
+    // Telegram notifications removed
   } catch (e) {
     console.error('notifyLibraryNewItem error:', e.message);
   }
@@ -92,9 +83,7 @@ module.exports = {
 };
 
 // ----------------- Due Reminders -----------------
-// Find approved library borrows that are due soon or overdue and notify students.
-// This implementation sends Telegram messages if telegramUserID is present.
-// You can extend with SMTP to email if desired.
+// Find approved library borrows that are due soon or overdue and notify students via email.
 
 async function runLibraryDueReminders() {
   const now = new Date();
@@ -125,11 +114,6 @@ async function runLibraryDueReminders() {
     const baseMsg = kind === 'overdue'
       ? `Reminder: Your borrowed book "${itemName}" is OVERDUE. Due on ${dueStr}. Please return it as soon as possible.`
       : `Reminder: Your borrowed book "${itemName}" is due soon. Due on ${dueStr}. Please return on time.`;
-
-    // Telegram (if available)
-    if (st?.telegramUserID) {
-      try { await sendPlainMessage(st.telegramUserID, baseMsg); } catch (_) {}
-    }
 
     // Email (if available and SMTP configured)
     if (st?.email) {

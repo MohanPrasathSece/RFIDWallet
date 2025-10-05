@@ -26,7 +26,6 @@ const cookieParser = require('cookie-parser');
 const { Server } = require('socket.io');
 const connectDB = require('./config/db');
 const mongoose = require('mongoose');
-const { initTelegram } = require('./services/telegram');
 const Item = require('./models/Item');
 const Student = require('./models/Student');
 const { runLibraryDueReminders } = require('./services/library');
@@ -165,7 +164,7 @@ mongoose.connection.once('connected', async () => {
       const hasLegacy = indexes.some(ix => ix.name === 'RFIDNumber_1');
       if (hasLegacy) {
         await mongoose.connection.db.collection('students').dropIndex('RFIDNumber_1');
-        console.log('Dropped legacy index RFIDNumber_1');
+        // legacy index dropped silently
       }
     } catch (e) {
       console.warn('Index cleanup skipped:', e.message);
@@ -174,7 +173,7 @@ mongoose.connection.once('connected', async () => {
     // Ensure indexes match the schema (adds sparse unique on legacy RFIDNumber)
     try {
       await Student.syncIndexes();
-      console.log('Student indexes synced');
+      // student indexes synced silently
     } catch (e) {
       console.warn('Student syncIndexes failed:', e.message);
     }
@@ -347,8 +346,7 @@ app.use('/api/students', studentRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/esp32', esp32Routes);
 
-// Initialize Telegram bot integration (webhook or polling)
-initTelegram(app, io);
+// Telegram integration removed
 
 // Initialize ESP32 Auto-Upload and Serial Service
 let esp32Service = null;

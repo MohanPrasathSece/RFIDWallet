@@ -68,13 +68,7 @@ router.post('/', async (req, res) => {
     // Default path: create as-is
     const tx = await Transaction.create(body);
     req.app.get('io').emit('transaction:new', tx);
-    // If created directly in approved state, apply effects (e.g., library borrow/return)
-    try {
-      if (tx?.status === 'approved') {
-        const { applyApprovalEffects } = require('../services/approvals');
-        await applyApprovalEffects(tx);
-      }
-    } catch (_) {}
+    // Approval workflow removed; effects are handled inline where necessary
     return res.status(201).json(tx);
   } catch (e) {
     return res.status(400).json({ message: e.message });
@@ -119,10 +113,7 @@ router.put('/:id', async (req, res) => {
     const tx = await Transaction.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!tx) return res.status(404).json({ message: 'Not found' });
     req.app.get('io').emit('transaction:update', tx);
-    if (before && req.body.status && before.status !== req.body.status) {
-      const { onTransactionStatusChange } = require('../services/approvals');
-      await onTransactionStatusChange(tx._id, before.status, req.body.status);
-    }
+    // Approval workflow removed; no status change side-effects
     return res.json(tx);
   } catch (e) {
     return res.status(500).json({ message: e.message });
