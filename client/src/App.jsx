@@ -28,7 +28,7 @@ export default function App() {
       {/* Routes without the sidebar layout */}
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
-
+      <Route path="/student" element={<StudentDashboard />} />
       {/* Routes with the sidebar layout */}
       <Route element={<MainLayout />}>
         <Route path="/library" element={<Library />} />
@@ -42,7 +42,6 @@ export default function App() {
         <Route path="/store/history" element={<StoreHistory />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/admin/students" element={<RecentStudents />} />
-        <Route path="/student" element={<StudentDashboard />} />
         <Route path="/student/history" element={<StudentHistory />} />
         <Route path="/student/purchase/:receiptId" element={<StudentPurchaseDetails />} />
         <Route path="/student/profile" element={<StudentProfile />} />

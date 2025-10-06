@@ -242,8 +242,11 @@ export default function Library() {
   return (
     <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold">Library</h1>
-          <Link to="/library/add" className="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded">Add Book</Link>
+          <div>
+            <h1 className="text-2xl font-semibold">Library</h1>
+            <p className="text-sm text-gray-500">Borrow, return and manage your library collection</p>
+          </div>
+          <Link to="/library/add" className="px-8 py-2 bg-green-600 hover:bg-green-700 text-white rounded shadow">Add Book</Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-white p-4 rounded shadow">
@@ -271,31 +274,47 @@ export default function Library() {
         </div>
 
         <div className="bg-white p-4 rounded shadow">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Roll Number</label>
-              <input value={rollNo} onChange={e => setRollNo(e.target.value)} placeholder="Enter Roll Number"
-                     className="w-full border rounded px-3 py-2" />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">RFID Number</label>
-              <div className="flex items-center gap-2">
+          <div className="flex items-start gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 flex-1">
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">Roll Number</label>
+                <input value={rollNo} onChange={e => setRollNo(e.target.value)} placeholder="Enter Roll Number"
+                       className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">RFID Number</label>
                 <input value={rfid} onChange={e => setRfid(e.target.value)} placeholder="Scan or enter RFID"
-                       className="w-full border rounded px-3 py-2" />
+                       className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <div className="flex gap-2 pt-6 md:pt-0">
+                <button onClick={findStudent} className="px-2.5 py-0.5 text-xs leading-none bg-emerald-600 hover:bg-emerald-700 text-white rounded">Find</button>
+                <button onClick={loadData} className="px-2.5 py-0.5 text-xs leading-none bg-blue-600 hover:bg-blue-700 text-white rounded">Load</button>
+                <button onClick={() => { setRfid(''); setRollNo(''); setStudentId(''); setStudent(null); setActive([]); setHistory([]); setError(''); try { localStorage.removeItem('last_student'); } catch {}; try { window?.socket?.emit?.('ui:rfid-clear', {}); } catch {}; try { window.dispatchEvent(new CustomEvent('ui:rfid-clear', { detail: {} })); } catch {} }}
+                        className="px-2.5 py-0.5 text-xs leading-none bg-gray-100 hover:bg-gray-200 rounded border">Clear</button>
               </div>
             </div>
-            <div className="flex gap-2">
-              <button onClick={findStudent} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded">Find Student</button>
-              <button onClick={loadData} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">Load Data</button>
-              <button onClick={() => { setRfid(''); setRollNo(''); setStudentId(''); setStudent(null); setActive([]); setHistory([]); setError(''); try { localStorage.removeItem('last_student'); } catch {}; try { window?.socket?.emit?.('ui:rfid-clear', {}); } catch {}; try { window.dispatchEvent(new CustomEvent('ui:rfid-clear', { detail: {} })); } catch {} }}
-                      className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded">Clear</button>
+            <div className="hidden md:block w-px bg-gray-100" />
+            <div className="min-w-[260px]">
+              <div className="text-sm font-semibold text-gray-700 mb-2">Student</div>
+              {!student ? (
+                <div className="text-gray-500 text-sm">No student selected</div>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+                    {String(student.name || '?').charAt(0)}
+                  </div>
+                  <div>
+                    <div className="font-medium">{student.name}</div>
+                    <div className="text-xs text-gray-500">{student.rollNo} · {student.department || '-'}</div>
+                  </div>
+                </div>
+              )}
             </div>
-            {loading && <div className="text-gray-500">Loading...</div>}
           </div>
-          {error && <div className="mt-2 text-red-600 text-sm">{error}</div>}
-          {student && (
-            <div className="mt-3 text-sm text-gray-700">Student: <b>{student.name}</b> · Dept: {student.department || '-'} · Modules: {Array.isArray(student.modules) && student.modules.length ? student.modules.join(', ') : '-'}</div>
-          )}
+          <div className="mt-2 flex items-center gap-3">
+            {loading && <div className="text-gray-500 text-sm">Loading...</div>}
+            {error && <div className="text-red-600 text-sm">{error}</div>}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -308,8 +327,8 @@ export default function Library() {
               <div className="text-gray-500">No active borrows.</div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="min-w-full text-sm">
-                  <thead className="bg-gray-50">
+                <table className="min-w-full text-sm table-fixed">
+                  <thead className="bg-gray-50 sticky top-0 z-10">
                     <tr>
                       <th className="px-3 py-2 text-left">Item</th>
                       <th className="px-3 py-2 text-left">Topics</th>
@@ -319,16 +338,16 @@ export default function Library() {
                       <th className="px-3 py-2 text-left">Actions</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y">
                     {active.map(({ item, count, last, dueDate }, idx) => (
-                      <tr key={idx} className="border-t">
+                      <tr key={idx} className="hover:bg-gray-50">
                         <td className="px-3 py-2">{item?.name || '-'}</td>
                         <td className="px-3 py-2 text-gray-600">{(item?.topics || []).join(', ') || '-'}</td>
                         <td className="px-3 py-2">{count}</td>
                         <td className="px-3 py-2">{last ? new Date(last).toLocaleString() : '-'}</td>
                         <td className="px-3 py-2">{dueDate ? new Date(dueDate).toLocaleDateString() : '-'}</td>
                         <td className="px-3 py-2">
-                          <button onClick={() => returnBook(item?._id)} className="px-2 py-1 text-xs bg-emerald-600 hover:bg-emerald-700 text-white rounded">Mark Returned</button>
+                          <button onClick={() => returnBook(item?._id)} className="px-2 py-1 text-xs bg-emerald-600 hover:bg-emerald-700 text-white rounded shadow">Mark Returned</button>
                         </td>
                       </tr>
                     ))}
@@ -347,22 +366,28 @@ export default function Library() {
               <div className="text-gray-500">No history.</div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="min-w-full text-sm">
-                  <thead className="bg-gray-50">
+                <table className="min-w-full text-sm table-fixed">
+                  <thead className="bg-gray-50 sticky top-0 z-10">
                     <tr>
                       <th className="px-3 py-2 text-left">When</th>
                       <th className="px-3 py-2 text-left">Action</th>
                       <th className="px-3 py-2 text-left">Item</th>
                       <th className="px-3 py-2 text-left">Notes</th>
+                      <th className="px-3 py-2 text-left">Status</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y">
                     {history.map(tx => (
-                      <tr key={tx._id} className="border-t">
+                      <tr key={tx._id} className="hover:bg-gray-50">
                         <td className="px-3 py-2">{new Date(tx.createdAt).toLocaleString()}</td>
                         <td className="px-3 py-2 capitalize">{tx.action}</td>
                         <td className="px-3 py-2">{tx.item?.name || '-'}</td>
                         <td className="px-3 py-2 text-gray-600">{tx.notes || '-'}</td>
+                        <td className="px-3 py-2">
+                          <span className={`px-2 py-0.5 rounded text-xs font-medium ${tx.status === 'approved' ? 'bg-emerald-100 text-emerald-700' : tx.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
+                            {tx.status || '-'}
+                          </span>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -372,45 +397,9 @@ export default function Library() {
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded shadow">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-lg font-semibold">Recent Scans (Library)</h2>
-            <div className="flex items-center gap-2">
-              <button onClick={loadAllScans} className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded">Refresh</button>
-              <Link to="/library/scans" className="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded">All Scans</Link>
-            </div>
-          </div>
-          {allHistory.length === 0 ? (
-            <div className="text-gray-500">No scans yet.</div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full text-sm">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-3 py-2 text-left">When</th>
-                    <th className="px-3 py-2 text-left">Action</th>
-                    <th className="px-3 py-2 text-left">Item</th>
-                    <th className="px-3 py-2 text-left">Student</th>
-                    <th className="px-3 py-2 text-left">RFID</th>
-                    <th className="px-3 py-2 text-left">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {allHistory.slice(0,5).map(row => (
-                    <tr key={row._id} className="border-t">
-                      <td className="px-3 py-2">{new Date(row.createdAt).toLocaleString()}</td>
-                      <td className="px-3 py-2 capitalize">{row.action}</td>
-                      <td className="px-3 py-2">{row.item?.name || '-'}</td>
-                      <td className="px-3 py-2">{row.student?.name || '-'}</td>
-                      <td className="px-3 py-2">{row.student?.rfid || '-'}</td>
-                      <td className="px-3 py-2 capitalize">{row.status || '-'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+        <div className="flex justify-end">
+          <Link to="/library/scans" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded shadow">View All Scans</Link>
         </div>
-    </div>
+      </div>
   );
 }

@@ -234,7 +234,7 @@ export default function Sidebar() {
             )}
           </div>
           <button
-            onClick={() => { try { logout?.(); } catch {} navigate('/login'); }}
+            onClick={() => { try { logout?.(); } catch {} navigate('/'); }}
             className="mt-4 w-full px-3 py-2 text-sm bg-gray-800 hover:bg-gray-700 text-gray-100 rounded-lg">
             Logout
           </button>
