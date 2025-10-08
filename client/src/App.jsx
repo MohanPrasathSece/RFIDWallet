@@ -29,6 +29,11 @@ export default function App() {
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/student" element={<StudentDashboard />} />
+      <Route path="/student/history" element={<StudentHistory />} />
+      <Route path="/student/purchase/:receiptId" element={<StudentPurchaseDetails />} />
+      <Route path="/student/profile" element={<StudentProfile />} />
+      <Route path="/student/library" element={<StudentLibrary />} />
+      <Route path="/student/analytics" element={<StudentAnalytics />} />
       {/* Routes with the sidebar layout */}
       <Route element={<MainLayout />}>
         <Route path="/library" element={<Library />} />
@@ -42,11 +47,6 @@ export default function App() {
         <Route path="/store/history" element={<StoreHistory />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/admin/students" element={<RecentStudents />} />
-        <Route path="/student/history" element={<StudentHistory />} />
-        <Route path="/student/purchase/:receiptId" element={<StudentPurchaseDetails />} />
-        <Route path="/student/profile" element={<StudentProfile />} />
-        <Route path="/student/library" element={<StudentLibrary />} />
-        <Route path="/student/analytics" element={<StudentAnalytics />} />
         <Route path="/rfid-scanner" element={<RFIDScanner />} />
         <Route path="/admin/rfid-scanner" element={<AdminRFIDScanner />} />
         <Route path="/admin/esp32-manager" element={<ESP32Manager />} />

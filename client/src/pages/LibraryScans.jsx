@@ -20,48 +20,71 @@ export default function LibraryScans() {
   useEffect(() => { load(); }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto p-6 space-y-4">
+    <div className="h-screen bg-white p-4 flex flex-col">
+      <div className="w-full flex flex-col h-full space-y-4">
+        {/* Header */}
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold">All Scans (Library)</h1>
-          <div className="flex items-center gap-2">
-            <button onClick={load} className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 rounded">Refresh</button>
-            <Link to="/library" className="px-3 py-1.5 text-sm bg-white border rounded hover:bg-gray-50">Back to Library</Link>
+          <div>
+            <h1 className="text-xl font-semibold text-gray-800">Library Transaction History</h1>
+            <p className="text-xs text-gray-500">Overview of all library activities</p>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={load} className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm">Refresh</button>
+            <Link to="/library" className="px-3 py-2 border rounded text-sm">Back to Library</Link>
           </div>
         </div>
-        {error && <div className="text-sm text-red-600">{error}</div>}
-        {loading ? (
-          <div className="text-gray-500">Loading…</div>
-        ) : rows.length === 0 ? (
-          <div className="text-gray-500">No scans yet.</div>
-        ) : (
-          <div className="overflow-x-auto bg-white rounded shadow">
-            <table className="min-w-full text-sm">
+
+        {/* Error Message */}
+        {error && (
+          <div className="p-3 border rounded text-sm text-red-600 bg-red-50">
+            {error}
+          </div>
+        )}
+
+        {/* Content */}
+        <div className="border rounded overflow-hidden flex-grow flex flex-col">
+          {loading ? (
+            <div className="p-6 text-center text-sm text-gray-600">Loading...</div>
+          ) : rows.length === 0 ? (
+            <div className="p-6 text-center text-sm text-gray-600">No transaction history.</div>
+          ) : (
+            <div className="overflow-auto flex-grow">
+              <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-3 py-2 text-left">When</th>
-                  <th className="px-3 py-2 text-left">Action</th>
-                  <th className="px-3 py-2 text-left">Item</th>
-                  <th className="px-3 py-2 text-left">Student</th>
-                  <th className="px-3 py-2 text-left">RFID</th>
-                  <th className="px-3 py-2 text-left">Status</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Item</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Student</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="bg-white divide-y divide-gray-200">
                 {rows.map((row) => (
-                  <tr key={row._id} className="border-t">
-                    <td className="px-3 py-2">{new Date(row.createdAt).toLocaleString()}</td>
-                    <td className="px-3 py-2 capitalize">{row.action}</td>
-                    <td className="px-3 py-2">{row.item?.name || '-'}</td>
-                    <td className="px-3 py-2">{row.student?.name || '-'}</td>
-                    <td className="px-3 py-2">{row.student?.rfid || '-'}</td>
-                    <td className="px-3 py-2 capitalize">{row.status || '-'}</td>
+                  <tr key={row._id}>
+                    <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">{row.item?.name || 'N/A'}</td>
+                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-600">{row.student?.name || 'N/A'}</td>
+                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-600 capitalize">{row.action}</td>
+                    <td className="px-4 py-2 whitespace-nowrap">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        row.status === 'approved' ? 'bg-green-100 text-green-800' :
+                        row.status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {row.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-600">{new Date(row.createdAt).toLocaleString()}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
-        )}
+            </div>
+          )}
+        </div>
+
+        <div className="text-center text-xs text-gray-500">
+          <p>Showing {rows.length} transactions.</p>
+        </div>
       </div>
     </div>
   );
