@@ -2,9 +2,10 @@ export default function BrandLogo({
   size = 48,
   className = '',
   showText = false,
-  text = 'RFID Wallet',
+  text = 'CamCards',
   src = '/logo.png',
   alt = 'App logo',
+  rounded = true,
 }) {
   const px = typeof size === 'number' ? `${size}px` : size;
   return (
@@ -12,7 +13,7 @@ export default function BrandLogo({
       <img
         src={src}
         alt={alt}
-        className="rounded-full object-cover"
+        className={`${rounded ? 'rounded-full' : ''} object-cover`.trim()}
         style={{ width: px, height: px }}
       />
       {showText && (

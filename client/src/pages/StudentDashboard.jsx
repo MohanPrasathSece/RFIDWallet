@@ -1,17 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { api } from '../shared/api';
 import { io } from 'socket.io-client';
 import { useAuth } from '../shared/AuthContext.jsx';
 import BrandLogo from '../components/BrandLogo.jsx';
 
 function StudentDashboard() {
-  const brandName = import.meta?.env?.VITE_BRAND_NAME || 'RFID Wallet';
+  const brandName = import.meta?.env?.VITE_BRAND_NAME || 'CamCards';
   const navigate = useNavigate();
   const { logout } = useAuth();
   const [profile, setProfile] = useState({ name: '', rfid_uid: '' });
   const [balance, setBalance] = useState(0);
   const [history, setHistory] = useState([]);
+//{{ ... }}
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');

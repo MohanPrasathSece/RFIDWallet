@@ -6,7 +6,7 @@ import BrandLogo from '../components/BrandLogo.jsx';
 export default function Landing() {
   const { login, logout, token } = useAuth();
   const navigate = useNavigate();
-  const brandName = import.meta?.env?.VITE_BRAND_NAME || 'RFID Wallet';
+  const brandName = import.meta?.env?.VITE_BRAND_NAME || 'CamCards';
   const [mounted, setMounted] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
   const [showStudent, setShowStudent] = useState(false);
@@ -96,8 +96,8 @@ export default function Landing() {
       {/* Navigation - Desktop Only */}
       <nav className={`hidden lg:flex relative z-10 items-center justify-between px-4 py-2 transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
         <div className="flex items-center space-x-2">
-          <BrandLogo size={64} />
-          <span className="text-green-800 font-bold text-base">RFID Wallet</span>
+          <BrandLogo size={80} rounded={false} />
+          <span className="text-green-800 font-bold text-2xl">{brandName}</span>
         </div>
       </nav>
 
@@ -108,9 +108,9 @@ export default function Landing() {
         <div className="lg:hidden flex-1 flex flex-col px-6 py-8">
           {/* Brand in Top Left */}
           <div className="flex items-center mb-8">
-            <BrandLogo size={44} className="mr-3" />
+            <BrandLogo size={56} className="mr-3" rounded={false} />
             <div>
-              <h1 className="text-xl font-bold text-green-800 tracking-tight leading-snug">RFID Wallet</h1>
+              <h1 className="text-2xl font-bold text-green-800 tracking-tight leading-snug">{brandName}</h1>
               <p className="text-sm text-green-700 font-medium">Digital Payment System</p>
             </div>
           </div>

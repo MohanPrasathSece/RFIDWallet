@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../shared/api.js';
 import { io } from 'socket.io-client';
 import PendingApprovals from '../shared/PendingApprovals.jsx';
+import StatCard from '../shared/ui/StatCard.jsx';
 
 export default function Dashboard() {
   const [stats, setStats] = useState({ users: 0, today: 0, pending: 0, notifications: 0, approved: 0, rejected: 0 });
@@ -36,37 +37,16 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-semibold">Dashboard</h1>
+    <div className="p-4 space-y-4">
+      <h1 className="text-xl font-semibold text-gray-800">Dashboard</h1>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="p-4 bg-white rounded shadow">
-          <div className="text-sm text-gray-500">Today</div>
-          <div className="text-2xl font-semibold">{stats.today ?? 0}</div>
-        </div>
-        <div className="p-4 bg-white rounded shadow">
-          <div className="text-sm text-gray-500">Pending</div>
-          <div className="text-2xl font-semibold">{stats.pending ?? 0}</div>
-        </div>
-        <div className="p-4 bg-white rounded shadow">
-          <div className="text-sm text-gray-500">Approved</div>
-          <div className="text-2xl font-semibold">{stats.approved ?? 0}</div>
-        </div>
-        <div className="p-4 bg-white rounded shadow">
-          <div className="text-sm text-gray-500">Rejected</div>
-          <div className="text-2xl font-semibold">{stats.rejected ?? 0}</div>
-        </div>
+        <StatCard title="Today" value={stats.today ?? 0} />
+        <StatCard title="Pending" value={stats.pending ?? 0} />
+        <StatCard title="Approved" value={stats.approved ?? 0} />
+        <StatCard title="Rejected" value={stats.rejected ?? 0} />
       </div>
 
       <PendingApprovals />
-    </div>
-  );
-}
-
-function StatCard({ title, value }) {
-  return (
-    <div className="bg-white p-4 rounded shadow">
-      <div className="text-gray-500 text-sm">{title}</div>
-      <div className="text-3xl font-bold">{value}</div>
     </div>
   );
 }

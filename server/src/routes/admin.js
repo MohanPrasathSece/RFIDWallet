@@ -1,3 +1,7 @@
+const multer = require('multer');
+const XLSX = require('xlsx');
+const path = require('path');
+const fs = require('fs').promises;
 const router = require('express').Router();
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
@@ -68,8 +72,39 @@ router.get('/students/:id', async (req, res) => {
   }
 });
 
-// All admin routes require admin role
-router.use(auth(), requireRoles('admin'));
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/');
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+        file.mimetype === 'application/vnd.ms-excel') {
+      cb(null, true);
+    } else {
+      cb(new Error('Only Excel files are allowed'), false);
+    }
+  },
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10MB limit
+  }
+});
+
+// Ensure uploads directory exists
+(async () => {
+  try {
+    await fs.mkdir('uploads', { recursive: true });
+  } catch (e) {
+    console.log('Uploads directory exists or cannot be created:', e.message);
+  }
+})();
 
 // Activate/Deactivate a student (admin only)
 router.put('/students/:id/active', async (req, res) => {
@@ -295,8 +330,158 @@ router.post('/students', async (req, res) => {
   }
 });
 
-// List students (basic)
-router.get('/students', async (req, res) => {
-  const students = await Student.find().sort({ createdAt: -1 });
-  return res.json(students);
+// Bulk create students from Excel file
+router.post('/students/bulk', upload.single('excel'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No Excel file provided' });
+    }
+
+    const filePath = req.file.path;
+
+    // Read Excel file
+    const workbook = XLSX.readFile(filePath);
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+
+    // Convert to JSON
+    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+    if (jsonData.length < 2) {
+      return res.status(400).json({ message: 'Excel file must contain at least a header row and one data row' });
+    }
+
+    // Extract headers (first row)
+    const headers = jsonData[0].map(header => header?.toString().toLowerCase().trim());
+
+    // Expected columns
+    const expectedColumns = ['name', 'rollno', 'email', 'mobilenumber', 'rfidnumber', 'department', 'password'];
+
+    // Validate headers
+    const missingColumns = expectedColumns.filter(col => !headers.includes(col));
+    if (missingColumns.length > 0) {
+      return res.status(400).json({
+        message: `Missing required columns: ${missingColumns.join(', ')}. Expected: ${expectedColumns.join(', ')}`
+      });
+    }
+
+    // Get column indices
+    const getColumnIndex = (colName) => headers.findIndex(header => header === colName);
+
+    const studentsToCreate = [];
+    const errors = [];
+    const duplicates = [];
+
+    // Process each row (skip header)
+    for (let i = 1; i < jsonData.length; i++) {
+      const row = jsonData[i];
+
+      if (!row || row.length === 0) continue; // Skip empty rows
+
+      const studentData = {
+        name: row[getColumnIndex('name')]?.toString().trim(),
+        rollNo: row[getColumnIndex('rollno')]?.toString().trim(),
+        email: row[getColumnIndex('email')]?.toString().trim(),
+        mobileNumber: row[getColumnIndex('mobilenumber')]?.toString().trim(),
+        rfid_uid: row[getColumnIndex('rfidnumber')]?.toString().trim(),
+        department: row[getColumnIndex('department')]?.toString().trim(),
+        password: row[getColumnIndex('password')]?.toString().trim()
+      };
+
+      // Validate required fields
+      const missingFields = expectedColumns.filter(col => !studentData[col]);
+      if (missingFields.length > 0) {
+        errors.push(`Row ${i + 1}: Missing required fields: ${missingFields.join(', ')}`);
+        continue;
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(studentData.email)) {
+        errors.push(`Row ${i + 1}: Invalid email format`);
+        continue;
+      }
+
+      // Validate mobile number format
+      const phone = studentData.mobileNumber;
+      if (!/^\+?\d{7,15}$/.test(phone)) {
+        errors.push(`Row ${i + 1}: Invalid mobile number format`);
+        continue;
+      }
+
+      // Check for duplicates
+      const existingStudent = await Student.findOne({
+        $or: [
+          { rollNo: studentData.rollNo },
+          { rfid_uid: studentData.rfid_uid },
+          { email: studentData.email }
+        ]
+      });
+
+      if (existingStudent) {
+        let duplicateField = '';
+        if (existingStudent.rollNo === studentData.rollNo) duplicateField = 'Roll No';
+        else if (existingStudent.rfid_uid === studentData.rfid_uid) duplicateField = 'RFID Number';
+        else if (existingStudent.email === studentData.email) duplicateField = 'Email';
+
+        duplicates.push(`Row ${i + 1}: ${duplicateField} already exists (${studentData.name})`);
+        continue;
+      }
+
+      studentsToCreate.push(studentData);
+    }
+
+    if (studentsToCreate.length === 0) {
+      return res.status(400).json({
+        message: 'No valid students to create',
+        errors,
+        duplicates
+      });
+    }
+
+    // Create students in bulk
+    const createdStudents = [];
+    for (const studentData of studentsToCreate) {
+      try {
+        const passwordHash = await bcrypt.hash(studentData.password, 10);
+        const student = await Student.create({
+          name: studentData.name,
+          rollNo: studentData.rollNo,
+          email: studentData.email,
+          mobileNumber: studentData.mobileNumber,
+          rfid_uid: studentData.rfid_uid,
+          department: studentData.department,
+          passwordHash
+        });
+        createdStudents.push(student);
+      } catch (error) {
+        errors.push(`Failed to create student ${studentData.name}: ${error.message}`);
+      }
+    }
+
+    // Clean up uploaded file
+    try {
+      await fs.unlink(filePath);
+    } catch (cleanupError) {
+      console.error('Failed to clean up uploaded file:', cleanupError);
+    }
+
+    res.json({
+      message: `Successfully created ${createdStudents.length} students`,
+      createdCount: createdStudents.length,
+      totalProcessed: jsonData.length - 1,
+      errors,
+      duplicates,
+      createdStudents: createdStudents.map(s => ({
+        id: s._id,
+        name: s.name,
+        rollNo: s.rollNo,
+        rfid_uid: s.rfid_uid
+      }))
+    });
+
+  } catch (error) {
+    console.error('Bulk student creation error:', error);
+    res.status(500).json({ message: 'Failed to process Excel file', error: error.message });
+  }
 });

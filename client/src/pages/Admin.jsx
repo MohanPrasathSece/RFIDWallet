@@ -14,15 +14,10 @@ export default function Admin() {
   const [form, setForm] = useState({ name: '', rollNo: '', email: '', mobileNumber: '', password: '', RFIDNumber: '', department: '' });
   const [selected, setSelected] = useState(null);
   const [newStudentPassword, setNewStudentPassword] = useState('');
-  const [walletInputs, setWalletInputs] = useState({});
-  const [rfidReader, setRfidReader] = useState(null);
-  // Web Serial state for inline ESP32 connect
-  const [serialPort, setSerialPort] = useState(null);
-  const [serialConnected, setSerialConnected] = useState(false);
-  const [serialStatus, setSerialStatus] = useState('Not connected');
-  const socketRef = useRef(null);
-  const { logout, user } = useAuth();
-  const navigate = useNavigate();
+  const [excelFile, setExcelFile] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(null);
+  const [uploadResult, setUploadResult] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
   // Tabs: 'add' | 'edit'
   const [activeTab, setActiveTab] = useState('add');
   // Edit tab find bar
@@ -506,16 +501,43 @@ export default function Admin() {
     }
   };
 
-  const disconnectESP32 = async () => {
+  const handleExcelUpload = async (e) => {
+    e.preventDefault();
+    if (!excelFile) {
+      setError('Please select an Excel file');
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadProgress(0);
+    setUploadResult(null);
+    setError('');
+
+    const formData = new FormData();
+    formData.append('excel', excelFile);
+
     try {
-      if (rfidReader) { await rfidReader.cancel(); setRfidReader(null); }
-      if (serialPort) { await serialPort.close(); setSerialPort(null); }
-      setSerialConnected(false);
-      setSerialStatus('Disconnected');
-      try { socketRef.current?.emit('esp32:web-serial', { event: 'disconnected' }); } catch {}
-    } catch (err) {
-      setError(`Disconnect error: ${err.message}`);
-      try { socketRef.current?.emit('esp32:web-serial', { event: 'disconnect-error', message: err.message }); } catch {}
+      const response = await api.post('/admin/students/bulk', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          setUploadProgress(percentCompleted);
+        },
+      });
+
+      setUploadResult(response.data);
+      if (response.data.createdCount > 0) {
+        // Refresh students list
+        await loadStudents();
+      }
+    } catch (error) {
+      setError(error?.response?.data?.message || 'Failed to upload Excel file');
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(null);
+      setExcelFile(null);
     }
   };
 
@@ -545,99 +567,106 @@ export default function Admin() {
           <StatCard title="ESP32" value={serialConnected ? 'Connected' : 'Not connected'} hint={serialStatus} icon="🔌" />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-white p-4 rounded border border-green-100 shadow-sm overflow-x-auto">
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-lg font-semibold">{selected ? 'Edit Student' : 'Add Student (by RFID)'}</h2>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <input className="border rounded px-3 py-2" placeholder="Name" value={form.name} onChange={e => setForm(v => ({ ...v, name: e.target.value }))} />
-                <input className="border rounded px-3 py-2" placeholder="Roll No" value={form.rollNo} onChange={e => setForm(v => ({ ...v, rollNo: e.target.value }))} />
-                <input type="email" className="border rounded px-3 py-2" placeholder="Email ID" value={form.email} onChange={e => setForm(v => ({ ...v, email: e.target.value }))} />
-                <input className="border rounded px-3 py-2" placeholder="Mobile Number" value={form.mobileNumber} onChange={e => setForm(v => ({ ...v, mobileNumber: e.target.value }))} />
-                <input type="text" className="border rounded px-3 py-2" placeholder="New Password" value={form.password} onChange={e => setForm(v => ({ ...v, password: e.target.value }))} />
-                <input className="border rounded px-3 py-2" placeholder="Department" value={form.department} onChange={e => setForm(v => ({ ...v, department: e.target.value }))} />
-                <div className="flex items-center gap-2">
-                  <input
-                    className="border rounded px-3 py-2 w-full"
-                    placeholder="RFID Number"
-                    value={form.RFIDNumber}
-                    onChange={e => setForm(v => ({ ...v, RFIDNumber: e.target.value }))}
-                  />
-                </div>
-              </div>
-              {error && <div className="mt-2 text-red-600 text-sm">{error}</div>}
-              <div className="mt-3 flex items-center gap-2 flex-wrap">
-                {selected ? (
-                  <>
-                    <Button disabled={saving} onClick={updateStudent}>
-                      {saving ? 'Saving...' : 'Save Changes'}
-                    </Button>
-                    {/* Inline password reset */}
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        placeholder="Set new password"
-                        value={newStudentPassword}
-                        onChange={e=>setNewStudentPassword(e.target.value)}
-                        className="border rounded px-3 py-2 text-sm"
-                      />
-                      <button
-                        type="button"
-                        onClick={resetStudentPassword}
-                        className="px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded text-sm"
-                        disabled={saving}
-                      >
-                        Reset Password
-                      </button>
-                    </div>
-                    <Button type="button" variant="outline" onClick={() => { setSelected(null); setActiveTab('add'); setForm({ name: '', rollNo: '', email: '', mobileNumber: '', password: '', RFIDNumber: '', department: '' }); }}>
-                      Add New
-                    </Button>
-                  </>
-                ) : (
-                  <Button disabled={saving} onClick={addStudent}>{saving ? 'Saving...' : 'Add Student'}</Button>
-                )}
-              </div>
+          <div className="bg-white p-4 rounded border border-gray-200 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-semibold text-gray-900">Bulk Student Upload</h2>
             </div>
 
-            <div className="bg-white p-4 rounded border border-green-100 shadow-sm">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-semibold text-gray-900">Recent Students</h2>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 border text-gray-700">{students.length}</span>
+            <form onSubmit={handleExcelUpload} className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Excel File (.xlsx, .xls)
+                </label>
+                <input
+                  type="file"
+                  accept=".xlsx,.xls"
+                  onChange={(e) => setExcelFile(e.target.files[0])}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                  disabled={isUploading}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Required columns: name, rollno, email, mobilenumber, rfidnumber, department, password
+                </p>
+              </div>
+
+              {isUploading && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Uploading...</span>
+                    <span className="text-sm text-gray-600">{uploadProgress}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className="bg-blue-600 h-2 rounded-full transition-all"
+                      style={{ width: `${uploadProgress}%` }}
+                    ></div>
+                  </div>
                 </div>
-                <Button variant="outline" onClick={() => navigate('/admin/students')}>Open</Button>
+              )}
+
+              <button
+                type="submit"
+                disabled={!excelFile || isUploading}
+                className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded text-sm font-medium"
+              >
+                {isUploading ? 'Uploading...' : 'Upload & Create Students'}
+              </button>
+            </form>
+
+            {uploadResult && (
+              <div className="mt-4 p-3 bg-gray-50 rounded border">
+                <h3 className="font-medium text-sm text-gray-900 mb-2">Upload Results</h3>
+                <div className="text-xs space-y-1">
+                  <p className="text-green-600">✓ Created {uploadResult.createdCount} students</p>
+                  <p className="text-gray-600">Total processed: {uploadResult.totalProcessed}</p>
+                  {uploadResult.duplicates.length > 0 && (
+                    <p className="text-amber-600">⚠ Duplicates skipped: {uploadResult.duplicates.length}</p>
+                  )}
+                  {uploadResult.errors.length > 0 && (
+                    <p className="text-red-600">✗ Errors: {uploadResult.errors.length}</p>
+                  )}
+                </div>
               </div>
-              <p className="mt-2 text-sm text-gray-600">Latest added students:</p>
-              <div className="mt-3 max-h-48 overflow-auto divide-y">
-                {students.slice(0, 8).map(s => (
-                  <button
-                    key={s._id}
-                    onClick={() => navigate('/admin/students')}
-                    className="w-full text-left px-2 py-2 hover:bg-gray-50 rounded-md transition-colors"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="h-7 w-7 rounded-full bg-blue-100 text-blue-700 grid place-items-center text-xs font-semibold">
-                          {(s.name || '?').charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                          <div className="text-sm text-gray-900">{s.name}</div>
-                          <div className="text-xs text-gray-500">{s.rollNo || s.rfid_uid || '—'}</div>
-                        </div>
+            )}
+          </div>
+          <div className="bg-white p-4 rounded border border-gray-200 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-semibold text-gray-900">Recent Students</h2>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 border text-gray-700">{students.length}</span>
+              </div>
+              <Button variant="outline" onClick={() => navigate('/admin/students')}>Open</Button>
+            </div>
+            <p className="mt-2 text-sm text-gray-600">Latest added students:</p>
+            <div className="mt-3 max-h-48 overflow-auto divide-y">
+              {students.slice(0, 8).map(s => (
+                <button
+                  key={s._id}
+                  onClick={() => navigate('/admin/students')}
+                  className="w-full text-left px-2 py-2 hover:bg-gray-50 rounded-md transition-colors"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="h-7 w-7 rounded-full bg-blue-100 text-blue-700 grid place-items-center text-xs font-semibold">
+                        {(s.name || '?').charAt(0).toUpperCase()}
                       </div>
-                      <span className="text-xs text-blue-600">View</span>
+                      <div>
+                        <div className="text-sm text-gray-900">{s.name}</div>
+                        <div className="text-xs text-gray-500">{s.rollNo || s.rfid_uid || '—'}</div>
+                      </div>
                     </div>
-                  </button>
-                ))}
-                {students.length === 0 && (
-                  <div className="px-2 py-3 text-sm text-gray-500">No students yet.</div>
-                )}
-              </div>
+                    <span className="text-xs text-blue-600">View</span>
+                  </div>
+                </button>
+              ))}
+              {students.length === 0 && (
+                <div className="px-2 py-3 text-sm text-gray-500">No students yet.</div>
+              )}
             </div>
           </div>
+        </div>
       </div>
     </>
-  )
+    )
   );
 }

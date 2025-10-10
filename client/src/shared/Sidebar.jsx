@@ -181,17 +181,16 @@ export default function Sidebar() {
     try { navigator.serial.addEventListener('connect', onConnect); } catch {}
     try { navigator.serial.addEventListener('disconnect', onDisconnect); } catch {}
     return () => {
-      mounted = false;
       try { navigator.serial.removeEventListener('connect', onConnect); } catch {}
       try { navigator.serial.removeEventListener('disconnect', onDisconnect); } catch {}
     };
   }, [serialConnected]);
 
   return (
-    <aside className="w-64 bg-gray-900 text-gray-200 flex flex-col min-h-screen p-4">
+    <aside className="w-64 bg-white text-gray-800 flex flex-col min-h-screen p-4 border-r">
       <div className="flex items-center gap-3 mb-8 px-2">
         <BrandLogo size={38} />
-        <div className="text-xl font-bold tracking-tight">RFID Dashboard</div>
+        <div className="text-xl font-bold tracking-tight text-gray-800">CamCards</div>
       </div>
 
       <nav className="flex-grow space-y-2">
@@ -201,8 +200,8 @@ export default function Sidebar() {
             to={l.to}
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
               pathname === l.to
-                ? 'bg-green-600 text-white font-semibold'
-                : 'text-gray-400 hover:bg-gray-800 hover:text-gray-100'
+                ? 'bg-gray-100 text-gray-900 font-semibold'
+                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
             }`}>
             <span className="w-6 text-center">{l.icon}</span>
             <span>{l.label}</span>
@@ -211,31 +210,31 @@ export default function Sidebar() {
       </nav>
 
       {pathname.startsWith('/admin') && (
-        <div className="mt-6 pt-4 border-t border-gray-700/50">
+        <div className="mt-6 pt-4 border-t border-gray-200">
           <div className="flex items-center justify-between gap-2">
             <span
-              className={`text-xs px-2.5 py-1 rounded-full ${serialConnected ? 'bg-green-500/20 text-green-400' : 'bg-gray-700 text-gray-400'}`}>
+              className={`text-xs px-2.5 py-1 rounded-full ${serialConnected ? 'bg-gray-100 text-gray-700' : 'bg-gray-100 text-gray-500'}`}>
               {serialStatus}
             </span>
             {!serialConnected ? (
               <button
                 onClick={connectESP32}
                 title="Connect ESP32"
-                className="px-4 py-1.5 text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white rounded-lg shadow-md transition-colors">
+                className="px-4 py-1.5 text-xs font-semibold bg-gray-800 hover:bg-gray-700 text-white rounded-lg shadow-md transition-colors">
                 Connect
               </button>
             ) : (
               <button
                 onClick={disconnectESP32}
                 title="Disconnect ESP32"
-                className="px-4 py-1.5 text-xs font-semibold bg-red-600 hover:bg-red-500 text-white rounded-lg shadow-md transition-colors">
+                className="px-4 py-1.5 text-xs font-semibold bg-gray-800 hover:bg-gray-700 text-white rounded-lg shadow-md transition-colors">
                 Disconnect
               </button>
             )}
           </div>
           <button
             onClick={() => { try { logout?.(); } catch {} navigate('/'); }}
-            className="mt-4 w-full px-3 py-2 text-sm bg-gray-800 hover:bg-gray-700 text-gray-100 rounded-lg">
+            className="mt-4 w-full px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg">
             Logout
           </button>
         </div>
