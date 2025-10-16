@@ -189,12 +189,8 @@ export default function Sidebar() {
 
   return (
     <aside className="w-64 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 flex flex-col min-h-screen p-4 border-r border-gray-200 dark:border-gray-700">
-      <div className="flex items-center justify-between mb-8 px-2">
-        <div className="flex items-center gap-3">
-          <BrandLogo size={38} />
-          <div className="text-xl font-bold tracking-tight text-gray-800 dark:text-gray-200">CamCards</div>
-        </div>
-        <ThemeToggle />
+      <div className="flex items-center justify-center mb-8 px-2">
+        <BrandLogo size={96} />
       </div>
 
       <nav className="flex-grow space-y-2">
@@ -213,36 +209,43 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      {pathname.startsWith('/admin') && (
-        <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between gap-2">
-            <span
-              className={`text-xs px-2.5 py-1 rounded-full ${serialConnected ? 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'}`}>
-              {serialStatus}
-            </span>
-            {!serialConnected ? (
-              <button
-                onClick={connectESP32}
-                title="Connect ESP32"
-                className="px-4 py-1.5 text-xs font-semibold bg-gray-800 dark:bg-gray-600 hover:bg-gray-700 dark:hover:bg-gray-500 text-white rounded-lg shadow-md transition-colors">
-                Connect
-              </button>
-            ) : (
-              <button
-                onClick={disconnectESP32}
-                title="Disconnect ESP32"
-                className="px-4 py-1.5 text-xs font-semibold bg-gray-800 dark:bg-gray-600 hover:bg-gray-700 dark:hover:bg-gray-500 text-white rounded-lg shadow-md transition-colors">
-                Disconnect
-              </button>
-            )}
-          </div>
-          <button
-            onClick={() => { try { logout?.(); } catch {} navigate('/'); }}
-            className="mt-4 w-full px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg">
-            Logout
-          </button>
+      {/* Theme Toggle and ESP32 controls at bottom */}
+      <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 space-y-3">
+        <div className="flex items-center justify-center">
+          <ThemeToggle />
         </div>
-      )}
+
+        {pathname.startsWith('/admin') && (
+          <>
+            <div className="flex items-center justify-between gap-2">
+              <span
+                className={`text-xs px-2.5 py-1 rounded-full ${serialConnected ? 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'}`}>
+                {serialStatus}
+              </span>
+              {!serialConnected ? (
+                <button
+                  onClick={connectESP32}
+                  title="Connect ESP32"
+                  className="px-4 py-1.5 text-xs font-semibold bg-gray-800 dark:bg-gray-600 hover:bg-gray-700 dark:hover:bg-gray-500 text-white rounded-lg shadow-md transition-colors">
+                  Connect
+                </button>
+              ) : (
+                <button
+                  onClick={disconnectESP32}
+                  title="Disconnect ESP32"
+                  className="px-4 py-1.5 text-xs font-semibold bg-gray-800 dark:bg-gray-600 hover:bg-gray-700 dark:hover:bg-gray-500 text-white rounded-lg shadow-md transition-colors">
+                  Disconnect
+                </button>
+              )}
+            </div>
+            <button
+              onClick={() => { try { logout?.(); } catch {} navigate('/'); }}
+              className="w-full px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg">
+              Logout
+            </button>
+          </>
+        )}
+      </div>
     </aside>
   );
 }

@@ -1,23 +1,29 @@
+import { useTheme } from '../shared/ThemeContext.jsx';
+
 export default function BrandLogo({
   size = 48,
   className = '',
   showText = false,
   text = 'CamCards',
-  src = '/logo.png',
   alt = 'App logo',
-  rounded = true,
+  rounded = false,
 }) {
+  const { isDark } = useTheme();
   const px = typeof size === 'number' ? `${size}px` : size;
+
+  // Use theme-appropriate logos
+  const logoSrc = isDark ? '/black_bg.png' : '/white_bg.png';
+
   return (
     <div className={`flex items-center ${className}`.trim()}>
       <img
-        src={src}
+        src={logoSrc}
         alt={alt}
-        className={`${rounded ? 'rounded-full' : ''} object-cover`.trim()}
-        style={{ width: px, height: px }}
+        className={`${rounded ? 'rounded-full' : ''} object-contain`.trim()}
+        style={{ maxWidth: px, maxHeight: px }}
       />
       {showText && (
-        <span className="ml-2 font-bold text-green-800 text-base">{text}</span>
+        <span className="ml-2 font-bold text-green-800 dark:text-green-400 text-base">{text}</span>
       )}
     </div>
   );

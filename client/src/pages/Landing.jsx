@@ -77,27 +77,27 @@ export default function Landing() {
 
 
   return (
-    <div className="min-h-[100dvh] bg-gradient-to-br from-white to-green-50 font-sans antialiased overflow-y-auto lg:overflow-hidden flex flex-col relative">
+    <div className="min-h-[100dvh] bg-gradient-to-br from-white to-green-50 dark:from-gray-900 dark:to-gray-800 font-sans antialiased overflow-y-auto lg:overflow-hidden flex flex-col relative">
       {/* Background Image (from public/bgimage.jpg) */}
       <div
-        className="absolute inset-0 bg-[url('/bgimage.jpg')] bg-cover bg-center opacity-70"
+        className="absolute inset-0 bg-[url('/bgimage.jpg')] bg-cover bg-center opacity-70 dark:opacity-30"
         aria-hidden="true"
       ></div>
       {/* Background (light green with white) */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white/90 to-green-50/80"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-white/90 to-green-50/80 dark:from-gray-900/90 dark:to-gray-800/80"></div>
       
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-green-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-green-300 rounded-full mix-blend-multiply filter blur-xl opacity-25 animate-blob animation-delay-2000"></div>
-        <div className="absolute top-40 left-40 w-80 h-80 bg-green-100 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-green-200 dark:bg-green-800 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-green-300 dark:bg-green-700 rounded-full mix-blend-multiply filter blur-xl opacity-25 animate-blob animation-delay-2000"></div>
+        <div className="absolute top-40 left-40 w-80 h-80 bg-green-100 dark:bg-green-900 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000"></div>
       </div>
 
       {/* Navigation - Desktop Only */}
       <nav className={`hidden lg:flex relative z-10 items-center justify-between px-4 py-2 transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
         <div className="flex items-center space-x-2">
           <BrandLogo size={80} rounded={false} />
-          <span className="text-green-800 font-bold text-2xl">{brandName}</span>
+          <span className="text-green-800 dark:text-green-400 font-bold text-2xl">{brandName}</span>
         </div>
       </nav>
 
@@ -110,23 +110,23 @@ export default function Landing() {
           <div className="flex items-center mb-8">
             <BrandLogo size={56} className="mr-3" rounded={false} />
             <div>
-              <h1 className="text-2xl font-bold text-green-800 tracking-tight leading-snug">{brandName}</h1>
-              <p className="text-sm text-green-700 font-medium">Digital Payment System</p>
+              <h1 className="text-2xl font-bold text-green-800 dark:text-green-400 tracking-tight leading-snug">{brandName}</h1>
+              <p className="text-sm text-green-700 dark:text-green-300 font-medium">Digital Payment System</p>
             </div>
           </div>
 
           {/* Brand Badge (neutral) */}
           <div className="flex justify-center mb-8">
-            <div className="inline-flex items-center px-4 py-2 bg-white rounded-full border border-green-200 shadow-sm">
+            <div className="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 rounded-full border border-green-200 dark:border-green-600 shadow-sm">
               <span className="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
-              <span className="text-green-700 text-sm font-semibold">Smart Payments Portal</span>
+              <span className="text-green-700 dark:text-green-300 text-sm font-semibold">Smart Payments Portal</span>
             </div>
           </div>
 
           {/* Main Title (neutral) */}
           <div className="text-center mb-2">
-            <h1 className="text-3xl font-bold text-green-700 mb-2">Cashless Payments Portal</h1>
-            <p className="text-green-600 text-sm font-medium">Smart • Secure • Seamless</p>
+            <h1 className="text-3xl font-bold text-green-700 dark:text-green-300 mb-2">Cashless Payments Portal</h1>
+            <p className="text-green-600 dark:text-green-400 text-sm font-medium">Smart • Secure • Seamless</p>
           </div>
 
           {/* Portal Selection Header - removed for mobile per request */}
