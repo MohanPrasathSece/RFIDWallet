@@ -8,16 +8,14 @@ import { api } from '../shared/api.js';
 import { io } from 'socket.io-client';
 
 export default function Admin() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [students, setStudents] = useState([]);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ name: '', rollNo: '', email: '', mobileNumber: '', password: '', RFIDNumber: '', department: '' });
   const [selected, setSelected] = useState(null);
   const [newStudentPassword, setNewStudentPassword] = useState('');
-  const [excelFile, setExcelFile] = useState(null);
-  const [uploadProgress, setUploadProgress] = useState(null);
-  const [uploadResult, setUploadResult] = useState(null);
-  const [isUploading, setIsUploading] = useState(false);
   // Tabs: 'add' | 'edit'
   const [activeTab, setActiveTab] = useState('add');
   // Edit tab find bar
@@ -25,6 +23,14 @@ export default function Admin() {
   const [editRfid, setEditRfid] = useState('');
   const [todaysFoodSales, setTodaysFoodSales] = useState(0);
   const [todaysStoreSales, setTodaysStoreSales] = useState(0);
+
+  // Serial ESP32 state
+  const [serialConnected, setSerialConnected] = useState(false);
+  const [serialStatus, setSerialStatus] = useState('Not connected');
+  const [serialPort, setSerialPort] = useState(null);
+  const socketRef = useRef(null);
+  const [walletInputs, setWalletInputs] = useState({});
+  const [showSidebar, setShowSidebar] = useState(false);
 
   // Fetch full student from admin endpoint for freshest data
   const fetchStudentFull = async (id) => {
@@ -501,63 +507,11 @@ export default function Admin() {
     }
   };
 
-  const handleExcelUpload = async (e) => {
-    e.preventDefault();
-    if (!excelFile) {
-      setError('Please select an Excel file');
-      return;
-    }
-
-    setIsUploading(true);
-    setUploadProgress(0);
-    setUploadResult(null);
-    setError('');
-
-    const formData = new FormData();
-    formData.append('excel', excelFile);
-
-    try {
-      const response = await api.post('/admin/students/bulk', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        onUploadProgress: (progressEvent) => {
-          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-          setUploadProgress(percentCompleted);
-        },
-      });
-
-      setUploadResult(response.data);
-      if (response.data.createdCount > 0) {
-        // Refresh students list
-        await loadStudents();
-      }
-    } catch (error) {
-      setError(error?.response?.data?.message || 'Failed to upload Excel file');
-    } finally {
-      setIsUploading(false);
-      setUploadProgress(null);
-      setExcelFile(null);
-    }
-  };
-
   return (
     // Guard: only admins may access this page
     !user || user.role !== 'admin' ? <Navigate to="/login" replace /> : (
     <>
 
-      {/* Selected student banner */}
-      {selected && (
-        <div className="px-4 py-3 bg-green-50 border border-green-200 rounded flex items-center justify-between">
-          <div className="text-sm text-green-900">
-            <span className="font-medium">Student:</span> {selected.name} · <span className="font-medium">Roll:</span> {selected.rollNo || '-'} · <span className="font-medium">RFID:</span> {selected.rfid_uid || selected.RFIDNumber || '-'} · <span className="font-medium">Dept:</span> {selected.department || '-'}
-          </div>
-          <button
-            onClick={() => { setSelected(null); setForm(v => ({ ...v, name: '', rollNo: '', RFIDNumber: '', department: '', email: '' })); try { localStorage.removeItem('last_student'); } catch {}; try { window?.socket?.emit?.('ui:rfid-clear', {}); } catch {}; try { window.dispatchEvent(new CustomEvent('ui:rfid-clear', { detail: {} })); } catch {} }}
-            className="px-2 py-1 text-xs bg-white hover:bg-gray-50 rounded border border-green-200 text-green-800"
-          >Clear</button>
-        </div>
-      )}
       <div className="space-y-6 mt-4">
         {/* KPI Stat Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -567,67 +521,129 @@ export default function Admin() {
           <StatCard title="ESP32" value={serialConnected ? 'Connected' : 'Not connected'} hint={serialStatus} icon="🔌" />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-white p-4 rounded border border-gray-200 shadow-sm">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-semibold text-gray-900">Bulk Student Upload</h2>
-            </div>
-
-            <form onSubmit={handleExcelUpload} className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Excel File (.xlsx, .xls)
-                </label>
-                <input
-                  type="file"
-                  accept=".xlsx,.xls"
-                  onChange={(e) => setExcelFile(e.target.files[0])}
-                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-                  disabled={isUploading}
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Required columns: name, rollno, email, mobilenumber, rfidnumber, department, password
-                </p>
+          <div className="space-y-4">
+            {/* Add/Edit Student (condensed, auto-switch by selection) */}
+            <div className="bg-white p-4 rounded border border-gray-200 shadow-sm">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-lg font-semibold text-gray-900">{selected? 'Edit Student' : 'Add New Student'}</h2>
               </div>
 
-              {isUploading && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Uploading...</span>
-                    <span className="text-sm text-gray-600">{uploadProgress}%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-blue-600 h-2 rounded-full transition-all"
-                      style={{ width: `${uploadProgress}%` }}
-                    ></div>
-                  </div>
+              {/* Hidden decoy fields to deter browser autofill */}
+              <div className="hidden">
+                <input type="text" autoComplete="username" name="username" />
+                <input type="password" autoComplete="new-password" name="password" />
+              </div>
+
+              {selected && (
+                <div className="mb-3 p-2 bg-green-50 border border-green-200 rounded text-xs text-green-900">
+                  <span className="font-medium">Editing:</span> {selected.name || '-'} · Roll: {selected.rollNo || '-'} · RFID: {selected.rfid_uid || selected.RFIDNumber || '-'}
                 </div>
               )}
 
-              <button
-                type="submit"
-                disabled={!excelFile || isUploading}
-                className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded text-sm font-medium"
-              >
-                {isUploading ? 'Uploading...' : 'Upload & Create Students'}
-              </button>
-            </form>
-
-            {uploadResult && (
-              <div className="mt-4 p-3 bg-gray-50 rounded border">
-                <h3 className="font-medium text-sm text-gray-900 mb-2">Upload Results</h3>
-                <div className="text-xs space-y-1">
-                  <p className="text-green-600">✓ Created {uploadResult.createdCount} students</p>
-                  <p className="text-gray-600">Total processed: {uploadResult.totalProcessed}</p>
-                  {uploadResult.duplicates.length > 0 && (
-                    <p className="text-amber-600">⚠ Duplicates skipped: {uploadResult.duplicates.length}</p>
-                  )}
-                  {uploadResult.errors.length > 0 && (
-                    <p className="text-red-600">✗ Errors: {uploadResult.errors.length}</p>
-                  )}
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <input
+                  type="text"
+                  value={form.name}
+                  onChange={(e) => setForm(v => ({ ...v, name: e.target.value }))}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                  autoComplete="off"
+                  name="student-name"
+                  placeholder="Name *"
+                />
+                <input
+                  type="text"
+                  value={form.rollNo}
+                  onChange={(e) => setForm(v => ({ ...v, rollNo: e.target.value }))}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                  autoComplete="off"
+                  name="roll-no"
+                  placeholder="Roll No *"
+                />
+                <input
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => setForm(v => ({ ...v, email: e.target.value }))}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                  autoComplete="off"
+                  name="noemail"
+                  autoCorrect="off"
+                  autoCapitalize="none"
+                  placeholder="Email *"
+                />
+                <input
+                  type="text"
+                  value={form.RFIDNumber}
+                  onChange={(e) => setForm(v => ({ ...v, RFIDNumber: e.target.value }))}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                  autoComplete="off"
+                  name="rfid-number"
+                  placeholder="RFID Number *"
+                />
+                <input
+                  type="text"
+                  value={form.department}
+                  onChange={(e) => setForm(v => ({ ...v, department: e.target.value }))}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                  autoComplete="off"
+                  name="department"
+                  placeholder="Department"
+                />
+                {!selected && (
+                  <input
+                    type="password"
+                    value={form.password}
+                    onChange={(e) => setForm(v => ({ ...v, password: e.target.value }))}
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                    autoComplete="new-password"
+                    name="new-password"
+                    autoCorrect="off"
+                    autoCapitalize="none"
+                    placeholder="Password *"
+                  />
+                )}
               </div>
-            )}
+
+              {error && (
+                <div className="mt-3 p-2 bg-red-50 border border-red-200 rounded">
+                  <p className="text-xs text-red-800">{error}</p>
+                </div>
+              )}
+
+              <div className="mt-3 flex gap-2">
+                <button
+                  type="button"
+                  onClick={selected? updateStudent : addStudent}
+                  disabled={saving}
+                  className={`px-4 py-2 ${saving ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700'} text-white rounded text-sm`}
+                >
+                  {saving ? 'Saving...' : (selected? 'Update Student' : 'Add Student')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setForm({ name: '', rollNo: '', email: '', mobileNumber: '', password: '', RFIDNumber: '', department: '' });
+                    setSelected(null);
+                    setError('');
+                    // Broadcast clear event to all modules
+                    try { socketRef.current?.emit('ui:rfid-clear', {}); } catch {}
+                    try { window.dispatchEvent(new CustomEvent('ui:rfid-clear', { detail: {} })); } catch {}
+                    try { localStorage.removeItem('last_student'); } catch {}
+                  }}
+                  className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded text-sm"
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
+
+            {/* Bulk Upload (short) */}
+            <div className="bg-white p-4 rounded border border-gray-200 shadow-sm">
+              <div className="flex items-center justify-between">
+                <h3 className="text-base font-semibold text-gray-900">Bulk Student Upload</h3>
+                <Button variant="outline" onClick={() => navigate('/admin/bulk-upload')}>Open</Button>
+              </div>
+              <p className="mt-2 text-sm text-gray-600">Upload multiple students from Excel.</p>
+            </div>
           </div>
           <div className="bg-white p-4 rounded border border-gray-200 shadow-sm">
             <div className="flex items-center justify-between">
@@ -635,37 +651,189 @@ export default function Admin() {
                 <h2 className="text-lg font-semibold text-gray-900">Recent Students</h2>
                 <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 border text-gray-700">{students.length}</span>
               </div>
-              <Button variant="outline" onClick={() => navigate('/admin/students')}>Open</Button>
+              <Button variant="outline" onClick={() => setShowSidebar(true)}>Open</Button>
             </div>
             <p className="mt-2 text-sm text-gray-600">Latest added students:</p>
-            <div className="mt-3 max-h-48 overflow-auto divide-y">
+            <div className="mt-3 max-h-48 overflow-auto space-y-2">
               {students.slice(0, 8).map(s => (
-                <button
+                <div
                   key={s._id}
-                  onClick={() => navigate('/admin/students')}
-                  className="w-full text-left px-2 py-2 hover:bg-gray-50 rounded-md transition-colors"
+                  className="flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-md transition-colors"
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="h-7 w-7 rounded-full bg-blue-100 text-blue-700 grid place-items-center text-xs font-semibold">
-                        {(s.name || '?').charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <div className="text-sm text-gray-900">{s.name}</div>
-                        <div className="text-xs text-gray-500">{s.rollNo || s.rfid_uid || '—'}</div>
-                      </div>
+                  <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 rounded-full bg-blue-100 text-blue-700 grid place-items-center text-sm font-semibold">
+                      {(s.name || '?').charAt(0).toUpperCase()}
                     </div>
-                    <span className="text-xs text-blue-600">View</span>
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">{s.name}</div>
+                      <div className="text-xs text-gray-500">{s.rollNo || s.rfid_uid || '—'}</div>
+                    </div>
                   </div>
-                </button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowSidebar(true)}
+                    className="text-xs"
+                  >
+                    View Details
+                  </Button>
+                </div>
               ))}
               {students.length === 0 && (
-                <div className="px-2 py-3 text-sm text-gray-500">No students yet.</div>
+                <div className="text-center py-4 text-gray-500">
+                  No students yet.
+                </div>
               )}
             </div>
           </div>
         </div>
       </div>
+
+      {/* Students Sidebar */}
+      {showSidebar && (
+        <div className="fixed inset-0 z-50 flex">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+            onClick={() => setShowSidebar(false)}
+          />
+
+          {/* Sidebar */}
+          <div className="relative ml-auto w-full max-w-lg bg-white shadow-xl transform transition-transform">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h2 className="text-lg font-semibold text-gray-900">All Students</h2>
+              <button
+                onClick={() => setShowSidebar(false)}
+                className="p-2 text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="p-4">
+              <div className="mb-4">
+                <input
+                  type="text"
+                  placeholder="Search students..."
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                  onChange={(e) => {
+                    // Add search functionality if needed
+                  }}
+                />
+              </div>
+
+              <div className="max-h-[calc(100vh-200px)] overflow-auto space-y-3">
+                {students.length === 0 ? (
+                  <div className="text-center text-gray-500 py-8">No students found.</div>
+                ) : (
+                  students.map(s => (
+                    <div key={s._id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                      {/* Student Header */}
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="h-10 w-10 rounded-full bg-blue-100 text-blue-700 grid place-items-center text-sm font-semibold">
+                          {(s.name || '?').charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-medium text-gray-900">{s.name}</div>
+                          <div className="text-xs text-gray-500">{s.rollNo || s.rfid_uid || '—'}</div>
+                        </div>
+                        <button
+                          onClick={() => {
+                            setSelected(s);
+                            setActiveTab('edit');
+                            setForm(v => ({
+                              ...v,
+                              name: s.name || v.name,
+                              rollNo: s.rollNo || v.rollNo,
+                              RFIDNumber: s.rfid_uid || s.RFIDNumber || v.RFIDNumber,
+                              department: s.department || v.department,
+                              email: s.email || v.email,
+                              mobileNumber: s.mobileNumber || v.mobileNumber,
+                            }));
+                            setShowSidebar(false);
+                          }}
+                          className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                        >
+                          Edit
+                        </button>
+                      </div>
+
+                      {/* Student Details */}
+                      <div className="space-y-2 mb-3">
+                        <div className="grid grid-cols-1 gap-2 text-sm">
+                          <div className="flex justify-between">
+                            <span className="font-medium text-gray-700">Email:</span>
+                            <span className="text-gray-600">{s.email || '-'}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="font-medium text-gray-700">Department:</span>
+                            <span className="text-gray-600">{s.department || '-'}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="font-medium text-gray-700">RFID:</span>
+                            <span className="text-gray-600 font-mono text-xs">{s.rfid_uid || s.RFIDNumber || '-'}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="font-medium text-gray-700">Mobile:</span>
+                            <span className="text-gray-600">{s.mobileNumber || '-'}</span>
+                          </div>
+                        </div>
+
+                        {/* Wallet Balance */}
+                        <div className="bg-green-50 border border-green-200 rounded p-3 mt-3">
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium text-green-800">Wallet Balance:</span>
+                            <span className="font-semibold text-green-900">₹{s.walletBalance ?? 0}</span>
+                          </div>
+                        </div>
+
+                        {/* Wallet Actions */}
+                        <div className="flex gap-2 mt-3">
+                          <input
+                            type="number"
+                            placeholder="Amount"
+                            value={walletInputs[s._id] || ''}
+                            onChange={(e) => setWalletInputs(v => ({ ...v, [s._id]: e.target.value }))}
+                            className="flex-1 text-sm border border-gray-300 rounded px-2 py-1"
+                            min="0"
+                            step="0.01"
+                          />
+                          <button
+                            onClick={() => {
+                              deposit(s._id);
+                              // Clear input after operation
+                              setTimeout(() => setWalletInputs(v => ({ ...v, [s._id]: '' })), 100);
+                            }}
+                            disabled={!walletInputs[s._id] || walletInputs[s._id] <= 0}
+                            className="px-3 py-1 text-sm bg-green-600 hover:bg-green-700 text-white rounded disabled:bg-gray-400"
+                            title="Add money to wallet"
+                          >
+                            + Add
+                          </button>
+                          <button
+                            onClick={() => {
+                              withdraw(s._id);
+                              // Clear input after operation
+                              setTimeout(() => setWalletInputs(v => ({ ...v, [s._id]: '' })), 100);
+                            }}
+                            disabled={!walletInputs[s._id] || walletInputs[s._id] <= 0}
+                            className="px-3 py-1 text-sm bg-red-600 hover:bg-red-700 text-white rounded disabled:bg-gray-400"
+                            title="Deduct money from wallet"
+                          >
+                            - Deduct
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
     )
   );

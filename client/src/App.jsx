@@ -15,12 +15,13 @@ import StudentLibrary from './pages/StudentLibrary.jsx';
 import StudentAnalytics from './pages/StudentAnalytics.jsx';
 import StudentPurchaseDetails from './pages/StudentPurchaseDetails.jsx';
 import Store from './pages/Store.jsx';
-import StoreHistory from './pages/StoreHistory.jsx';
 import Admin from './pages/Admin.jsx';
+import Login from './pages/Login.jsx';
+import ESP32Manager from './pages/ESP32Manager.jsx';
+import StoreHistory from './pages/StoreHistory.jsx';
 import RFIDScanner from './pages/RFIDScanner.jsx';
 import AdminRFIDScanner from './pages/AdminRFIDScanner.jsx';
-import ESP32Manager from './pages/ESP32Manager.jsx';
-import Login from './pages/Login.jsx';
+import BulkStudentUpload from './pages/BulkStudentUpload.jsx';
 
 export default function App() {
   return (
@@ -47,6 +48,7 @@ export default function App() {
         <Route path="/store/history" element={<StoreHistory />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/admin/students" element={<RecentStudents />} />
+        <Route path="/admin/bulk-upload" element={<BulkStudentUpload />} />
         <Route path="/rfid-scanner" element={<RFIDScanner />} />
         <Route path="/admin/rfid-scanner" element={<AdminRFIDScanner />} />
         <Route path="/admin/esp32-manager" element={<ESP32Manager />} />
