@@ -460,41 +460,41 @@ export default function Food() {
     <>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-semibold">Food Court</h1>
-            <div className="text-sm font-medium text-gray-600 bg-gray-100 px-3 py-1 rounded-md">
-              Today's Sales: <span className="font-bold text-green-700">₹{todaysSales.toFixed(2)}</span>
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Food Court</h1>
+            <div className="text-sm font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md">
+              Today's Sales: <span className="font-bold text-green-700 dark:text-green-400">₹{todaysSales.toFixed(2)}</span>
             </div>
           </div>
-          <Link to="/food/add" className="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded">Add Food</Link>
+          <Link to="/food/add" className="px-3 py-2 bg-green-600 dark:bg-green-700 hover:bg-green-700 dark:hover:bg-green-600 text-white rounded">Add Food</Link>
         </div>
         
 
-        <div className="bg-white p-4 rounded shadow">
+        <div className="bg-white dark:bg-gray-800 p-4 rounded shadow border border-gray-200 dark:border-gray-700">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Roll Number</label>
+              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Roll Number</label>
               <input value={rollNo} onChange={e => setRollNo(e.target.value)} placeholder="Enter Roll Number"
-                     className="w-full border rounded px-3 py-2" />
+                     className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400" />
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">RFID Number</label>
+              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">RFID Number</label>
               <div className="flex items-center gap-2">
                 <input value={rfid} onChange={e => setRfid(e.target.value)} placeholder="Scan or enter RFID"
-                       className="w-full border rounded px-3 py-2" />
+                       className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400" />
               </div>
             </div>
             <div className="flex gap-2">
-              <button onClick={findStudent} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded">Find Student</button>
+              <button onClick={findStudent} className="px-4 py-2 bg-indigo-600 dark:bg-indigo-700 hover:bg-indigo-700 dark:hover:bg-indigo-600 text-white rounded">Find Student</button>
             </div>
           </div>
-          {error && <div className="mt-2 text-red-600 text-sm">{error}</div>}
-          {successMsg && <div className="mt-2 text-emerald-700 bg-emerald-50 border border-emerald-200 text-sm px-3 py-2 rounded">{successMsg}</div>}
+          {error && <div className="mt-2 text-red-600 dark:text-red-400 text-sm">{error}</div>}
+          {successMsg && <div className="mt-2 text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 text-sm px-3 py-2 rounded">{successMsg}</div>}
           {student && (
-            <div className="mt-3 text-sm text-gray-700 flex items-center gap-2 flex-wrap">
+            <div className="mt-3 text-sm text-gray-700 dark:text-gray-300 flex items-center gap-2 flex-wrap">
               <div>
                 <span className="font-medium">Student:</span> {student.name} | <span className="font-medium">Wallet Balance:</span> ₹{student.walletBalance}
               </div>
-              <button onClick={() => { unscan(); try { window?.socket?.emit?.('ui:rfid-clear', {}); } catch {} }} className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded border border-gray-200">Cancel</button>
+              <button onClick={() => { unscan(); try { window?.socket?.emit?.('ui:rfid-clear', {}); } catch {} }} className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 rounded border border-gray-200 dark:border-gray-600">Cancel</button>
             </div>
           )}
         </div>
@@ -502,38 +502,38 @@ export default function Food() {
         {/* Items + Cart layout */}
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4">
           {/* Items */}
-          <div className="bg-white p-4 rounded shadow">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded shadow border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-lg font-semibold">Order Food</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Order Food</h2>
               <div className="flex items-center gap-2">
                 <input
                   value={itemQuery}
                   onChange={(e) => setItemQuery(e.target.value)}
                   placeholder="Search food items"
-                  className="text-sm border rounded px-2 py-1 w-40 md:w-56"
+                  className="text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 w-40 md:w-56 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                 />
-                <button onClick={() => setItemQuery(v => v.trim())} className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded">Search</button>
+                <button onClick={() => setItemQuery(v => v.trim())} className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 rounded">Search</button>
               </div>
             </div>
-            <div className="text-xs text-gray-500 mb-2">{student ? 'Ready to order' : 'Find a student to begin.'}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">{student ? 'Ready to order' : 'Find a student to begin.'}</div>
             {items.length === 0 ? (
-              <div className="text-gray-500">No food items yet. Use "Add Food" to create some.</div>
+              <div className="text-gray-500 dark:text-gray-400">No food items yet. Use "Add Food" to create some.</div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                 {filteredItems.map(it => {
                   const qty = it.quantity ?? 0;
-                  const cardClass = `border rounded p-3 flex items-center justify-between ${qty === 0 ? 'opacity-50' : qty <= 5 ? 'bg-red-50 border-red-200' : ''}`;
-                  const qtyClass = `text-sm ${qty === 0 ? 'text-gray-400' : qty <= 5 ? 'text-red-600' : 'text-gray-600'}`;
+                  const cardClass = `border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 rounded p-3 flex items-center justify-between ${qty === 0 ? 'opacity-50' : qty <= 5 ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700' : ''}`;
+                  const qtyClass = `text-sm ${qty === 0 ? 'text-gray-400 dark:text-gray-500' : qty <= 5 ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-400'}`;
                   return (
                     <div key={it._id} className={cardClass} title={qty === 0 ? 'Out of stock' : qty <= 5 ? 'Low stock' : undefined}>
                       <div>
-                        <div className="font-medium">{it.name}</div>
+                        <div className="font-medium text-gray-900 dark:text-gray-100">{it.name}</div>
                         <div className={qtyClass}>₹{it.price ?? '-'} · Qty {qty}</div>
                       </div>
                       <button
                         disabled={!student || qty === 0}
                         onClick={() => addToCart(it)}
-                        className="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded disabled:opacity-60"
+                        className="px-3 py-1.5 bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-500 text-white rounded disabled:opacity-60"
                       >
                         Add to Cart
                       </button>
@@ -545,41 +545,41 @@ export default function Food() {
           </div>
 
           {/* Cart Sidebar */}
-          <aside className="bg-white p-3 rounded shadow lg:sticky lg:top-4 h-fit max-h-[75vh] overflow-y-auto">
+          <aside className="bg-white dark:bg-gray-800 p-3 rounded shadow border border-gray-200 dark:border-gray-700 lg:sticky lg:top-4 h-fit max-h-[75vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-base font-semibold">Cart</h2>
-              <div className="text-xs text-gray-600">Total: <span className="font-medium">₹ {cartTotal.toFixed(2)}</span></div>
+              <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Cart</h2>
+              <div className="text-xs text-gray-600 dark:text-gray-400">Total: <span className="font-medium">₹ {cartTotal.toFixed(2)}</span></div>
             </div>
             {cart.length === 0 ? (
-              <div className="text-gray-500 text-sm">No items in cart.</div>
+              <div className="text-gray-500 dark:text-gray-400 text-sm">No items in cart.</div>
             ) : (
               <div className="space-y-2">
                 {cart.map(c => (
-                  <div key={c._id} className="flex items-center justify-between border rounded px-2 py-1">
+                  <div key={c._id} className="flex items-center justify-between border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 rounded px-2 py-1">
                     <div>
-                      <div className="font-medium text-sm">{c.name}</div>
-                      <div className="text-xs text-gray-600">₹ {c.price} each</div>
+                      <div className="font-medium text-sm text-gray-900 dark:text-gray-100">{c.name}</div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400">₹ {c.price} each</div>
                     </div>
                     <div className="flex items-center gap-1">
-                      <button className="px-2 py-0.5 bg-gray-100 rounded" onClick={() => updateQty(c._id, -1)}>-</button>
-                      <span className="w-6 text-center text-sm">{c.qty}</span>
-                      <button className="px-2 py-0.5 bg-gray-100 rounded" onClick={() => updateQty(c._id, 1)}>+</button>
-                      <button className="px-2 py-0.5 bg-red-100 text-red-700 rounded" onClick={() => removeFromCart(c._id)}>x</button>
+                      <button className="px-2 py-0.5 bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100 rounded" onClick={() => updateQty(c._id, -1)}>-</button>
+                      <span className="w-6 text-center text-sm text-gray-900 dark:text-gray-100">{c.qty}</span>
+                      <button className="px-2 py-0.5 bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100 rounded" onClick={() => updateQty(c._id, 1)}>+</button>
+                      <button className="px-2 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded" onClick={() => removeFromCart(c._id)}>x</button>
                     </div>
                   </div>
                 ))}
                 <div className="flex items-center justify-end gap-2 pt-2">
-                  <button className="px-2 py-1 text-xs bg-gray-100 rounded" onClick={clearCart}>Clear</button>
+                  <button className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded" onClick={clearCart}>Clear</button>
                   <button
                     disabled={!student || cart.length===0 || cartTotal > Number(student?.walletBalance || 0)}
                     onClick={() => setShowConfirm(true)}
-                    className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-sm disabled:opacity-60"
+                    className="px-3 py-1 bg-emerald-600 dark:bg-emerald-700 hover:bg-emerald-700 dark:hover:bg-emerald-600 text-white rounded text-sm disabled:opacity-60"
                   >
                     Proceed
                   </button>
                 </div>
                 {student && cart.length>0 && cartTotal > Number(student?.walletBalance || 0) && (
-                  <div className="mt-1 text-xs text-red-600">Insufficient wallet balance. Remove items or reduce quantities.</div>
+                  <div className="mt-1 text-xs text-red-600 dark:text-red-400">Insufficient wallet balance. Remove items or reduce quantities.</div>
                 )}
               </div>
             )}
@@ -589,40 +589,40 @@ export default function Food() {
         {/* Confirm Modal */}
         {showConfirm && (
           <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-            <div className="bg-white rounded shadow p-4 w-full max-w-md">
-              <div className="text-lg font-semibold mb-2">Confirm Purchase</div>
-              <div className="text-sm mb-3">Student: <b>{student?.name}</b> · RFID: <span className="font-mono">{student?.rfid_uid}</span></div>
-              <div className="max-h-60 overflow-y-auto border rounded">
+            <div className="bg-white dark:bg-gray-800 rounded shadow p-4 w-full max-w-md border border-gray-200 dark:border-gray-700">
+              <div className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">Confirm Purchase</div>
+              <div className="text-sm mb-3 text-gray-700 dark:text-gray-300">Student: <b>{student?.name}</b> · RFID: <span className="font-mono">{student?.rfid_uid}</span></div>
+              <div className="max-h-60 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded">
                 <table className="w-full text-sm">
-                  <thead className="bg-gray-50">
+                  <thead className="bg-gray-50 dark:bg-gray-700">
                     <tr>
-                      <th className="px-2 py-1 text-left">Item</th>
-                      <th className="px-2 py-1 text-right">Qty</th>
-                      <th className="px-2 py-1 text-right">Amount</th>
+                      <th className="px-2 py-1 text-left text-gray-900 dark:text-gray-100">Item</th>
+                      <th className="px-2 py-1 text-right text-gray-900 dark:text-gray-100">Qty</th>
+                      <th className="px-2 py-1 text-right text-gray-900 dark:text-gray-100">Amount</th>
                     </tr>
                   </thead>
                   <tbody>
                     {cart.map(c => (
-                      <tr key={c._id} className="border-t">
-                        <td className="px-2 py-1">{c.name}</td>
-                        <td className="px-2 py-1 text-right">{c.qty}</td>
-                        <td className="px-2 py-1 text-right">₹ {(c.qty*Number(c.price)).toFixed(2)}</td>
+                      <tr key={c._id} className="border-t border-gray-200 dark:border-gray-600">
+                        <td className="px-2 py-1 text-gray-900 dark:text-gray-100">{c.name}</td>
+                        <td className="px-2 py-1 text-right text-gray-900 dark:text-gray-100">{c.qty}</td>
+                        <td className="px-2 py-1 text-right text-gray-900 dark:text-gray-100">₹ {(c.qty*Number(c.price)).toFixed(2)}</td>
                       </tr>
                     ))}
                   </tbody>
                   <tfoot>
-                    <tr className="border-t">
-                      <td className="px-2 py-1 font-medium">Total</td>
+                    <tr className="border-t border-gray-200 dark:border-gray-600">
+                      <td className="px-2 py-1 font-medium text-gray-900 dark:text-gray-100">Total</td>
                       <td></td>
-                      <td className="px-2 py-1 text-right font-semibold">₹ {cartTotal.toFixed(2)}</td>
+                      <td className="px-2 py-1 text-right font-semibold text-gray-900 dark:text-gray-100">₹ {cartTotal.toFixed(2)}</td>
                     </tr>
                   </tfoot>
                 </table>
               </div>
               <div className="flex items-center justify-end gap-2 mt-3">
-                <button className="px-3 py-1 bg-gray-100 rounded" onClick={() => setShowConfirm(false)}>Cancel</button>
-                <button className="px-3 py-1 bg-indigo-600 text-white rounded" onClick={printBill}>Print Bill</button>
-                <button className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded" onClick={confirmAndPurchase}>Confirm & Purchase</button>
+                <button className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600 rounded" onClick={() => setShowConfirm(false)}>Cancel</button>
+                <button className="px-3 py-1 bg-indigo-600 dark:bg-indigo-700 hover:bg-indigo-700 dark:hover:bg-indigo-600 text-white rounded" onClick={printBill}>Print Bill</button>
+                <button className="px-3 py-1.5 bg-emerald-600 dark:bg-emerald-700 hover:bg-emerald-700 dark:hover:bg-emerald-600 text-white rounded" onClick={confirmAndPurchase}>Confirm & Purchase</button>
               </div>
             </div>
           </div>
@@ -631,29 +631,29 @@ export default function Food() {
         {/* Success Modal */}
         {showSuccessModal && (
           <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-            <div className="bg-white rounded shadow p-5 w-full max-w-sm">
-              <div className="text-lg font-semibold mb-2">Order Confirmed</div>
-              <p className="text-sm text-gray-700">Receipt has been printed and saved as PDF to your downloads.</p>
+            <div className="bg-white dark:bg-gray-800 rounded shadow p-5 w-full max-w-sm border border-gray-200 dark:border-gray-700">
+              <div className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">Order Confirmed</div>
+              <p className="text-sm text-gray-700 dark:text-gray-300">Receipt has been printed and saved as PDF to your downloads.</p>
               <div className="flex items-center justify-end gap-2 mt-4">
-                <button className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded" onClick={() => setShowSuccessModal(false)}>OK</button>
+                <button className="px-3 py-1.5 bg-indigo-600 dark:bg-indigo-700 hover:bg-indigo-700 dark:hover:bg-indigo-600 text-white rounded" onClick={() => setShowSuccessModal(false)}>OK</button>
               </div>
             </div>
           </div>
         )}
 
-        <div className="bg-white p-4 rounded shadow">
+        <div className="bg-white dark:bg-gray-800 p-4 rounded shadow border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">More</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">More</h2>
             <div className="flex gap-2">
               <Link
                 to={`/food/history${student?.rollNo ? `?rollNo=${encodeURIComponent(student.rollNo)}` : ''}`}
-                className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded"
+                className="px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 rounded"
               >
                 Purchase History
               </Link>
               <Link
                 to="/food/scans"
-                className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded"
+                className="px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 rounded"
               >
                 Show All Scans
               </Link>

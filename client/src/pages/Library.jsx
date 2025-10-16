@@ -286,50 +286,50 @@ export default function Library() {
   }, [student, borrowItemId]);
 
   return (
-    <div className="h-screen bg-white p-4 flex flex-col">
+    <div className="h-screen bg-white dark:bg-gray-900 p-4 flex flex-col">
       <div className="w-full flex flex-col h-full space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-semibold text-gray-800">Library</h1>
-            <p className="text-xs text-gray-500">Search student, issue books, and manage returns</p>
+            <h1 className="text-xl font-semibold text-gray-800 dark:text-gray-100">Library</h1>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Search student, issue books, and manage returns</p>
           </div>
           <div className="flex items-center gap-2">
-            <Link to="/library/add" className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm" title="Add new book to library">
+            <Link to="/library/add" className="px-3 py-2 bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 text-white rounded text-sm" title="Add new book to library">
               Add Book
             </Link>
-            <Link to="/library/scans" className="px-3 py-2 border rounded text-sm" title="View all transaction history">
+            <Link to="/library/scans" className="px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 rounded text-sm" title="View all transaction history">
               Recent Scans
             </Link>
           </div>
         </div>
 
         {/* Search and Issue */}
-        <div className="bg-white rounded border p-3">
+        <div className="bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 p-3">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {/* Student Search */}
             <div className="space-y-2">
-              <h3 className="text-sm font-semibold text-gray-700">Find Student</h3>
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Find Student</h3>
               <div className="grid grid-cols-2 gap-2">
                 <input
                   id="student-search-input"
                   value={rollNo}
                   onChange={e => setRollNo(e.target.value)}
                   placeholder="Roll Number"
-                  className="border rounded px-2 py-2 text-sm"
+                  className="border border-gray-300 dark:border-gray-600 rounded px-2 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                   title="Search by roll number (Alt+F to focus)"
                 />
                 <input
                   value={rfid}
                   onChange={e => setRfid(e.target.value)}
                   placeholder="RFID Number"
-                  className="border rounded px-2 py-2 text-sm"
+                  className="border border-gray-300 dark:border-gray-600 rounded px-2 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                   title="Search by RFID"
                 />
               </div>
               <div className="flex gap-2">
-                <button onClick={findStudent} className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm" title="Find student (Alt+F)">Find</button>
-                <button onClick={loadData} className="px-3 py-2 border rounded text-sm" title="Reload data">Load</button>
+                <button onClick={findStudent} className="px-3 py-2 bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 text-white rounded text-sm" title="Find student (Alt+F)">Find</button>
+                <button onClick={loadData} className="px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 rounded text-sm" title="Reload data">Load</button>
                 <button
                   onClick={() => {
                     setRfid(''); setRollNo(''); setStudentId(''); setStudent(null);
@@ -337,7 +337,7 @@ export default function Library() {
                     try { localStorage.removeItem('last_student'); } catch {}
                     try { window?.socket?.emit?.('ui:rfid-clear', {}); } catch {}
                   }}
-                  className="px-3 py-2 border rounded text-sm"
+                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 rounded text-sm"
                   title="Clear selection (Alt+C)"
                 >
                   Clear
@@ -345,19 +345,19 @@ export default function Library() {
               </div>
 
               {student && (
-                <div className="border rounded p-2 text-sm text-gray-700">
-                  <div className="font-semibold">{student.name}</div>
-                  <div className="text-xs text-gray-500">{student.rollNo} {student.department ? `• ${student.department}` : ''}</div>
-                  <div className="text-xs">Wallet: ₹{student.walletBalance || 0}</div>
+                <div className="border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 rounded p-2 text-sm text-gray-700 dark:text-gray-300">
+                  <div className="font-semibold text-gray-900 dark:text-gray-100">{student.name}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">{student.rollNo} {student.department ? `• ${student.department}` : ''}</div>
+                  <div className="text-xs text-gray-700 dark:text-gray-300">Wallet: ₹{student.walletBalance || 0}</div>
                 </div>
               )}
             </div>
 
             {/* Book Issue */}
             <div className="space-y-2">
-              <h3 className="text-sm font-semibold text-gray-700">Select Book</h3>
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Select Book</h3>
               <select
-                className="w-full border rounded px-2 py-2 text-sm"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 value={borrowItemId}
                 onChange={e => setBorrowItemId(e.target.value)}
                 title="Choose book to issue"
@@ -371,43 +371,43 @@ export default function Library() {
               </select>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">Due Date</label>
-                  <input type="date" className="w-full border rounded px-2 py-2 text-sm" value={borrowDueDate} onChange={e => setBorrowDueDate(e.target.value)} />
+                  <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Due Date</label>
+                  <input type="date" className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" value={borrowDueDate} onChange={e => setBorrowDueDate(e.target.value)} />
                 </div>
                 <div className="flex items-end">
-                  <button onClick={borrowBook} disabled={!student || !borrowItemId} className="w-full px-3 py-2 bg-blue-600 disabled:bg-gray-300 text-white rounded text-sm" title="Issue book (Alt+I)">
+                  <button onClick={borrowBook} disabled={!student || !borrowItemId} className="w-full px-3 py-2 bg-blue-600 dark:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white rounded text-sm" title="Issue book (Alt+I)">
                     Issue Book
                   </button>
                 </div>
               </div>
-              <input className="w-full border rounded px-2 py-2 text-sm" placeholder="Notes (optional)" value={borrowNotes} onChange={e=>setBorrowNotes(e.target.value)} />
+              <input className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400" placeholder="Notes (optional)" value={borrowNotes} onChange={e=>setBorrowNotes(e.target.value)} />
             </div>
           </div>
         </div>
 
         {/* Status Messages */}
         {(loading || error) && (
-          <div className="p-3 border rounded">
-            {loading && <div className="text-sm text-gray-600">Loading...</div>}
-            {error && <div className="text-sm text-red-600 bg-red-50 p-2 rounded">{error}</div>}
+          <div className="p-3 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded">
+            {loading && <div className="text-sm text-gray-600 dark:text-gray-400">Loading...</div>}
+            {error && <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-2 rounded">{error}</div>}
           </div>
         )}
 
         {/* Tabbed Data Section */}
-        <div className="border rounded flex flex-col flex-grow">
+        <div className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded flex flex-col flex-grow">
           {/* Tab Navigation */}
-          <div className="flex border-b">
+          <div className="flex border-b border-gray-200 dark:border-gray-700">
             <button
               onClick={() => setActiveTab('active')}
               className={`flex-1 p-2 text-sm font-medium ${
-                activeTab === 'active' ? 'bg-gray-100 text-gray-800' : 'text-gray-500'
+                activeTab === 'active' ? 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
               }`}>
               Active Borrows ({active.length})
             </button>
             <button
               onClick={() => setActiveTab('history')}
               className={`flex-1 p-2 text-sm font-medium ${
-                activeTab === 'history' ? 'bg-gray-100 text-gray-800' : 'text-gray-500'
+                activeTab === 'history' ? 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
               }`}>
               History ({history.length})
             </button>
@@ -418,24 +418,24 @@ export default function Library() {
             {activeTab === 'active' && (
               <div className="space-y-2 h-full flex flex-col">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-gray-700">Active Borrows</h3>
-                  <button onClick={loadData} className="px-3 py-1 border rounded text-xs">Refresh</button>
+                  <h3 className="font-semibold text-gray-700 dark:text-gray-300">Active Borrows</h3>
+                  <button onClick={loadData} className="px-3 py-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 rounded text-xs">Refresh</button>
                 </div>
                 {active.length === 0 ? (
-                  <p className="text-sm text-gray-500">No active borrows.</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">No active borrows.</p>
                 ) : (
                   <div className="space-y-2 flex-grow overflow-auto">
                     {active.map(({ item, count, dueDate }, idx) => (
-                      <div key={idx} className="border rounded p-2">
+                      <div key={idx} className="border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 rounded p-2">
                         <div className="flex items-center justify-between">
                           <div>
-                            <h4 className="font-semibold text-sm">{item?.name || 'N/A'}</h4>
-                            <div className="text-xs text-gray-600">Count: {count} | Due: {dueDate ? new Date(dueDate).toLocaleDateString() : 'N/A'}</div>
+                            <h4 className="font-semibold text-sm text-gray-900 dark:text-gray-100">{item?.name || 'N/A'}</h4>
+                            <div className="text-xs text-gray-600 dark:text-gray-400">Count: {count} | Due: {dueDate ? new Date(dueDate).toLocaleDateString() : 'N/A'}</div>
                             {dueDate && new Date(dueDate) < new Date() && (
-                              <div className="mt-1 text-xs text-red-600">Overdue</div>
+                              <div className="mt-1 text-xs text-red-600 dark:text-red-400">Overdue</div>
                             )}
                           </div>
-                          <button onClick={() => returnBook(item?._id)} className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs">Return</button>
+                          <button onClick={() => returnBook(item?._id)} className="px-3 py-1 bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 text-white rounded text-xs">Return</button>
                         </div>
                       </div>
                     ))}
@@ -447,23 +447,23 @@ export default function Library() {
             {activeTab === 'history' && (
               <div className="space-y-2 h-full flex flex-col">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-gray-700">History</h3>
-                  <button onClick={loadData} className="px-3 py-1 border rounded text-xs">Refresh</button>
+                  <h3 className="font-semibold text-gray-700 dark:text-gray-300">History</h3>
+                  <button onClick={loadData} className="px-3 py-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 rounded text-xs">Refresh</button>
                 </div>
                 {history.length === 0 ? (
-                  <p className="text-sm text-gray-500">No transaction history.</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">No transaction history.</p>
                 ) : (
                   <div className="space-y-2 flex-grow overflow-auto">
                     {history.map(tx => (
-                      <div key={tx._id} className="border rounded p-2">
+                      <div key={tx._id} className="border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 rounded p-2">
                         <div className="flex items-center justify-between">
                           <div>
-                            <h4 className="font-semibold text-sm">{tx.item?.name || 'N/A'}</h4>
-                            <p className="text-xs text-gray-600 capitalize">{tx.action} • {new Date(tx.createdAt).toLocaleDateString()}</p>
+                            <h4 className="font-semibold text-sm text-gray-900 dark:text-gray-100">{tx.item?.name || 'N/A'}</h4>
+                            <p className="text-xs text-gray-600 dark:text-gray-400 capitalize">{tx.action} • {new Date(tx.createdAt).toLocaleDateString()}</p>
                           </div>
                           <span className={`px-2 py-0.5 rounded text-xs ${
-                            tx.status === 'approved' ? 'bg-green-100 text-green-700' :
-                            tx.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
+                            tx.status === 'approved' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
+                            tx.status === 'rejected' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
                           }`}>
                             {tx.status}
                           </span>
@@ -480,22 +480,22 @@ export default function Library() {
         {/* Confirmation Modal */}
         {showConfirmation && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4">
-            <div className="bg-white rounded p-4 max-w-sm w-full">
-              <h3 className="font-semibold text-lg mb-2">Confirm {confirmationAction?.type}</h3>
-              <div className="text-sm text-gray-600 mb-4">
+            <div className="bg-white dark:bg-gray-800 rounded p-4 max-w-sm w-full border border-gray-200 dark:border-gray-700">
+              <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-gray-100">Confirm {confirmationAction?.type}</h3>
+              <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                 <p><b>Student:</b> {confirmationAction?.data?.student}</p>
                 <p><b>Book:</b> {confirmationAction?.data?.item}</p>
               </div>
               <div className="flex gap-2">
                 <button
                   onClick={() => { setShowConfirmation(false); setConfirmationAction(null); }}
-                  className="flex-1 px-3 py-2 bg-gray-200 rounded text-sm"
+                  className="flex-1 px-3 py-2 bg-gray-200 dark:bg-gray-600 text-gray-900 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-500 rounded text-sm"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={confirmationAction?.type === 'borrow' ? confirmBorrow : confirmReturn}
-                  className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm"
+                  className="flex-1 px-3 py-2 bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 text-white rounded text-sm"
                 >
                   Confirm
                 </button>

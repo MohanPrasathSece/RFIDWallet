@@ -456,41 +456,41 @@ export default function Store() {
     <>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-semibold">Store</h1>
-            <div className="text-sm font-medium text-gray-600 bg-gray-100 px-3 py-1 rounded-md">
-              Today's Sales: <span className="font-bold text-green-700">₹{todaysSales.toFixed(2)}</span>
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Store</h1>
+            <div className="text-sm font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md">
+              Today's Sales: <span className="font-bold text-green-700 dark:text-green-400">₹{todaysSales.toFixed(2)}</span>
             </div>
           </div>
-          <Link to="/store/add" className="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded">Add Store Item</Link>
+          <Link to="/store/add" className="px-3 py-2 bg-green-600 dark:bg-green-700 hover:bg-green-700 dark:hover:bg-green-600 text-white rounded">Add Store Item</Link>
         </div>
 
-        <div className="bg-white p-4 rounded shadow">
+        <div className="bg-white dark:bg-gray-800 p-4 rounded shadow border border-gray-200 dark:border-gray-700">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Roll Number</label>
+              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Roll Number</label>
               <input value={rollNo} onChange={e => setRollNo(e.target.value)} placeholder="Enter Roll Number"
-                     className="w-full border rounded px-3 py-2" />
+                     className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400" />
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">RFID Number</label>
+              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">RFID Number</label>
               <div className="flex items-center gap-2">
                 <input value={rfid} onChange={e => setRfid(e.target.value)} placeholder="Scan or enter RFID"
-                       className="w-full border rounded px-3 py-2" />
+                       className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400" />
               </div>
             </div>
             <div className="flex gap-2">
-              <button onClick={findStudent} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded">Find Student</button>
-              <button onClick={loadHistory} className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded">Load History</button>
+              <button onClick={findStudent} className="px-4 py-2 bg-indigo-600 dark:bg-indigo-700 hover:bg-indigo-700 dark:hover:bg-indigo-600 text-white rounded">Find Student</button>
+              <button onClick={loadHistory} className="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 rounded">Load History</button>
             </div>
-            {loading && <div className="text-gray-500">Loading...</div>}
+            {loading && <div className="text-gray-500 dark:text-gray-400">Loading...</div>}
           </div>
-          {error && <div className="mt-2 text-red-600 text-sm">{error}</div>}
+          {error && <div className="mt-2 text-red-600 dark:text-red-400 text-sm">{error}</div>}
           {student && (
-            <div className="mt-3 text-sm text-gray-700 flex items-center gap-2 flex-wrap">
+            <div className="mt-3 text-sm text-gray-700 dark:text-gray-300 flex items-center gap-2 flex-wrap">
               <div>
                 <span className="font-medium">Student:</span> {student.name} | <span className="font-medium">Wallet Balance:</span> ₹{student.walletBalance}
               </div>
-              <button onClick={() => { setError(''); clearCart(); setStudent(null); setStudentId(''); setRollNo(''); setRfid(''); setWalletBalance(null); try { localStorage.removeItem('last_student'); localStorage.removeItem('food_student'); } catch {}; try { window?.socket?.emit?.('ui:rfid-clear', {}); } catch {}; try { window.dispatchEvent(new CustomEvent('ui:rfid-clear', { detail: {} })); } catch {} }} className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded border border-gray-200">Cancel</button>
+              <button onClick={() => { setError(''); clearCart(); setStudent(null); setStudentId(''); setRollNo(''); setRfid(''); setWalletBalance(null); try { localStorage.removeItem('last_student'); localStorage.removeItem('food_student'); } catch {}; try { window?.socket?.emit?.('ui:rfid-clear', {}); } catch {}; try { window.dispatchEvent(new CustomEvent('ui:rfid-clear', { detail: {} })); } catch {} }} className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 rounded border border-gray-200 dark:border-gray-600">Cancel</button>
             </div>
           )}
         </div>
@@ -498,38 +498,38 @@ export default function Store() {
         {/* Items + Cart layout */}
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4">
           {/* Items */}
-          <div className="bg-white p-4 rounded shadow">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded shadow border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-lg font-semibold">Order Item</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Order Item</h2>
               <div className="flex items-center gap-2">
                 <input
                   value={itemQuery}
                   onChange={(e) => setItemQuery(e.target.value)}
                   placeholder="Search store items"
-                  className="text-sm border rounded px-2 py-1 w-40 md:w-56"
+                  className="text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 w-40 md:w-56 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                 />
-                <button onClick={() => setItemQuery(v => v.trim())} className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded">Search</button>
+                <button onClick={() => setItemQuery(v => v.trim())} className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 rounded">Search</button>
               </div>
             </div>
-            <div className="text-xs text-gray-500 mb-2">{(student || studentId || rfid) ? 'Ready to order' : 'Find a student to begin.'}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">{(student || studentId || rfid) ? 'Ready to order' : 'Find a student to begin.'}</div>
             {items.length === 0 ? (
-              <div className="text-gray-500">No store items yet. Use "Add Store Item" to create some.</div>
+              <div className="text-gray-500 dark:text-gray-400">No store items yet. Use "Add Store Item" to create some.</div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                 {filteredItems.map(it => {
                   const qty = it.quantity ?? 0;
-                  const cardClass = `border rounded p-3 flex items-center justify-between ${qty === 0 ? 'opacity-50' : qty <= 5 ? 'bg-red-50 border-red-200' : ''}`;
-                  const qtyClass = `text-sm ${qty === 0 ? 'text-gray-400' : qty <= 5 ? 'text-red-600' : 'text-gray-600'}`;
+                  const cardClass = `border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 rounded p-3 flex items-center justify-between ${qty === 0 ? 'opacity-50' : qty <= 5 ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700' : ''}`;
+                  const qtyClass = `text-sm ${qty === 0 ? 'text-gray-400 dark:text-gray-500' : qty <= 5 ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-400'}`;
                   return (
                     <div key={it._id} className={cardClass} title={qty === 0 ? 'Out of stock' : qty <= 5 ? 'Low stock' : undefined}>
                       <div>
-                        <div className="font-medium">{it.name}</div>
+                        <div className="font-medium text-gray-900 dark:text-gray-100">{it.name}</div>
                         <div className={qtyClass}>₹{it.price ?? '-'} · Qty {qty}</div>
                       </div>
                       <button
                         disabled={(!student && !studentId) || qty === 0}
                         onClick={() => addToCart(it)}
-                        className="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded disabled:opacity-60 flex-shrink-0"
+                        className="px-3 py-1.5 bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-500 text-white rounded disabled:opacity-60 flex-shrink-0"
                       >
                         Add to Cart
                       </button>
@@ -541,74 +541,74 @@ export default function Store() {
           </div>
 
           {/* Cart Sidebar */}
-          <aside className="bg-white p-3 rounded shadow lg:sticky lg:top-4 h-fit max-h-[75vh] overflow-y-auto">
+          <aside className="bg-white dark:bg-gray-800 p-3 rounded shadow border border-gray-200 dark:border-gray-700 lg:sticky lg:top-4 h-fit max-h-[75vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-base font-semibold">Cart</h2>
-              <div className="text-xs text-gray-600">Total: <span className="font-medium">₹ {cartTotal.toFixed(2)}</span></div>
+              <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Cart</h2>
+              <div className="text-xs text-gray-600 dark:text-gray-400">Total: <span className="font-medium">₹ {cartTotal.toFixed(2)}</span></div>
             </div>
             {cart.length === 0 ? (
-              <div className="text-gray-500 text-sm">No items in cart.</div>
+              <div className="text-gray-500 dark:text-gray-400 text-sm">No items in cart.</div>
             ) : (
               <div className="space-y-2">
                 {cart.map(c => (
-                  <div key={c._id} className="flex items-center justify-between border rounded px-2 py-1">
+                  <div key={c._id} className="flex items-center justify-between border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 rounded px-2 py-1">
                     <div>
-                      <div className="font-medium text-sm">{c.name}</div>
-                      <div className="text-xs text-gray-600">₹ {c.price} each</div>
+                      <div className="font-medium text-sm text-gray-900 dark:text-gray-100">{c.name}</div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400">₹ {c.price} each</div>
                     </div>
                     <div className="flex items-center gap-1">
-                      <button className="px-2 py-0.5 bg-gray-100 rounded" onClick={() => updateQty(c._id, -1)}>-</button>
-                      <span className="w-6 text-center text-sm">{c.qty}</span>
-                      <button className="px-2 py-0.5 bg-gray-100 rounded" onClick={() => updateQty(c._id, 1)}>+</button>
-                      <button className="px-2 py-0.5 bg-red-100 text-red-700 rounded" onClick={() => removeFromCart(c._id)}>x</button>
+                      <button className="px-2 py-0.5 bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100 rounded" onClick={() => updateQty(c._id, -1)}>-</button>
+                      <span className="w-6 text-center text-sm text-gray-900 dark:text-gray-100">{c.qty}</span>
+                      <button className="px-2 py-0.5 bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100 rounded" onClick={() => updateQty(c._id, 1)}>+</button>
+                      <button className="px-2 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded" onClick={() => removeFromCart(c._id)}>x</button>
                     </div>
                   </div>
                 ))}
                 <div className="flex items-center justify-end gap-2 pt-2">
-                  <button className="px-2 py-1 text-xs bg-gray-100 rounded" onClick={clearCart}>Clear</button>
+                  <button className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded" onClick={clearCart}>Clear</button>
                   <button
                     disabled={(!student && !studentId) || cart.length===0 || cartTotal > currentBalance}
                     onClick={() => setShowConfirm(true)}
-                    className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-sm disabled:opacity-60"
+                    className="px-3 py-1 bg-emerald-600 dark:bg-emerald-700 hover:bg-emerald-700 dark:hover:bg-emerald-600 text-white rounded text-sm disabled:opacity-60"
                   >
                     Proceed
                   </button>
                 </div>
                 {cart.length>0 && cartTotal > currentBalance && (
-                  <div className="mt-1 text-xs text-red-600">Insufficient wallet balance. Remove items or reduce quantities.</div>
+                  <div className="mt-1 text-xs text-red-600 dark:text-red-400">Insufficient wallet balance. Remove items or reduce quantities.</div>
                 )}
               </div>
             )}
           </aside>
         </div>
 
-        <div className="bg-white p-4 rounded shadow">
+        <div className="bg-white dark:bg-gray-800 p-4 rounded shadow border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between mb-2">
-            <h2 className="text-lg font-semibold">Purchase History</h2>
-            <button onClick={loadHistory} className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded">Refresh</button>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Purchase History</h2>
+            <button onClick={loadHistory} className="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 rounded">Refresh</button>
           </div>
           {history.length === 0 ? (
-            <div className="text-gray-500">No history.</div>
+            <div className="text-gray-500 dark:text-gray-400">No history.</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full text-sm">
-                <thead className="bg-gray-50">
+                <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr>
-                    <th className="px-3 py-2 text-left">When</th>
-                    <th className="px-3 py-2 text-left">Action</th>
-                    <th className="px-3 py-2 text-left">Item</th>
-                    <th className="px-3 py-2 text-left">Student</th>
-                    <th className="px-3 py-2 text-left">RFID</th>
+                    <th className="px-3 py-2 text-left text-gray-900 dark:text-gray-100">When</th>
+                    <th className="px-3 py-2 text-left text-gray-900 dark:text-gray-100">Action</th>
+                    <th className="px-3 py-2 text-left text-gray-900 dark:text-gray-100">Item</th>
+                    <th className="px-3 py-2 text-left text-gray-900 dark:text-gray-100">Student</th>
+                    <th className="px-3 py-2 text-left text-gray-900 dark:text-gray-100">RFID</th>
                   </tr>
                 </thead>
                 <tbody>
                   {history.map(row => (
-                    <tr key={row._id} className="border-t">
-                      <td className="px-3 py-2">{new Date(row.createdAt).toLocaleString()}</td>
-                      <td className="px-3 py-2 capitalize">{row.action}</td>
-                      <td className="px-3 py-2">{row.item?.name || '-'}</td>
-                      <td className="px-3 py-2">{row.student?.name || '-'}</td>
-                      <td className="px-3 py-2">{row.student?.rfid_uid || row.student?.rfid || '-'}</td>
+                    <tr key={row._id} className="border-t border-gray-200 dark:border-gray-600">
+                      <td className="px-3 py-2 text-gray-900 dark:text-gray-100">{new Date(row.createdAt).toLocaleString()}</td>
+                      <td className="px-3 py-2 capitalize text-gray-900 dark:text-gray-100">{row.action}</td>
+                      <td className="px-3 py-2 text-gray-900 dark:text-gray-100">{row.item?.name || '-'}</td>
+                      <td className="px-3 py-2 text-gray-900 dark:text-gray-100">{row.student?.name || '-'}</td>
+                      <td className="px-3 py-2 text-gray-900 dark:text-gray-100">{row.student?.rfid_uid || row.student?.rfid || '-'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -617,19 +617,19 @@ export default function Store() {
           )}
         </div>
 
-        <div className="bg-white p-4 rounded shadow">
+        <div className="bg-white dark:bg-gray-800 p-4 rounded shadow border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">More</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">More</h2>
             <div className="flex gap-2">
               <Link
                 to={`/store/history${student?.rollNo ? `?rollNo=${encodeURIComponent(student.rollNo)}` : ''}`}
-                className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded"
+                className="px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 rounded"
               >
                 Purchase History
               </Link>
               <Link
                 to="/store/scans"
-                className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded"
+                className="px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 rounded"
               >
                 Show All Scans
               </Link>
