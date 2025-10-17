@@ -454,188 +454,300 @@ export default function Store() {
 
   return (
     <>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Store</h1>
-            <div className="text-sm font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md">
-              Today's Sales: <span className="font-bold text-green-700 dark:text-green-400">₹{todaysSales.toFixed(2)}</span>
-            </div>
-          </div>
-          <Link to="/store/add" className="px-3 py-2 bg-green-600 dark:bg-green-700 hover:bg-green-700 dark:hover:bg-green-600 text-white rounded">Add Store Item</Link>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-cyan-50 to-blue-50 dark:from-gray-900 dark:via-slate-800 dark:to-gray-900">
+        {/* Animated background elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-cyan-400/20 to-blue-400/20 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-teal-400/20 to-cyan-400/20 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
+          <div className="absolute top-40 left-1/2 w-80 h-80 bg-gradient-to-br from-indigo-400/20 to-cyan-400/20 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-4 rounded shadow border border-gray-200 dark:border-gray-700">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
-            <div>
-              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Roll Number</label>
-              <input value={rollNo} onChange={e => setRollNo(e.target.value)} placeholder="Enter Roll Number"
-                     className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400" />
+        <div className="relative z-10 p-6 max-w-7xl mx-auto">
+          {/* Enhanced Header Section */}
+          <div className="text-center space-y-2 py-4 mb-4">
+            <div className="inline-flex items-center px-4 py-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-full border border-white/20 dark:border-gray-700/50 shadow-lg">
+              <div className="w-2.5 h-2.5 bg-cyan-500 rounded-full mr-2 animate-pulse"></div>
+              <span className="text-gray-700 dark:text-gray-300 font-semibold">Campus Store</span>
             </div>
-            <div>
-              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">RFID Number</label>
-              <div className="flex items-center gap-2">
-                <input value={rfid} onChange={e => setRfid(e.target.value)} placeholder="Scan or enter RFID"
-                       className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400" />
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <button onClick={findStudent} className="px-4 py-2 bg-indigo-600 dark:bg-indigo-700 hover:bg-indigo-700 dark:hover:bg-indigo-600 text-white rounded">Find Student</button>
-              <button onClick={loadHistory} className="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 rounded">Load History</button>
-            </div>
-            {loading && <div className="text-gray-500 dark:text-gray-400">Loading...</div>}
           </div>
-          {error && <div className="mt-2 text-red-600 dark:text-red-400 text-sm">{error}</div>}
-          {student && (
-            <div className="mt-3 text-sm text-gray-700 dark:text-gray-300 flex items-center gap-2 flex-wrap">
-              <div>
-                <span className="font-medium">Student:</span> {student.name} | <span className="font-medium">Wallet Balance:</span> ₹{student.walletBalance}
-              </div>
-              <button onClick={() => { setError(''); clearCart(); setStudent(null); setStudentId(''); setRollNo(''); setRfid(''); setWalletBalance(null); try { localStorage.removeItem('last_student'); localStorage.removeItem('food_student'); } catch {}; try { window?.socket?.emit?.('ui:rfid-clear', {}); } catch {}; try { window.dispatchEvent(new CustomEvent('ui:rfid-clear', { detail: {} })); } catch {} }} className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 rounded border border-gray-200 dark:border-gray-600">Cancel</button>
-            </div>
-          )}
-        </div>
 
-        {/* Items + Cart layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4">
-          {/* Items */}
-          <div className="bg-white dark:bg-gray-800 p-4 rounded shadow border border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Order Item</h2>
-              <div className="flex items-center gap-2">
-                <input
-                  value={itemQuery}
-                  onChange={(e) => setItemQuery(e.target.value)}
-                  placeholder="Search store items"
-                  className="text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 w-40 md:w-56 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
-                />
-                <button onClick={() => setItemQuery(v => v.trim())} className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 rounded">Search</button>
-              </div>
-            </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">{(student || studentId || rfid) ? 'Ready to order' : 'Find a student to begin.'}</div>
-            {items.length === 0 ? (
-              <div className="text-gray-500 dark:text-gray-400">No store items yet. Use "Add Store Item" to create some.</div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-                {filteredItems.map(it => {
-                  const qty = it.quantity ?? 0;
-                  const cardClass = `border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 rounded p-3 flex items-center justify-between ${qty === 0 ? 'opacity-50' : qty <= 5 ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700' : ''}`;
-                  const qtyClass = `text-sm ${qty === 0 ? 'text-gray-400 dark:text-gray-500' : qty <= 5 ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-400'}`;
-                  return (
-                    <div key={it._id} className={cardClass} title={qty === 0 ? 'Out of stock' : qty <= 5 ? 'Low stock' : undefined}>
-                      <div>
-                        <div className="font-medium text-gray-900 dark:text-gray-100">{it.name}</div>
-                        <div className={qtyClass}>₹{it.price ?? '-'} · Qty {qty}</div>
+          <div className="space-y-6">
+            {/* Enhanced Header with Sales Info */}
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-6 rounded-2xl border border-white/20 dark:border-gray-700/50 shadow-xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-cyan-100 to-blue-100 dark:from-cyan-900/30 dark:to-blue-900/30 rounded-xl flex items-center justify-center">
+                    <span className="text-2xl text-cyan-600 dark:text-cyan-400">🛒</span>
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Campus Store Management</h2>
+                    <div className="flex items-center gap-3 mt-2">
+                      <div className="px-4 py-2 bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 border border-green-200 dark:border-green-700 rounded-xl">
+                        <span className="text-sm font-medium text-green-700 dark:text-green-300">Today's Sales:</span>
+                        <span className="font-bold text-green-800 dark:text-green-200 ml-2">₹{todaysSales.toFixed(2)}</span>
                       </div>
-                      <button
-                        disabled={(!student && !studentId) || qty === 0}
-                        onClick={() => addToCart(it)}
-                        className="px-3 py-1.5 bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-500 text-white rounded disabled:opacity-60 flex-shrink-0"
-                      >
-                        Add to Cart
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Cart Sidebar */}
-          <aside className="bg-white dark:bg-gray-800 p-3 rounded shadow border border-gray-200 dark:border-gray-700 lg:sticky lg:top-4 h-fit max-h-[75vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Cart</h2>
-              <div className="text-xs text-gray-600 dark:text-gray-400">Total: <span className="font-medium">₹ {cartTotal.toFixed(2)}</span></div>
-            </div>
-            {cart.length === 0 ? (
-              <div className="text-gray-500 dark:text-gray-400 text-sm">No items in cart.</div>
-            ) : (
-              <div className="space-y-2">
-                {cart.map(c => (
-                  <div key={c._id} className="flex items-center justify-between border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 rounded px-2 py-1">
-                    <div>
-                      <div className="font-medium text-sm text-gray-900 dark:text-gray-100">{c.name}</div>
-                      <div className="text-xs text-gray-600 dark:text-gray-400">₹ {c.price} each</div>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <button className="px-2 py-0.5 bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100 rounded" onClick={() => updateQty(c._id, -1)}>-</button>
-                      <span className="w-6 text-center text-sm text-gray-900 dark:text-gray-100">{c.qty}</span>
-                      <button className="px-2 py-0.5 bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100 rounded" onClick={() => updateQty(c._id, 1)}>+</button>
-                      <button className="px-2 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded" onClick={() => removeFromCart(c._id)}>x</button>
                     </div>
                   </div>
-                ))}
-                <div className="flex items-center justify-end gap-2 pt-2">
-                  <button className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded" onClick={clearCart}>Clear</button>
-                  <button
-                    disabled={(!student && !studentId) || cart.length===0 || cartTotal > currentBalance}
-                    onClick={() => setShowConfirm(true)}
-                    className="px-3 py-1 bg-emerald-600 dark:bg-emerald-700 hover:bg-emerald-700 dark:hover:bg-emerald-600 text-white rounded text-sm disabled:opacity-60"
-                  >
-                    Proceed
+                </div>
+                <Link to="/store/add" className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+                  Add Store Item
+                </Link>
+              </div>
+            </div>
+
+            {/* Enhanced Student Search Section */}
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-6 rounded-2xl border border-white/20 dark:border-gray-700/50 shadow-xl hover:shadow-2xl transition-all duration-300">
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-end">
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Student Information</label>
+                  <input
+                    value={rollNo}
+                    onChange={e => setRollNo(e.target.value)}
+                    placeholder="Roll Number"
+                    className="w-full border-2 border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white/50 dark:bg-gray-700/50 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200 hover:bg-white dark:hover:bg-gray-700"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">RFID Scanner</label>
+                  <input
+                    value={rfid}
+                    onChange={e => setRfid(e.target.value)}
+                    placeholder="Scan or enter RFID"
+                    className="w-full border-2 border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white/50 dark:bg-gray-700/50 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200 hover:bg-white dark:hover:bg-gray-700"
+                  />
+                </div>
+                <div className="flex gap-3">
+                  <button onClick={findStudent} className="flex-1 px-4 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+                    Find Student
+                  </button>
+                  <button onClick={loadHistory} className="px-4 py-3 bg-gradient-to-r from-gray-500 to-slate-600 hover:from-gray-600 hover:to-slate-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+                    Load History
                   </button>
                 </div>
-                {cart.length>0 && cartTotal > currentBalance && (
-                  <div className="mt-1 text-xs text-red-600 dark:text-red-400">Insufficient wallet balance. Remove items or reduce quantities.</div>
+                <div className="flex items-center">
+                  {loading && <div className="text-gray-500 dark:text-gray-400 flex items-center gap-2"><div className="w-4 h-4 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>Loading...</div>}
+                </div>
+              </div>
+
+              {/* Status Messages */}
+              {error && <div className="mt-4 p-3 bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 border border-red-200 dark:border-red-700 rounded-xl"><p className="text-sm text-red-800 dark:text-red-300">{error}</p></div>}
+
+              {student && (
+                <div className="mt-4 p-4 bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 border border-cyan-200 dark:border-cyan-700 rounded-xl">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <div className="font-bold text-cyan-900 dark:text-cyan-100 text-lg">{student.name}</div>
+                      <div className="text-sm text-cyan-700 dark:text-cyan-300">Roll: {student.rollNo} • Wallet: ₹{student.walletBalance}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm text-cyan-600 dark:text-cyan-400">Ready to Shop</div>
+                      <div className="text-xs text-cyan-500 dark:text-cyan-500 mt-1">🛒 RFID Enabled</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Enhanced Items + Cart Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8">
+              {/* Enhanced Store Items Section */}
+              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-6 rounded-2xl border border-white/20 dark:border-gray-700/50 shadow-xl hover:shadow-2xl transition-all duration-300">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-cyan-100 to-blue-100 dark:from-cyan-900/30 dark:to-blue-900/30 rounded-xl flex items-center justify-center">
+                      <span className="text-xl text-cyan-600 dark:text-cyan-400">🛍️</span>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Store Items</h3>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <input
+                      value={itemQuery}
+                      onChange={(e) => setItemQuery(e.target.value)}
+                      placeholder="Search store items"
+                      className="text-sm border-2 border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2 w-48 bg-white/50 dark:bg-gray-700/50 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200"
+                    />
+                    <button onClick={() => setItemQuery(v => v.trim())} className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+                      Search
+                    </button>
+                  </div>
+                </div>
+
+                <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  {(student || studentId || rfid) ? '🛒 Ready to shop - select items below' : '👤 Find a student first to begin shopping'}
+                </div>
+
+                {items.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <span className="text-2xl text-gray-400 dark:text-gray-500">🛍️</span>
+                    </div>
+                    <p className="text-gray-500 dark:text-gray-400 text-lg">No store items available</p>
+                    <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">Add items using "Add Store Item" button</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+                    {filteredItems.map(it => {
+                      const qty = it.quantity ?? 0;
+                      const cardClass = `border-2 border-gray-200 dark:border-gray-600 bg-white/50 dark:bg-gray-700/50 rounded-xl p-3 flex items-center justify-between transition-all duration-200 hover:shadow-lg hover:scale-105 h-20 ${qty === 0 ? 'opacity-50 border-gray-300 dark:border-gray-500' : qty <= 5 ? 'border-red-200 dark:border-red-700 bg-red-50/50 dark:bg-red-900/10' : 'hover:border-cyan-300 dark:hover:border-cyan-600'}`;
+                      const qtyClass = `text-sm font-medium ${qty === 0 ? 'text-gray-400 dark:text-gray-500' : qty <= 5 ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-400'}`;
+                      return (
+                        <div key={it._id} className={cardClass} title={qty === 0 ? 'Out of stock' : qty <= 5 ? 'Low stock' : undefined}>
+                          <div className="flex-1">
+                            <div className="font-bold text-base text-gray-900 dark:text-gray-100">{it.name}</div>
+                            <div className={qtyClass}>₹{it.price ?? '-'} • Qty: {qty}</div>
+                          </div>
+                          <button
+                            disabled={(!student && !studentId) || qty === 0}
+                            onClick={() => addToCart(it)}
+                            className="px-3 py-1.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 disabled:bg-gray-400 dark:disabled:bg-gray-600 text-white rounded-lg text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                          >
+                            Add
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
                 )}
               </div>
-            )}
-          </aside>
-        </div>
 
-        <div className="bg-white dark:bg-gray-800 p-4 rounded shadow border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Purchase History</h2>
-            <button onClick={loadHistory} className="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 rounded">Refresh</button>
-          </div>
-          {history.length === 0 ? (
-            <div className="text-gray-500 dark:text-gray-400">No history.</div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full text-sm">
-                <thead className="bg-gray-50 dark:bg-gray-700">
-                  <tr>
-                    <th className="px-3 py-2 text-left text-gray-900 dark:text-gray-100">When</th>
-                    <th className="px-3 py-2 text-left text-gray-900 dark:text-gray-100">Action</th>
-                    <th className="px-3 py-2 text-left text-gray-900 dark:text-gray-100">Item</th>
-                    <th className="px-3 py-2 text-left text-gray-900 dark:text-gray-100">Student</th>
-                    <th className="px-3 py-2 text-left text-gray-900 dark:text-gray-100">RFID</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {history.map(row => (
-                    <tr key={row._id} className="border-t border-gray-200 dark:border-gray-600">
-                      <td className="px-3 py-2 text-gray-900 dark:text-gray-100">{new Date(row.createdAt).toLocaleString()}</td>
-                      <td className="px-3 py-2 capitalize text-gray-900 dark:text-gray-100">{row.action}</td>
-                      <td className="px-3 py-2 text-gray-900 dark:text-gray-100">{row.item?.name || '-'}</td>
-                      <td className="px-3 py-2 text-gray-900 dark:text-gray-100">{row.student?.name || '-'}</td>
-                      <td className="px-3 py-2 text-gray-900 dark:text-gray-100">{row.student?.rfid_uid || row.student?.rfid || '-'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+              {/* Enhanced Cart Sidebar */}
+              <aside className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-6 rounded-2xl border border-white/20 dark:border-gray-700/50 shadow-xl hover:shadow-2xl transition-all duration-300 lg:sticky lg:top-6 h-fit">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30 rounded-xl flex items-center justify-center">
+                      <span className="text-xl text-blue-600 dark:text-blue-400">🛒</span>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Shopping Cart</h3>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Total Amount</div>
+                    <div className="text-xl font-bold text-cyan-600 dark:text-cyan-400">₹{cartTotal.toFixed(2)}</div>
+                  </div>
+                </div>
 
-        <div className="bg-white dark:bg-gray-800 p-4 rounded shadow border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">More</h2>
-            <div className="flex gap-2">
-              <Link
-                to={`/store/history${student?.rollNo ? `?rollNo=${encodeURIComponent(student.rollNo)}` : ''}`}
-                className="px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 rounded"
-              >
-                Purchase History
-              </Link>
-              <Link
-                to="/store/scans"
-                className="px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 rounded"
-              >
-                Show All Scans
-              </Link>
+                {cart.length === 0 ? (
+                  <div className="text-center py-8">
+                    <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <span className="text-xl text-gray-400 dark:text-gray-500">🛒</span>
+                    </div>
+                    <p className="text-gray-500 dark:text-gray-400">Cart is empty</p>
+                    <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">Add items to get started</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {cart.map(c => (
+                      <div key={c._id} className="bg-gradient-to-r from-gray-50 to-slate-50 dark:from-gray-700/50 dark:to-slate-700/50 border border-gray-200 dark:border-gray-600 rounded-xl p-3 transition-all duration-200">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex-1">
+                            <div className="font-semibold text-gray-900 dark:text-gray-100">{c.name}</div>
+                            <div className="text-sm text-gray-600 dark:text-gray-400">₹{c.price} each</div>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <button className="w-7 h-7 bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-500 transition-all duration-200" onClick={() => updateQty(c._id, -1)}>-</button>
+                            <span className="w-7 text-center text-sm font-semibold text-gray-900 dark:text-gray-100">{c.qty}</span>
+                            <button className="w-7 h-7 bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-500 transition-all duration-200" onClick={() => updateQty(c._id, 1)}>+</button>
+                            <button className="w-7 h-7 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-800 transition-all duration-200" onClick={() => removeFromCart(c._id)}>×</button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+                      <button className="px-4 py-2 bg-gradient-to-r from-gray-500 to-slate-600 hover:from-gray-600 hover:to-slate-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200" onClick={clearCart}>
+                        Clear Cart
+                      </button>
+                      <button
+                        disabled={(!student && !studentId) || cart.length===0 || cartTotal > currentBalance}
+                        onClick={() => setShowConfirm(true)}
+                        className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 disabled:bg-gray-400 dark:disabled:bg-gray-600 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                      >
+                        Proceed to Pay
+                      </button>
+                    </div>
+
+                    {cart.length>0 && cartTotal > currentBalance && (
+                      <div className="mt-3 p-3 bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 border border-red-200 dark:border-red-700 rounded-xl">
+                        <p className="text-xs text-red-800 dark:text-red-300">⚠️ Insufficient wallet balance. Remove items or reduce quantities.</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </aside>
+            </div>
+
+            {/* Enhanced Purchase History Section */}
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-6 rounded-2xl border border-white/20 dark:border-gray-700/50 shadow-xl hover:shadow-2xl transition-all duration-300">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-xl flex items-center justify-center">
+                    <span className="text-xl text-indigo-600 dark:text-indigo-400">📋</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Purchase History</h3>
+                </div>
+                <button onClick={loadHistory} className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+                  Refresh
+                </button>
+              </div>
+
+              {history.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <span className="text-xl text-gray-400 dark:text-gray-500">📋</span>
+                  </div>
+                  <p className="text-gray-500 dark:text-gray-400">No purchase history</p>
+                  <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">Purchases will appear here</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50 dark:bg-gray-700">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-gray-900 dark:text-gray-100 font-semibold">When</th>
+                        <th className="px-4 py-3 text-left text-gray-900 dark:text-gray-100 font-semibold">Action</th>
+                        <th className="px-4 py-3 text-left text-gray-900 dark:text-gray-100 font-semibold">Item</th>
+                        <th className="px-4 py-3 text-left text-gray-900 dark:text-gray-100 font-semibold">Student</th>
+                        <th className="px-4 py-3 text-left text-gray-900 dark:text-gray-100 font-semibold">RFID</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {history.map(row => (
+                        <tr key={row._id} className="border-t border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                          <td className="px-4 py-3 text-gray-900 dark:text-gray-100">{new Date(row.createdAt).toLocaleString()}</td>
+                          <td className="px-4 py-3 capitalize text-gray-900 dark:text-gray-100">{row.action}</td>
+                          <td className="px-4 py-3 text-gray-900 dark:text-gray-100">{row.item?.name || '-'}</td>
+                          <td className="px-4 py-3 text-gray-900 dark:text-gray-100">{row.student?.name || '-'}</td>
+                          <td className="px-4 py-3 text-gray-900 dark:text-gray-100 font-mono text-xs">{row.student?.rfid_uid || row.student?.rfid || '-'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            {/* Enhanced Navigation Links */}
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-6 rounded-2xl border border-white/20 dark:border-gray-700/50 shadow-xl">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Quick Actions</h3>
+                <div className="flex gap-3">
+                  <Link
+                    to={`/store/history${student?.rollNo ? `?rollNo=${encodeURIComponent(student.rollNo)}` : ''}`}
+                    className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                  >
+                    Purchase History
+                  </Link>
+                  <Link
+                    to="/store/scans"
+                    className="px-4 py-2 border-2 border-cyan-200 dark:border-cyan-700 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 text-cyan-700 dark:text-cyan-300 rounded-xl text-sm font-semibold transition-all duration-200"
+                  >
+                    Show All Scans
+                  </Link>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+      </div>
     </>
   );
 }

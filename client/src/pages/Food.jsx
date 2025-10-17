@@ -458,210 +458,317 @@ export default function Food() {
 
   return (
     <>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Food Court</h1>
-            <div className="text-sm font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md">
-              Today's Sales: <span className="font-bold text-green-700 dark:text-green-400">₹{todaysSales.toFixed(2)}</span>
-            </div>
-          </div>
-          <Link to="/food/add" className="px-3 py-2 bg-green-600 dark:bg-green-700 hover:bg-green-700 dark:hover:bg-green-600 text-white rounded">Add Food</Link>
-        </div>
-        
-
-        <div className="bg-white dark:bg-gray-800 p-4 rounded shadow border border-gray-200 dark:border-gray-700">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
-            <div>
-              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Roll Number</label>
-              <input value={rollNo} onChange={e => setRollNo(e.target.value)} placeholder="Enter Roll Number"
-                     className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400" />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">RFID Number</label>
-              <div className="flex items-center gap-2">
-                <input value={rfid} onChange={e => setRfid(e.target.value)} placeholder="Scan or enter RFID"
-                       className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400" />
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <button onClick={findStudent} className="px-4 py-2 bg-indigo-600 dark:bg-indigo-700 hover:bg-indigo-700 dark:hover:bg-indigo-600 text-white rounded">Find Student</button>
-            </div>
-          </div>
-          {error && <div className="mt-2 text-red-600 dark:text-red-400 text-sm">{error}</div>}
-          {successMsg && <div className="mt-2 text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 text-sm px-3 py-2 rounded">{successMsg}</div>}
-          {student && (
-            <div className="mt-3 text-sm text-gray-700 dark:text-gray-300 flex items-center gap-2 flex-wrap">
-              <div>
-                <span className="font-medium">Student:</span> {student.name} | <span className="font-medium">Wallet Balance:</span> ₹{student.walletBalance}
-              </div>
-              <button onClick={() => { unscan(); try { window?.socket?.emit?.('ui:rfid-clear', {}); } catch {} }} className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 rounded border border-gray-200 dark:border-gray-600">Cancel</button>
-            </div>
-          )}
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-orange-50 to-amber-50 dark:from-gray-900 dark:via-slate-800 dark:to-gray-900">
+        {/* Animated background elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-orange-400/20 to-red-400/20 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-yellow-400/20 to-orange-400/20 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
+          <div className="absolute top-40 left-1/2 w-80 h-80 bg-gradient-to-br from-amber-400/20 to-orange-400/20 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
         </div>
 
-        {/* Items + Cart layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4">
-          {/* Items */}
-          <div className="bg-white dark:bg-gray-800 p-4 rounded shadow border border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Order Food</h2>
-              <div className="flex items-center gap-2">
-                <input
-                  value={itemQuery}
-                  onChange={(e) => setItemQuery(e.target.value)}
-                  placeholder="Search food items"
-                  className="text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 w-40 md:w-56 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
-                />
-                <button onClick={() => setItemQuery(v => v.trim())} className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 rounded">Search</button>
-              </div>
-            </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">{student ? 'Ready to order' : 'Find a student to begin.'}</div>
-            {items.length === 0 ? (
-              <div className="text-gray-500 dark:text-gray-400">No food items yet. Use "Add Food" to create some.</div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-                {filteredItems.map(it => {
-                  const qty = it.quantity ?? 0;
-                  const cardClass = `border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 rounded p-3 flex items-center justify-between ${qty === 0 ? 'opacity-50' : qty <= 5 ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700' : ''}`;
-                  const qtyClass = `text-sm ${qty === 0 ? 'text-gray-400 dark:text-gray-500' : qty <= 5 ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-400'}`;
-                  return (
-                    <div key={it._id} className={cardClass} title={qty === 0 ? 'Out of stock' : qty <= 5 ? 'Low stock' : undefined}>
-                      <div>
-                        <div className="font-medium text-gray-900 dark:text-gray-100">{it.name}</div>
-                        <div className={qtyClass}>₹{it.price ?? '-'} · Qty {qty}</div>
+        <div className="relative z-10 p-6 max-w-7xl mx-auto">
+          {/* Enhanced Header Section */}
+          <div className="text-center space-y-2 py-4 mb-4">
+
+          <div className="space-y-6">
+            {/* Enhanced Header with Sales Info */}
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-6 rounded-2xl border border-white/20 dark:border-gray-700/50 shadow-xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-amber-100 dark:from-orange-900/30 dark:to-amber-900/30 rounded-xl flex items-center justify-center">
+                    <span className="text-2xl text-orange-600 dark:text-orange-400">🍽️</span>
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Food Court Management</h2>
+                    <div className="flex items-center gap-3 mt-2">
+                      <div className="px-4 py-2 bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 border border-green-200 dark:border-green-700 rounded-xl">
+                        <span className="text-sm font-medium text-green-700 dark:text-green-300">Today's Sales:</span>
+                        <span className="font-bold text-green-800 dark:text-green-200 ml-2">₹{todaysSales.toFixed(2)}</span>
                       </div>
-                      <button
-                        disabled={!student || qty === 0}
-                        onClick={() => addToCart(it)}
-                        className="px-3 py-1.5 bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-500 text-white rounded disabled:opacity-60"
-                      >
-                        Add to Cart
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Cart Sidebar */}
-          <aside className="bg-white dark:bg-gray-800 p-3 rounded shadow border border-gray-200 dark:border-gray-700 lg:sticky lg:top-4 h-fit max-h-[75vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Cart</h2>
-              <div className="text-xs text-gray-600 dark:text-gray-400">Total: <span className="font-medium">₹ {cartTotal.toFixed(2)}</span></div>
-            </div>
-            {cart.length === 0 ? (
-              <div className="text-gray-500 dark:text-gray-400 text-sm">No items in cart.</div>
-            ) : (
-              <div className="space-y-2">
-                {cart.map(c => (
-                  <div key={c._id} className="flex items-center justify-between border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 rounded px-2 py-1">
-                    <div>
-                      <div className="font-medium text-sm text-gray-900 dark:text-gray-100">{c.name}</div>
-                      <div className="text-xs text-gray-600 dark:text-gray-400">₹ {c.price} each</div>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <button className="px-2 py-0.5 bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100 rounded" onClick={() => updateQty(c._id, -1)}>-</button>
-                      <span className="w-6 text-center text-sm text-gray-900 dark:text-gray-100">{c.qty}</span>
-                      <button className="px-2 py-0.5 bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100 rounded" onClick={() => updateQty(c._id, 1)}>+</button>
-                      <button className="px-2 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded" onClick={() => removeFromCart(c._id)}>x</button>
                     </div>
                   </div>
-                ))}
-                <div className="flex items-center justify-end gap-2 pt-2">
-                  <button className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded" onClick={clearCart}>Clear</button>
-                  <button
-                    disabled={!student || cart.length===0 || cartTotal > Number(student?.walletBalance || 0)}
-                    onClick={() => setShowConfirm(true)}
-                    className="px-3 py-1 bg-emerald-600 dark:bg-emerald-700 hover:bg-emerald-700 dark:hover:bg-emerald-600 text-white rounded text-sm disabled:opacity-60"
-                  >
-                    Proceed
+                </div>
+                <Link to="/food/add" className="px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+                  Add Food Item
+                </Link>
+              </div>
+            </div>
+
+            {/* Enhanced Student Search Section */}
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-6 rounded-2xl border border-white/20 dark:border-gray-700/50 shadow-xl hover:shadow-2xl transition-all duration-300">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-end">
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Student Information</label>
+                  <input
+                    value={rollNo}
+                    onChange={e => setRollNo(e.target.value)}
+                    placeholder="Roll Number"
+                    className="w-full border-2 border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white/50 dark:bg-gray-700/50 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 hover:bg-white dark:hover:bg-gray-700"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">RFID Scanner</label>
+                  <input
+                    value={rfid}
+                    onChange={e => setRfid(e.target.value)}
+                    placeholder="Scan or enter RFID"
+                    className="w-full border-2 border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white/50 dark:bg-gray-700/50 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 hover:bg-white dark:hover:bg-gray-700"
+                  />
+                </div>
+                <div className="flex gap-3">
+                  <button onClick={findStudent} className="flex-1 px-4 py-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+                    Find Student
+                  </button>
+                  <button onClick={() => { unscan(); try { window?.socket?.emit?.('ui:rfid-clear', {}); } catch {} }} className="px-4 py-3 bg-gradient-to-r from-gray-500 to-slate-600 hover:from-gray-600 hover:to-slate-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+                    Clear
                   </button>
                 </div>
-                {student && cart.length>0 && cartTotal > Number(student?.walletBalance || 0) && (
-                  <div className="mt-1 text-xs text-red-600 dark:text-red-400">Insufficient wallet balance. Remove items or reduce quantities.</div>
+              </div>
+
+              {/* Status Messages */}
+              {error && <div className="mt-4 p-3 bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 border border-red-200 dark:border-red-700 rounded-xl"><p className="text-sm text-red-800 dark:text-red-300">{error}</p></div>}
+              {successMsg && <div className="mt-4 p-3 bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 border border-emerald-200 dark:border-emerald-700 rounded-xl"><p className="text-sm text-emerald-800 dark:text-emerald-300">{successMsg}</p></div>}
+
+              {student && (
+                <div className="mt-4 p-4 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 border border-orange-200 dark:border-orange-700 rounded-xl">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <div className="font-bold text-orange-900 dark:text-orange-100 text-lg">{student.name}</div>
+                      <div className="text-sm text-orange-700 dark:text-orange-300">Roll: {student.rollNo} • Wallet: ₹{student.walletBalance}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm text-orange-600 dark:text-orange-400">Ready to Order</div>
+                      <div className="text-xs text-orange-500 dark:text-orange-500 mt-1">🍽️ RFID Enabled</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Enhanced Items + Cart Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8">
+              {/* Enhanced Food Items Section */}
+              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-6 rounded-2xl border border-white/20 dark:border-gray-700/50 shadow-xl hover:shadow-2xl transition-all duration-300">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-orange-100 to-amber-100 dark:from-orange-900/30 dark:to-amber-900/30 rounded-xl flex items-center justify-center">
+                      <span className="text-xl text-orange-600 dark:text-orange-400">🍔</span>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Order Food Items</h3>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <input
+                      value={itemQuery}
+                      onChange={(e) => setItemQuery(e.target.value)}
+                      placeholder="Search food items"
+                      className="text-sm border-2 border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2 w-48 bg-white/50 dark:bg-gray-700/50 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+                    />
+                    <button onClick={() => setItemQuery(v => v.trim())} className="px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+                      Search
+                    </button>
+                  </div>
+                </div>
+
+                <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  {student ? '🎯 Ready to order - select items below' : '👤 Find a student first to begin ordering'}
+                </div>
+
+                {items.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <span className="text-2xl text-gray-400 dark:text-gray-500">🍽️</span>
+                    </div>
+                    <p className="text-gray-500 dark:text-gray-400 text-lg">No food items available</p>
+                    <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">Add food items using "Add Food Item" button</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+                    {filteredItems.map(it => {
+                      const qty = it.quantity ?? 0;
+                      const cardClass = `border-2 border-gray-200 dark:border-gray-600 bg-white/50 dark:bg-gray-700/50 rounded-xl p-3 flex items-center justify-between transition-all duration-200 hover:shadow-lg hover:scale-105 h-20 ${qty === 0 ? 'opacity-50 border-gray-300 dark:border-gray-500' : qty <= 5 ? 'border-red-200 dark:border-red-700 bg-red-50/50 dark:bg-red-900/10' : 'hover:border-orange-300 dark:hover:border-orange-600'}`;
+                      const qtyClass = `text-sm font-medium ${qty === 0 ? 'text-gray-400 dark:text-gray-500' : qty <= 5 ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-400'}`;
+                      return (
+                        <div key={it._id} className={cardClass} title={qty === 0 ? 'Out of stock' : qty <= 5 ? 'Low stock' : undefined}>
+                          <div className="flex-1">
+                            <div className="font-bold text-base text-gray-900 dark:text-gray-100">{it.name}</div>
+                            <div className={qtyClass}>₹{it.price ?? '-'} • Qty: {qty}</div>
+                          </div>
+                          <button
+                            disabled={!student || qty === 0}
+                            onClick={() => addToCart(it)}
+                            className="px-3 py-1.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 disabled:bg-gray-400 dark:disabled:bg-gray-600 text-white rounded-lg text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                          >
+                            Add
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
                 )}
               </div>
-            )}
-          </aside>
-        </div>
 
-        {/* Confirm Modal */}
-        {showConfirm && (
-          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-800 rounded shadow p-4 w-full max-w-md border border-gray-200 dark:border-gray-700">
-              <div className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">Confirm Purchase</div>
-              <div className="text-sm mb-3 text-gray-700 dark:text-gray-300">Student: <b>{student?.name}</b> · RFID: <span className="font-mono">{student?.rfid_uid}</span></div>
-              <div className="max-h-60 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded">
-                <table className="w-full text-sm">
-                  <thead className="bg-gray-50 dark:bg-gray-700">
-                    <tr>
-                      <th className="px-2 py-1 text-left text-gray-900 dark:text-gray-100">Item</th>
-                      <th className="px-2 py-1 text-right text-gray-900 dark:text-gray-100">Qty</th>
-                      <th className="px-2 py-1 text-right text-gray-900 dark:text-gray-100">Amount</th>
-                    </tr>
-                  </thead>
-                  <tbody>
+              {/* Enhanced Cart Sidebar */}
+              <aside className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-6 rounded-2xl border border-white/20 dark:border-gray-700/50 shadow-xl hover:shadow-2xl transition-all duration-300 lg:sticky lg:top-6 h-fit">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30 rounded-xl flex items-center justify-center">
+                      <span className="text-xl text-amber-600 dark:text-amber-400">🛒</span>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Shopping Cart</h3>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Total Amount</div>
+                    <div className="text-xl font-bold text-orange-600 dark:text-orange-400">₹{cartTotal.toFixed(2)}</div>
+                  </div>
+                </div>
+
+                {cart.length === 0 ? (
+                  <div className="text-center py-8">
+                    <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <span className="text-xl text-gray-400 dark:text-gray-500">🛒</span>
+                    </div>
+                    <p className="text-gray-500 dark:text-gray-400">Cart is empty</p>
+                    <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">Add items to get started</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
                     {cart.map(c => (
-                      <tr key={c._id} className="border-t border-gray-200 dark:border-gray-600">
-                        <td className="px-2 py-1 text-gray-900 dark:text-gray-100">{c.name}</td>
-                        <td className="px-2 py-1 text-right text-gray-900 dark:text-gray-100">{c.qty}</td>
-                        <td className="px-2 py-1 text-right text-gray-900 dark:text-gray-100">₹ {(c.qty*Number(c.price)).toFixed(2)}</td>
-                      </tr>
+                      <div key={c._id} className="bg-gradient-to-r from-gray-50 to-slate-50 dark:from-gray-700/50 dark:to-slate-700/50 border border-gray-200 dark:border-gray-600 rounded-xl p-3 transition-all duration-200">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex-1">
+                            <div className="font-semibold text-gray-900 dark:text-gray-100">{c.name}</div>
+                            <div className="text-sm text-gray-600 dark:text-gray-400">₹{c.price} each</div>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <button className="w-7 h-7 bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-500 transition-all duration-200" onClick={() => updateQty(c._id, -1)}>-</button>
+                            <span className="w-7 text-center text-sm font-semibold text-gray-900 dark:text-gray-100">{c.qty}</span>
+                            <button className="w-7 h-7 bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-500 transition-all duration-200" onClick={() => updateQty(c._id, 1)}>+</button>
+                            <button className="w-7 h-7 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-800 transition-all duration-200" onClick={() => removeFromCart(c._id)}>×</button>
+                          </div>
+                        </div>
+                      </div>
                     ))}
-                  </tbody>
-                  <tfoot>
-                    <tr className="border-t border-gray-200 dark:border-gray-600">
-                      <td className="px-2 py-1 font-medium text-gray-900 dark:text-gray-100">Total</td>
-                      <td></td>
-                      <td className="px-2 py-1 text-right font-semibold text-gray-900 dark:text-gray-100">₹ {cartTotal.toFixed(2)}</td>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
-              <div className="flex items-center justify-end gap-2 mt-3">
-                <button className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600 rounded" onClick={() => setShowConfirm(false)}>Cancel</button>
-                <button className="px-3 py-1 bg-indigo-600 dark:bg-indigo-700 hover:bg-indigo-700 dark:hover:bg-indigo-600 text-white rounded" onClick={printBill}>Print Bill</button>
-                <button className="px-3 py-1.5 bg-emerald-600 dark:bg-emerald-700 hover:bg-emerald-700 dark:hover:bg-emerald-600 text-white rounded" onClick={confirmAndPurchase}>Confirm & Purchase</button>
-              </div>
-            </div>
-          </div>
-        )}
 
-        {/* Success Modal */}
-        {showSuccessModal && (
-          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-800 rounded shadow p-5 w-full max-w-sm border border-gray-200 dark:border-gray-700">
-              <div className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">Order Confirmed</div>
-              <p className="text-sm text-gray-700 dark:text-gray-300">Receipt has been printed and saved as PDF to your downloads.</p>
-              <div className="flex items-center justify-end gap-2 mt-4">
-                <button className="px-3 py-1.5 bg-indigo-600 dark:bg-indigo-700 hover:bg-indigo-700 dark:hover:bg-indigo-600 text-white rounded" onClick={() => setShowSuccessModal(false)}>OK</button>
-              </div>
-            </div>
-          </div>
-        )}
+                    <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+                      <button className="px-4 py-2 bg-gradient-to-r from-gray-500 to-slate-600 hover:from-gray-600 hover:to-slate-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200" onClick={clearCart}>
+                        Clear Cart
+                      </button>
+                      <button
+                        disabled={!student || cart.length===0 || cartTotal > Number(student?.walletBalance || 0)}
+                        onClick={() => setShowConfirm(true)}
+                        className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 disabled:bg-gray-400 dark:disabled:bg-gray-600 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                      >
+                        Proceed to Pay
+                      </button>
+                    </div>
 
-        <div className="bg-white dark:bg-gray-800 p-4 rounded shadow border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">More</h2>
-            <div className="flex gap-2">
-              <Link
-                to={`/food/history${student?.rollNo ? `?rollNo=${encodeURIComponent(student.rollNo)}` : ''}`}
-                className="px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 rounded"
-              >
-                Purchase History
-              </Link>
-              <Link
-                to="/food/scans"
-                className="px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 rounded"
-              >
-                Show All Scans
-              </Link>
+                    {student && cart.length>0 && cartTotal > Number(student?.walletBalance || 0) && (
+                      <div className="mt-3 p-3 bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 border border-red-200 dark:border-red-700 rounded-xl">
+                        <p className="text-xs text-red-800 dark:text-red-300">⚠️ Insufficient wallet balance. Remove items or reduce quantities.</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </aside>
+            </div>
+
+            {/* Enhanced Confirmation Modal */}
+            {showConfirm && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-md w-full border border-gray-200 dark:border-gray-700 shadow-2xl">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 bg-gradient-to-br from-emerald-100 to-green-100 dark:from-emerald-900/30 dark:to-green-900/30 rounded-xl flex items-center justify-center">
+                      <span className="text-xl text-emerald-600 dark:text-emerald-400">✅</span>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Confirm Purchase</h3>
+                  </div>
+                  <div className="text-sm text-gray-700 dark:text-gray-300 mb-4">
+                    <div className="font-medium mb-2">Student: <span className="font-bold">{student?.name}</span></div>
+                    <div className="font-mono text-xs bg-gray-100 dark:bg-gray-700 p-2 rounded">RFID: {student?.rfid_uid}</div>
+                  </div>
+                  <div className="max-h-48 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-xl mb-4">
+                    <table className="w-full text-sm">
+                      <thead className="bg-gray-50 dark:bg-gray-700">
+                        <tr>
+                          <th className="px-3 py-2 text-left text-gray-900 dark:text-gray-100">Item</th>
+                          <th className="px-3 py-2 text-right text-gray-900 dark:text-gray-100">Qty</th>
+                          <th className="px-3 py-2 text-right text-gray-900 dark:text-gray-100">Amount</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {cart.map(c => (
+                          <tr key={c._id} className="border-t border-gray-200 dark:border-gray-600">
+                            <td className="px-3 py-2 text-gray-900 dark:text-gray-100">{c.name}</td>
+                            <td className="px-3 py-2 text-right text-gray-900 dark:text-gray-100">{c.qty}</td>
+                            <td className="px-3 py-2 text-right text-gray-900 dark:text-gray-100">₹{(c.qty*Number(c.price)).toFixed(2)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                      <tfoot>
+                        <tr className="border-t border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700">
+                          <td className="px-3 py-2 font-bold text-gray-900 dark:text-gray-100">Total</td>
+                          <td></td>
+                          <td className="px-3 py-2 text-right font-bold text-gray-900 dark:text-gray-100">₹{cartTotal.toFixed(2)}</td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                  <div className="flex gap-3">
+                    <button className="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-900 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-xl text-sm font-semibold transition-all duration-200" onClick={() => setShowConfirm(false)}>
+                      Cancel
+                    </button>
+                    <button className="flex-1 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200" onClick={printBill}>
+                      Print Bill
+                    </button>
+                    <button className="flex-1 px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200" onClick={confirmAndPurchase}>
+                      Confirm & Pay
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Enhanced Success Modal */}
+            {showSuccessModal && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-sm w-full border border-gray-200 dark:border-gray-700 shadow-2xl">
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-gradient-to-br from-emerald-100 to-green-100 dark:from-emerald-900/30 dark:to-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <span className="text-2xl text-emerald-600 dark:text-emerald-400">✅</span>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">Order Confirmed!</h3>
+                    <p className="text-sm text-gray-700 dark:text-gray-300">Receipt has been printed and saved as PDF to your downloads.</p>
+                    <button className="mt-6 px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 w-full" onClick={() => setShowSuccessModal(false)}>
+                      OK
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Enhanced Navigation Links */}
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-6 rounded-2xl border border-white/20 dark:border-gray-700/50 shadow-xl">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Quick Actions</h3>
+                <div className="flex gap-3">
+                  <Link
+                    to={`/food/history${student?.rollNo ? `?rollNo=${encodeURIComponent(student.rollNo)}` : ''}`}
+                    className="px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                  >
+                    Purchase History
+                  </Link>
+                  <Link
+                    to="/food/scans"
+                    className="px-4 py-2 border-2 border-orange-200 dark:border-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/20 text-orange-700 dark:text-orange-300 rounded-xl text-sm font-semibold transition-all duration-200"
+                  >
+                    Show All Scans
+                  </Link>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-
-        {/* All scans moved to dedicated page via button above */}
+      </div>
     </>
   );
 }

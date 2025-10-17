@@ -188,12 +188,12 @@ export default function Sidebar() {
   }, [serialConnected]);
 
   return (
-    <aside className="w-64 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 flex flex-col min-h-screen p-4 border-r border-gray-200 dark:border-gray-700">
-      <div className="flex items-center justify-center mb-8 px-2">
-        <BrandLogo size={96} />
+    <aside className="w-64 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 flex flex-col h-screen p-4 border-r border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div className="flex items-center justify-center mb-6 px-2">
+        <BrandLogo size={64} />
       </div>
 
-      <nav className="flex-grow space-y-2">
+      <nav className="flex-1 space-y-2 overflow-y-auto">
         {links.map(l => (
           <Link
             key={l.to}

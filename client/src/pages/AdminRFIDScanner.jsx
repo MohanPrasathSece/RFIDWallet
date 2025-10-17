@@ -249,7 +249,7 @@ export default function AdminRFIDScanner() {
   }, []);
 
   return (
-    <AdminLayout title="Admin RFID Scanner" subtitle="Connect ESP32 and scan RFID cards">
+    <AdminLayout title="">
       <div className="space-y-6">
 
         {/* Connection Status */}

@@ -286,216 +286,303 @@ export default function Library() {
   }, [student, borrowItemId]);
 
   return (
-    <div className="h-screen bg-white dark:bg-gray-900 p-4 flex flex-col">
-      <div className="w-full flex flex-col h-full space-y-4">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-semibold text-gray-800 dark:text-gray-100">Library</h1>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Search student, issue books, and manage returns</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 dark:from-gray-900 dark:via-slate-800 dark:to-gray-900">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-indigo-400/20 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
+        <div className="absolute top-40 left-1/2 w-80 h-80 bg-gradient-to-br from-violet-400/20 to-purple-400/20 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
+      </div>
+
+      <div className="relative z-10 p-6 max-w-7xl mx-auto">
+        {/* Enhanced Header Section */}
+        <div className="text-center space-y-2 py-4 mb-4">
+          <div className="inline-flex items-center px-4 py-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-full border border-white/20 dark:border-gray-700/50 shadow-lg">
+            <div className="w-2.5 h-2.5 bg-purple-500 rounded-full mr-2 animate-pulse"></div>
+            <span className="text-gray-700 dark:text-gray-300 font-semibold">Library Management</span>
           </div>
-          <div className="flex items-center gap-2">
-            <Link to="/library/add" className="px-3 py-2 bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 text-white rounded text-sm" title="Add new book to library">
-              Add Book
-            </Link>
-            <Link to="/library/scans" className="px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 rounded text-sm" title="View all transaction history">
-              Recent Scans
-            </Link>
-          </div>
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-purple-800 to-gray-900 dark:from-white dark:via-purple-200 dark:to-white bg-clip-text text-transparent">
+            Digital Library System
+          </h1>
+          <p className="text-sm text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+            Manage book borrowing, track returns, and maintain your library collection
+          </p>
         </div>
 
-        {/* Search and Issue */}
-        <div className="bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 p-3">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {/* Student Search */}
-            <div className="space-y-2">
-              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Find Student</h3>
-              <div className="grid grid-cols-2 gap-2">
-                <input
-                  id="student-search-input"
-                  value={rollNo}
-                  onChange={e => setRollNo(e.target.value)}
-                  placeholder="Roll Number"
-                  className="border border-gray-300 dark:border-gray-600 rounded px-2 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
-                  title="Search by roll number (Alt+F to focus)"
-                />
-                <input
-                  value={rfid}
-                  onChange={e => setRfid(e.target.value)}
-                  placeholder="RFID Number"
-                  className="border border-gray-300 dark:border-gray-600 rounded px-2 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
-                  title="Search by RFID"
-                />
-              </div>
-              <div className="flex gap-2">
-                <button onClick={findStudent} className="px-3 py-2 bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 text-white rounded text-sm" title="Find student (Alt+F)">Find</button>
-                <button onClick={loadData} className="px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 rounded text-sm" title="Reload data">Load</button>
-                <button
-                  onClick={() => {
-                    setRfid(''); setRollNo(''); setStudentId(''); setStudent(null);
-                    setActive([]); setHistory([]); setError('');
-                    try { localStorage.removeItem('last_student'); } catch {}
-                    try { window?.socket?.emit?.('ui:rfid-clear', {}); } catch {}
-                  }}
-                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 rounded text-sm"
-                  title="Clear selection (Alt+C)"
-                >
-                  Clear
-                </button>
+        <div className="space-y-6">
+          {/* Enhanced Search and Issue Section */}
+          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-6 rounded-2xl border border-white/20 dark:border-gray-700/50 shadow-xl hover:shadow-2xl transition-all duration-300">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Student Search */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-xl flex items-center justify-center">
+                    <span className="text-xl text-blue-600 dark:text-blue-400">👤</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Find Student</h3>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <input
+                    id="student-search-input"
+                    value={rollNo}
+                    onChange={e => setRollNo(e.target.value)}
+                    placeholder="Roll Number"
+                    className="w-full border-2 border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white/50 dark:bg-gray-700/50 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 hover:bg-white dark:hover:bg-gray-700"
+                    title="Search by roll number (Alt+F to focus)"
+                  />
+                  <input
+                    value={rfid}
+                    onChange={e => setRfid(e.target.value)}
+                    placeholder="RFID Number"
+                    className="w-full border-2 border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white/50 dark:bg-gray-700/50 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 hover:bg-white dark:hover:bg-gray-700"
+                    title="Search by RFID"
+                  />
+                </div>
+
+                <div className="flex gap-3">
+                  <button onClick={findStudent} className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200" title="Find student (Alt+F)">
+                    Find Student
+                  </button>
+                  <button onClick={loadData} className="px-4 py-3 border-2 border-gray-300 dark:border-gray-600 bg-white/50 dark:bg-gray-700/50 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-600 rounded-xl text-sm font-semibold transition-all duration-200" title="Reload data">
+                    Load
+                  </button>
+                  <button
+                    onClick={() => {
+                      setRfid(''); setRollNo(''); setStudentId(''); setStudent(null);
+                      setActive([]); setHistory([]); setError('');
+                      try { localStorage.removeItem('last_student'); } catch {}
+                      try { window?.socket?.emit?.('ui:rfid-clear', {}); } catch {}
+                    }}
+                    className="px-4 py-3 bg-gradient-to-r from-gray-500 to-slate-600 hover:from-gray-600 hover:to-slate-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                    title="Clear selection (Alt+C)"
+                  >
+                    Clear
+                  </button>
+                </div>
+
+                {student && (
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-700 rounded-xl p-4">
+                    <div className="space-y-1">
+                      <div className="font-bold text-blue-900 dark:text-blue-100 text-lg">{student.name}</div>
+                      <div className="text-sm text-blue-700 dark:text-blue-300">{student.rollNo} {student.department ? `• ${student.department}` : ''}</div>
+                      <div className="text-sm font-medium text-blue-800 dark:text-blue-200">Wallet: ₹{student.walletBalance || 0}</div>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {student && (
-                <div className="border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 rounded p-2 text-sm text-gray-700 dark:text-gray-300">
-                  <div className="font-semibold text-gray-900 dark:text-gray-100">{student.name}</div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">{student.rollNo} {student.department ? `• ${student.department}` : ''}</div>
-                  <div className="text-xs text-gray-700 dark:text-gray-300">Wallet: ₹{student.walletBalance || 0}</div>
+              {/* Book Issue */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-gradient-to-br from-emerald-100 to-green-100 dark:from-emerald-900/30 dark:to-green-900/30 rounded-xl flex items-center justify-center">
+                    <span className="text-xl text-emerald-600 dark:text-emerald-400">📚</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Issue Book</h3>
+                </div>
+
+                <select
+                  className="w-full border-2 border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-white/50 dark:bg-gray-700/50 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 hover:bg-white dark:hover:bg-gray-700"
+                  value={borrowItemId}
+                  onChange={e => setBorrowItemId(e.target.value)}
+                  title="Choose book to issue"
+                >
+                  <option value="">Choose a book...</option>
+                  {items.map(it => (
+                    <option value={it._id} key={it._id} disabled={!(Number.isFinite(it?.quantity) ? it.quantity > 0 : false)}>
+                      {it.name} {Number(it?.quantity) > 0 ? `(${it.quantity} available)` : '— Out of Stock'}
+                    </option>
+                  ))}
+                </select>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs text-gray-600 dark:text-gray-400 mb-2 font-medium">Due Date</label>
+                    <input type="date" className="w-full border-2 border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 text-sm bg-white/50 dark:bg-gray-700/50 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200" value={borrowDueDate} onChange={e => setBorrowDueDate(e.target.value)} />
+                  </div>
+                  <div className="flex items-end">
+                    <button onClick={borrowBook} disabled={!student || !borrowItemId} className="w-full px-4 py-3 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 disabled:bg-gray-400 dark:disabled:bg-gray-600 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none" title="Issue book (Alt+I)">
+                      Issue Book
+                    </button>
+                  </div>
+                </div>
+
+                <input className="w-full border-2 border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 text-sm bg-white/50 dark:bg-gray-700/50 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 hover:bg-white dark:hover:bg-gray-700" placeholder="Notes (optional)" value={borrowNotes} onChange={e=>setBorrowNotes(e.target.value)} />
+              </div>
+            </div>
+          </div>
+
+          {/* Enhanced Status Messages */}
+          {(loading || error) && (
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-4 rounded-2xl border border-white/20 dark:border-gray-700/50 shadow-xl">
+              {loading && <div className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2"><div className="w-4 h-4 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>Loading...</div>}
+              {error && <div className="text-sm text-red-600 dark:text-red-400 bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 p-3 rounded-xl border border-red-200 dark:border-red-700">{error}</div>}
+            </div>
+          )}
+
+          {/* Enhanced Tabbed Data Section */}
+          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl border border-white/20 dark:border-gray-700/50 shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col flex-grow">
+            {/* Enhanced Tab Navigation */}
+            <div className="flex border-b border-gray-200 dark:border-gray-700">
+              <button
+                onClick={() => setActiveTab('active')}
+                className={`flex-1 p-4 text-sm font-medium transition-all duration-200 ${
+                  activeTab === 'active'
+                    ? 'bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/30 dark:to-indigo-900/30 text-purple-700 dark:text-purple-300 border-b-2 border-purple-500'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                }`}>
+                <div className="flex items-center justify-center gap-2">
+                  <span>📖</span>
+                  <span>Active Borrows</span>
+                  <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-xs">{active.length}</span>
+                </div>
+              </button>
+              <button
+                onClick={() => setActiveTab('history')}
+                className={`flex-1 p-4 text-sm font-medium transition-all duration-200 ${
+                  activeTab === 'history'
+                    ? 'bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/30 dark:to-indigo-900/30 text-purple-700 dark:text-purple-300 border-b-2 border-purple-500'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                }`}>
+                <div className="flex items-center justify-center gap-2">
+                  <span>📋</span>
+                  <span>History</span>
+                  <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-xs">{history.length}</span>
+                </div>
+              </button>
+            </div>
+
+            {/* Enhanced Tab Content */}
+            <div className="p-6 flex-grow overflow-auto">
+              {activeTab === 'active' && (
+                <div className="space-y-4 h-full flex flex-col">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Active Book Borrows</h3>
+                    <button onClick={loadData} className="px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+                      Refresh
+                    </button>
+                  </div>
+                  {active.length === 0 ? (
+                    <div className="text-center py-12">
+                      <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span className="text-2xl text-gray-400 dark:text-gray-500">📚</span>
+                      </div>
+                      <p className="text-gray-500 dark:text-gray-400 text-lg">No active borrows</p>
+                      <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">Books will appear here when borrowed</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3 flex-grow overflow-auto">
+                      {active.map(({ item, count, dueDate }, idx) => (
+                        <div key={idx} className="bg-gradient-to-r from-gray-50 to-slate-50 dark:from-gray-700/50 dark:to-slate-700/50 hover:from-purple-50 hover:to-indigo-50 dark:hover:from-purple-900/20 dark:hover:to-indigo-900/20 border border-gray-200 dark:border-gray-600 rounded-xl p-4 transition-all duration-200">
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <h4 className="font-bold text-lg text-gray-900 dark:text-gray-100">{item?.name || 'N/A'}</h4>
+                              <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                <span className="font-medium">Count:</span> {count} • <span className="font-medium">Due:</span> {dueDate ? new Date(dueDate).toLocaleDateString() : 'N/A'}
+                              </div>
+                              {dueDate && new Date(dueDate) < new Date() && (
+                                <div className="mt-2 inline-flex items-center px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-full text-xs font-medium">
+                                  ⚠️ Overdue
+                                </div>
+                              )}
+                            </div>
+                            <button onClick={() => returnBook(item?._id)} className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+                              Return Book
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'history' && (
+                <div className="space-y-4 h-full flex flex-col">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Transaction History</h3>
+                    <button onClick={loadData} className="px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+                      Refresh
+                    </button>
+                  </div>
+                  {history.length === 0 ? (
+                    <div className="text-center py-12">
+                      <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span className="text-2xl text-gray-400 dark:text-gray-500">📋</span>
+                      </div>
+                      <p className="text-gray-500 dark:text-gray-400 text-lg">No transaction history</p>
+                      <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">Transactions will appear here</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3 flex-grow overflow-auto">
+                      {history.map(tx => (
+                        <div key={tx._id} className="bg-gradient-to-r from-gray-50 to-slate-50 dark:from-gray-700/50 dark:to-slate-700/50 hover:from-purple-50 hover:to-indigo-50 dark:hover:from-purple-900/20 dark:hover:to-indigo-900/20 border border-gray-200 dark:border-gray-600 rounded-xl p-4 transition-all duration-200">
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <h4 className="font-bold text-lg text-gray-900 dark:text-gray-100">{tx.item?.name || 'N/A'}</h4>
+                              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 capitalize">
+                                {tx.action} • {new Date(tx.createdAt).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                              tx.status === 'approved'
+                                ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                                : tx.status === 'rejected'
+                                ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                                : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+                            }`}>
+                              {tx.status}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
+          </div>
 
-            {/* Book Issue */}
-            <div className="space-y-2">
-              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Select Book</h3>
-              <select
-                className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                value={borrowItemId}
-                onChange={e => setBorrowItemId(e.target.value)}
-                title="Choose book to issue"
-              >
-                <option value="">Choose a book...</option>
-                {items.map(it => (
-                  <option value={it._id} key={it._id} disabled={!(Number.isFinite(it?.quantity) ? it.quantity > 0 : false)}>
-                    {it.name} {Number(it?.quantity) > 0 ? `(${it.quantity} available)` : '— Out of Stock'}
-                  </option>
-                ))}
-              </select>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Due Date</label>
-                  <input type="date" className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" value={borrowDueDate} onChange={e => setBorrowDueDate(e.target.value)} />
-                </div>
-                <div className="flex items-end">
-                  <button onClick={borrowBook} disabled={!student || !borrowItemId} className="w-full px-3 py-2 bg-blue-600 dark:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white rounded text-sm" title="Issue book (Alt+I)">
-                    Issue Book
-                  </button>
-                </div>
+          {/* Enhanced Navigation Links */}
+          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-6 rounded-2xl border border-white/20 dark:border-gray-700/50 shadow-xl">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Quick Actions</h3>
+              <div className="flex gap-3">
+                <Link to="/library/add" className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+                  Add Book
+                </Link>
+                <Link to="/library/scans" className="px-4 py-2 border-2 border-purple-200 dark:border-purple-700 hover:bg-purple-50 dark:hover:bg-purple-900/20 text-purple-700 dark:text-purple-300 rounded-xl text-sm font-semibold transition-all duration-200">
+                  Recent Scans
+                </Link>
               </div>
-              <input className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400" placeholder="Notes (optional)" value={borrowNotes} onChange={e=>setBorrowNotes(e.target.value)} />
             </div>
           </div>
         </div>
 
-        {/* Status Messages */}
-        {(loading || error) && (
-          <div className="p-3 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded">
-            {loading && <div className="text-sm text-gray-600 dark:text-gray-400">Loading...</div>}
-            {error && <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-2 rounded">{error}</div>}
-          </div>
-        )}
-
-        {/* Tabbed Data Section */}
-        <div className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded flex flex-col flex-grow">
-          {/* Tab Navigation */}
-          <div className="flex border-b border-gray-200 dark:border-gray-700">
-            <button
-              onClick={() => setActiveTab('active')}
-              className={`flex-1 p-2 text-sm font-medium ${
-                activeTab === 'active' ? 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-              }`}>
-              Active Borrows ({active.length})
-            </button>
-            <button
-              onClick={() => setActiveTab('history')}
-              className={`flex-1 p-2 text-sm font-medium ${
-                activeTab === 'history' ? 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-              }`}>
-              History ({history.length})
-            </button>
-          </div>
-
-          {/* Tab Content */}
-          <div className="p-3 flex-grow overflow-auto">
-            {activeTab === 'active' && (
-              <div className="space-y-2 h-full flex flex-col">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-gray-700 dark:text-gray-300">Active Borrows</h3>
-                  <button onClick={loadData} className="px-3 py-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 rounded text-xs">Refresh</button>
-                </div>
-                {active.length === 0 ? (
-                  <p className="text-sm text-gray-500 dark:text-gray-400">No active borrows.</p>
-                ) : (
-                  <div className="space-y-2 flex-grow overflow-auto">
-                    {active.map(({ item, count, dueDate }, idx) => (
-                      <div key={idx} className="border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 rounded p-2">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="font-semibold text-sm text-gray-900 dark:text-gray-100">{item?.name || 'N/A'}</h4>
-                            <div className="text-xs text-gray-600 dark:text-gray-400">Count: {count} | Due: {dueDate ? new Date(dueDate).toLocaleDateString() : 'N/A'}</div>
-                            {dueDate && new Date(dueDate) < new Date() && (
-                              <div className="mt-1 text-xs text-red-600 dark:text-red-400">Overdue</div>
-                            )}
-                          </div>
-                          <button onClick={() => returnBook(item?._id)} className="px-3 py-1 bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 text-white rounded text-xs">Return</button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {activeTab === 'history' && (
-              <div className="space-y-2 h-full flex flex-col">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-gray-700 dark:text-gray-300">History</h3>
-                  <button onClick={loadData} className="px-3 py-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 rounded text-xs">Refresh</button>
-                </div>
-                {history.length === 0 ? (
-                  <p className="text-sm text-gray-500 dark:text-gray-400">No transaction history.</p>
-                ) : (
-                  <div className="space-y-2 flex-grow overflow-auto">
-                    {history.map(tx => (
-                      <div key={tx._id} className="border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 rounded p-2">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="font-semibold text-sm text-gray-900 dark:text-gray-100">{tx.item?.name || 'N/A'}</h4>
-                            <p className="text-xs text-gray-600 dark:text-gray-400 capitalize">{tx.action} • {new Date(tx.createdAt).toLocaleDateString()}</p>
-                          </div>
-                          <span className={`px-2 py-0.5 rounded text-xs ${
-                            tx.status === 'approved' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
-                            tx.status === 'rejected' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
-                          }`}>
-                            {tx.status}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Confirmation Modal */}
+        {/* Enhanced Confirmation Modal */}
         {showConfirmation && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-gray-800 rounded p-4 max-w-sm w-full border border-gray-200 dark:border-gray-700">
-              <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-gray-100">Confirm {confirmationAction?.type}</h3>
-              <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                <p><b>Student:</b> {confirmationAction?.data?.student}</p>
-                <p><b>Book:</b> {confirmationAction?.data?.item}</p>
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-sm w-full border border-gray-200 dark:border-gray-700 shadow-2xl">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-gradient-to-br from-purple-100 to-indigo-100 dark:from-purple-900/30 dark:to-indigo-900/30 rounded-xl flex items-center justify-center">
+                  <span className="text-xl text-purple-600 dark:text-purple-400">📋</span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Confirm {confirmationAction?.type}</h3>
               </div>
-              <div className="flex gap-2">
+              <div className="text-sm text-gray-600 dark:text-gray-400 mb-6 space-y-2">
+                <p><span className="font-medium text-gray-900 dark:text-gray-100">Student:</span> {confirmationAction?.data?.student}</p>
+                <p><span className="font-medium text-gray-900 dark:text-gray-100">Book:</span> {confirmationAction?.data?.item}</p>
+              </div>
+              <div className="flex gap-3">
                 <button
                   onClick={() => { setShowConfirmation(false); setConfirmationAction(null); }}
-                  className="flex-1 px-3 py-2 bg-gray-200 dark:bg-gray-600 text-gray-900 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-500 rounded text-sm"
+                  className="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-900 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-xl text-sm font-semibold transition-all duration-200"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={confirmationAction?.type === 'borrow' ? confirmBorrow : confirmReturn}
-                  className="flex-1 px-3 py-2 bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 text-white rounded text-sm"
+                  className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                 >
                   Confirm
                 </button>
