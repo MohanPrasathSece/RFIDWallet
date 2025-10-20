@@ -75,7 +75,7 @@ export default function Landing() {
     }
   };
 
-
+  return (
     <div className="min-h-[100dvh] bg-gradient-to-br from-white to-green-50 font-sans antialiased overflow-y-auto lg:overflow-hidden flex flex-col relative dark:from-gray-900 dark:to-gray-800 dark:text-white">
       {/* Background Image (from public/bgimage.jpg) */}
       <div
@@ -401,4 +401,5 @@ export default function Landing() {
       )}
 
     </div>
+  );
 }

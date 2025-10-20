@@ -588,7 +588,7 @@ export default function Store() {
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
                     {filteredItems.map(it => {
                       const qty = it.quantity ?? 0;
-                      const cardClass = `border-2 border-gray-200 dark:border-gray-600 bg-white/50 dark:bg-gray-700/50 rounded-xl p-3 flex items-center justify-between transition-all duration-200 hover:shadow-lg hover:scale-105 h-20 ${qty === 0 ? 'opacity-50 border-gray-300 dark:border-gray-500' : qty <= 5 ? 'border-red-200 dark:border-red-700 bg-red-50/50 dark:bg-red-900/10' : 'hover:border-cyan-300 dark:hover:border-cyan-600'}`;
+                      const cardClass = `border-2 border-gray-200 dark:border-gray-600 bg-white/50 dark:bg-gray-700/50 rounded-xl p-3 flex items-center justify-between transition-all duration-200 hover:shadow-lg hover:scale-105 ${qty === 0 ? 'opacity-50 border-gray-300 dark:border-gray-500' : qty <= 5 ? 'border-red-200 dark:border-red-700 bg-red-50/50 dark:bg-red-900/10' : 'hover:border-cyan-300 dark:hover:border-cyan-600'}`;
                       const qtyClass = `text-sm font-medium ${qty === 0 ? 'text-gray-400 dark:text-gray-500' : qty <= 5 ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-400'}`;
                       return (
                         <div key={it._id} className={cardClass} title={qty === 0 ? 'Out of stock' : qty <= 5 ? 'Low stock' : undefined}>

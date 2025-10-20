@@ -61,7 +61,10 @@ function StudentDashboard() {
     };
 
   // moved handleChangePassword to top-level so it can be used in the form
-    load();
+    load().catch(e => {
+      setError(e?.response?.data?.message || 'Failed to load');
+      setInitLoading(false);
+    });
 
     const socket = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000');
     socket.on('wallet:updated', (p) => {
@@ -138,6 +141,7 @@ function StudentDashboard() {
     return spaceIdx === -1 ? full : full.slice(0, spaceIdx);
   })();
 
+  return (
     <div className="min-h-screen bg-[url('/white_bg.png')] bg-cover bg-center py-10 px-4 dark:bg-gray-900 dark:text-white">
       <div className="max-w-3xl mx-auto">
         {/* Top Bar */}
@@ -160,6 +164,7 @@ function StudentDashboard() {
             {menuOpen && (
               <div className="absolute right-0 mt-2 w-44 rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden z-10 dark:bg-gray-800 dark:border-gray-600">
                 <button className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 dark:hover:bg-gray-700 dark:text-gray-300" onClick={() => { setMenuOpen(false); navigate('/student/profile'); }}>Profile</button>
+                <button className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 dark:hover:bg-gray-700 dark:text-gray-300" onClick={() => { setMenuOpen(false); navigate('/student/library'); }}>My Books</button>
                 <button className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 dark:hover:bg-gray-700 dark:text-gray-300" onClick={() => { setMenuOpen(false); navigate('/student/analytics'); }}>Analytics</button>
                 <div className="h-px bg-slate-100 dark:bg-gray-600" />
                 <button className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20" onClick={handleLogout}>Logout</button>
@@ -271,6 +276,7 @@ function StudentDashboard() {
         {/* No modals here; profile and history are separate pages now */}
       </div>
     </div>
+  );
 }
 
 export default StudentDashboard;

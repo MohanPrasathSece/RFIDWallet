@@ -12,15 +12,21 @@ export default function BrandLogo({
   const px = typeof size === 'number' ? `${size}px` : size;
 
   // Use theme-appropriate logos
-  const logoSrc = isDark ? '/black_bg.png' : '/white_bg.png';
+  const logoSrc = '/logo.svg';
 
   return (
     <div className={`flex items-center ${className}`.trim()}>
-      <img
-        src={logoSrc}
-        alt={alt}
-        className={`${rounded ? 'rounded-full' : ''} object-contain`.trim()}
-        style={{ maxWidth: px, maxHeight: px }}
+      <div
+        className={`object-contain`.trim()}
+        style={{
+          maxWidth: px,
+          maxHeight: px,
+          backgroundImage: isDark ? 'url(/black_bg.png)' : 'url(/white_bg.png)',
+          backgroundSize: 'contain',
+          backgroundPosition: 'center',
+          width: px,
+          height: px,
+        }}
       />
       {showText && (
         <span className="ml-2 font-bold text-green-800 dark:text-green-400 text-base">{text}</span>
