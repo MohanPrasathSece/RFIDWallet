@@ -142,52 +142,52 @@ function StudentDashboard() {
   })();
 
   return (
-    <div className="min-h-screen bg-[url('/white_bg.png')] bg-cover bg-center py-10 px-4 dark:bg-gray-900 dark:text-white">
+    <div className="min-h-screen py-10 px-4">
       <div className="max-w-3xl mx-auto">
         {/* Top Bar */}
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
             <BrandLogo size={48} />
-            <h1 className="text-3xl font-extrabold leading-tight text-green-700 dark:text-green-400">
+            <h1 className="text-3xl font-extrabold leading-tight text-green-700">
               {`Welcome, ${firstName}`}
             </h1>
           </div>
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setMenuOpen(v=>!v)}
-              className="w-9 h-9 rounded-full bg-gradient-to-br from-green-500 to-green-600 text-white grid place-items-center shadow-md focus:outline-none focus:ring-2 focus:ring-green-300 dark:focus:ring-green-600"
+              className="w-9 h-9 rounded-full bg-gradient-to-br from-green-500 to-green-600 text-white grid place-items-center shadow-md focus:outline-none focus:ring-2 focus:ring-green-300"
               aria-haspopup="menu"
               aria-expanded={menuOpen}
             >
               {(profile.name || 'ST').split(' ').map(s=>s[0]).slice(0,2).join('')}
             </button>
             {menuOpen && (
-              <div className="absolute right-0 mt-2 w-44 rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden z-10 dark:bg-gray-800 dark:border-gray-600">
-                <button className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 dark:hover:bg-gray-700 dark:text-gray-300" onClick={() => { setMenuOpen(false); navigate('/student/profile'); }}>Profile</button>
-                <button className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 dark:hover:bg-gray-700 dark:text-gray-300" onClick={() => { setMenuOpen(false); navigate('/student/library'); }}>My Books</button>
-                <button className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 dark:hover:bg-gray-700 dark:text-gray-300" onClick={() => { setMenuOpen(false); navigate('/student/analytics'); }}>Analytics</button>
-                <div className="h-px bg-slate-100 dark:bg-gray-600" />
-                <button className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20" onClick={handleLogout}>Logout</button>
+              <div className="absolute right-0 mt-2 w-44 rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden z-10">
+                <button className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50" onClick={() => { setMenuOpen(false); navigate('/student/profile'); }}>Profile</button>
+                <button className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50" onClick={() => { setMenuOpen(false); navigate('/student/library'); }}>My Books</button>
+                <button className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50" onClick={() => { setMenuOpen(false); navigate('/student/analytics'); }}>Analytics</button>
+                <div className="h-px bg-slate-100" />
+                <button className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50" onClick={handleLogout}>Logout</button>
               </div>
             )}
           </div>
         </div>
-        {error && <div className="mb-4 text-sm text-red-600 dark:text-red-400">{error}</div>}
+        {error && <div className="mb-4 text-sm text-red-600">{error}</div>}
 
         {/* Hero Card */}
-        <div className="relative overflow-hidden rounded-2xl border border-green-100 bg-white/80 backdrop-blur shadow-sm mb-6 dark:bg-gray-800/80 dark:border-gray-600">
-          <div className="absolute -top-16 -right-10 w-56 h-56 rounded-full bg-green-100/70 blur-3xl dark:bg-green-900/30" />
-          <div className="absolute bottom-0 -left-10 w-60 h-60 rounded-full bg-green-50/80 blur-3xl dark:bg-green-800/40" />
-          <div className="absolute inset-0 bg-gradient-to-br from-green-50/80 via-white/60 to-green-50/80 pointer-events-none dark:from-gray-800/60 dark:via-gray-700/40 dark:to-gray-800/60" />
+        <div className="relative overflow-hidden rounded-2xl border border-green-100 bg-white/80 backdrop-blur shadow-sm mb-6">
+          <div className="absolute -top-16 -right-10 w-56 h-56 rounded-full bg-green-100/70 blur-3xl" />
+          <div className="absolute bottom-0 -left-10 w-60 h-60 rounded-full bg-green-50/80 blur-3xl" />
+          <div className="absolute inset-0 bg-gradient-to-br from-green-50/80 via-white/60 to-green-50/80 pointer-events-none" />
           <div className="relative p-5 md:p-6">
             {initLoading ? (
               <div className="animate-pulse flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-slate-200 dark:bg-gray-600" />
+                <div className="w-12 h-12 rounded-full bg-slate-200" />
                 <div className="flex-1">
-                  <div className="h-4 w-40 bg-slate-200 rounded dark:bg-gray-600" />
-                  <div className="mt-2 h-3 w-56 bg-slate-200 rounded dark:bg-gray-600" />
+                  <div className="h-4 w-40 bg-slate-200 rounded" />
+                  <div className="mt-2 h-3 w-56 bg-slate-200 rounded" />
                 </div>
-                <div className="h-8 w-28 bg-slate-200 rounded dark:bg-gray-600" />
+                <div className="h-8 w-28 bg-slate-200 rounded" />
               </div>
             ) : (
               <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -196,22 +196,22 @@ function StudentDashboard() {
                     {profile.name ? profile.name.split(' ').map(s=>s[0]).slice(0,2).join('') : 'ST'}
                   </div>
                   <div>
-                    <div className="text-sm text-slate-800 font-medium dark:text-gray-200">{firstName || '—'}</div>
-                    <div className="text-[11px] font-mono text-slate-500 dark:text-gray-400">RFID: {profile.rfid_uid || '—'}</div>
+                    <div className="text-sm text-slate-800 font-medium">{firstName || '—'}</div>
+                    <div className="text-[11px] font-mono text-slate-500">RFID: {profile.rfid_uid || '—'}</div>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="inline-flex items-center gap-2 rounded-full bg-green-50 px-3 py-1 text-[11px] text-green-700 ring-1 ring-green-200 dark:bg-green-900/30 dark:text-green-300 dark:ring-green-600">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-green-50 px-3 py-1 text-[11px] text-green-700 ring-1 ring-green-200">
                     <span className="h-2 w-2 rounded-full bg-green-500"></span>
                     Balance
                   </div>
-                  <div className="mt-1 text-3xl font-semibold text-slate-800 dark:text-gray-100">₹ {balance?.toFixed(2)}</div>
+                  <div className="mt-1 text-3xl font-semibold text-slate-800">₹ {balance?.toFixed(2)}</div>
                 </div>
               </div>
             )}
             <div className="mt-4 flex gap-2 items-center">
-              <input className="input-sm rounded-xl flex-1 bg-white placeholder-slate-400 focus:ring-green-300 dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-600" type="number" placeholder="Add amount (₹)" value={amount} onChange={e=>setAmount(e.target.value)} />
-              <button className="rounded-xl whitespace-nowrap px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm disabled:opacity-60 dark:bg-green-700 dark:hover:bg-green-800" onClick={handleAdd} disabled={loading}>
+              <input className="input-sm rounded-xl flex-1 bg-white placeholder-slate-400 focus:ring-green-300" type="number" placeholder="Add amount (₹)" value={amount} onChange={e=>setAmount(e.target.value)} />
+              <button className="rounded-xl whitespace-nowrap px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm disabled:opacity-60" onClick={handleAdd} disabled={loading}>
                 {loading ? 'Processing…' : 'Add Funds'}
               </button>
             </div>
@@ -219,21 +219,21 @@ function StudentDashboard() {
         </div>
 
         {/* Minimal Recent Activity */}
-        <div className="rounded-2xl border border-green-100 bg-white/80 backdrop-blur shadow-sm overflow-hidden dark:bg-gray-800/80 dark:border-gray-600">
-          <div className="p-4 border-b border-green-100 text-slate-800 font-medium dark:text-gray-200 dark:border-gray-600">Recent Activity</div>
+        <div className="rounded-2xl border border-green-100 bg-white/80 backdrop-blur shadow-sm overflow-hidden">
+          <div className="p-4 border-b border-green-100 text-slate-800 font-medium">Recent Activity</div>
           {initLoading ? (
-            <div className="divide-y divide-green-100 dark:divide-gray-600">
+            <div className="divide-y divide-green-100">
               {Array.from({ length: 3 }).map((_, i) => (
                 <div key={i} className="p-4 animate-pulse flex items-center justify-between">
-                  <div className="h-3 w-40 bg-slate-200 rounded dark:bg-gray-600" />
-                  <div className="h-3 w-20 bg-slate-200 rounded dark:bg-gray-600" />
+                  <div className="h-3 w-40 bg-slate-200 rounded" />
+                  <div className="h-3 w-20 bg-slate-200 rounded" />
                 </div>
               ))}
             </div>
           ) : recent.length === 0 ? (
-            <div className="p-4 text-sm text-slate-500 dark:text-gray-400">No recent transactions</div>
+            <div className="p-4 text-sm text-slate-500">No recent transactions</div>
           ) : (
-            <div className="divide-y divide-green-100 dark:divide-gray-600">
+            <div className="divide-y divide-green-100">
               {recent.map((row, i) => (
                 <button
                   key={row._id || i}
@@ -243,20 +243,20 @@ function StudentDashboard() {
                       navigate(`/student/purchase/${encodeURIComponent(id)}`);
                     }
                   }}
-                  className={`w-full text-left p-4 flex items-center justify-between ${row.type==='debit' ? 'hover:bg-green-50/50 dark:hover:bg-green-900/20' : 'dark:hover:bg-gray-700'}`}
+                  className={`w-full text-left p-4 flex items-center justify-between ${row.type==='debit' ? 'hover:bg-green-50/50' : ''}`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-full grid place-items-center bg-green-50 text-sm dark:bg-green-900/30 dark:text-green-300">
+                    <div className="h-8 w-8 rounded-full grid place-items-center bg-green-50 text-sm">
                       {row.type === 'credit' ? '➕' : (row.module === 'food' ? '🍔' : row.module === 'store' ? '🛍️' : '🧾')}
                     </div>
                     <div>
-                      <div className="text-sm text-slate-800 dark:text-gray-200">
+                      <div className="text-sm text-slate-800">
                         {row.type === 'credit' ? 'Top-up' : (row.itemName || (row.module === 'store' ? 'Store' : row.module === 'food' ? 'Food Court' : 'Purchase'))}
                       </div>
-                      <div className="text-xs text-slate-500 dark:text-gray-400">{new Date(row.createdAt).toLocaleString()}</div>
+                      <div className="text-xs text-slate-500">{new Date(row.createdAt).toLocaleString()}</div>
                     </div>
                   </div>
-                  <div className={`text-sm font-semibold ${row.type === 'debit' ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                  <div className={`text-sm font-semibold ${row.type === 'debit' ? 'text-red-600' : 'text-emerald-600'}`}>
                     {row.type === 'debit' ? '-' : '+'} ₹ {Number(row.amount || 0).toFixed(2)}
                   </div>
                 </button>
@@ -266,7 +266,7 @@ function StudentDashboard() {
           <div className="p-3 text-center">
             <button
               onClick={() => navigate('/student/history')}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl ring-1 ring-green-200 bg-white hover:bg-green-50 text-slate-700 text-sm dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-300 dark:ring-green-600"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl ring-1 ring-green-200 bg-white hover:bg-green-50 text-slate-700 text-sm"
             >
               View full history
             </button>

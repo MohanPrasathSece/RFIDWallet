@@ -295,18 +295,10 @@ export default function Library() {
       </div>
 
       <div className="relative z-10 p-6 max-w-7xl mx-auto">
-        {/* Enhanced Header Section */}
-        <div className="text-center space-y-2 py-4 mb-4">
-          <div className="inline-flex items-center px-4 py-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-full border border-white/20 dark:border-gray-700/50 shadow-lg">
-            <div className="w-2.5 h-2.5 bg-purple-500 rounded-full mr-2 animate-pulse"></div>
-            <span className="text-gray-700 dark:text-gray-300 font-semibold">Library Management</span>
-          </div>
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-purple-800 to-gray-900 dark:from-white dark:via-purple-200 dark:to-white bg-clip-text text-transparent">
-            Digital Library System
-          </h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            Manage book borrowing, track returns, and maintain your library collection
-          </p>
+        {/* Header (badge removed) */}
+        <div className="py-4 mb-4">
+          <h1 className="text-2xl font-bold text-gray-900">Library Management</h1>
+          <p className="text-sm text-gray-600">Manage book borrowing, track returns, and maintain your library collection</p>
         </div>
 
         <div className="space-y-6">

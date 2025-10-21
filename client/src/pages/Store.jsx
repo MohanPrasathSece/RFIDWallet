@@ -463,12 +463,9 @@ export default function Store() {
         </div>
 
         <div className="relative z-10 p-6 max-w-7xl mx-auto">
-          {/* Enhanced Header Section */}
-          <div className="text-center space-y-2 py-4 mb-4">
-            <div className="inline-flex items-center px-4 py-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-full border border-white/20 dark:border-gray-700/50 shadow-lg">
-              <div className="w-2.5 h-2.5 bg-cyan-500 rounded-full mr-2 animate-pulse"></div>
-              <span className="text-gray-700 dark:text-gray-300 font-semibold">Campus Store</span>
-            </div>
+          {/* Header (badge removed) */}
+          <div className="py-4 mb-4">
+            <h1 className="text-2xl font-bold text-gray-900">Campus Store</h1>
           </div>
 
           <div className="space-y-6">
