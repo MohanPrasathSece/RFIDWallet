@@ -512,19 +512,15 @@ export default function Admin() {
     !user || user.role !== 'admin' ? <Navigate to="/login" replace /> : (
     <>
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-slate-800 dark:to-gray-900">
+      <div className="min-h-screen bg-slate-50 dark:bg-gray-900">
         {/* Animated background elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-emerald-400/20 to-teal-400/20 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
-          <div className="absolute top-40 left-1/2 w-80 h-80 bg-gradient-to-br from-violet-400/20 to-pink-400/20 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400/10 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-emerald-400/10 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
+          <div className="absolute top-40 left-1/2 w-80 h-80 bg-violet-400/10 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
         </div>
 
         <div className="relative z-10 space-y-4 p-4 max-w-7xl mx-auto">
-          {/* Header Section (badge removed) */}
-          <div className="py-4">
-            <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-          </div>
 
           <div className="space-y-6">
             {/* Enhanced KPI Stat Cards */}
@@ -559,7 +555,7 @@ export default function Admin() {
                   </div>
 
                   {selected && (
-                    <div className="mb-4 p-3 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-200 dark:border-amber-700 rounded-xl">
+                    <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-xl">
                       <div className="flex items-center gap-2 text-sm">
                         <span className="text-amber-700 dark:text-amber-300 font-medium">Currently Editing:</span>
                         <span className="font-semibold text-amber-800 dark:text-amber-200">{selected.name || '-'}</span>
@@ -635,7 +631,7 @@ export default function Admin() {
                   </div>
 
                   {error && (
-                    <div className="mt-4 p-3 bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 border border-red-200 dark:border-red-700 rounded-xl">
+                    <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-xl">
                       <p className="text-sm text-red-800 dark:text-red-300">{error}</p>
                     </div>
                   )}
@@ -645,7 +641,7 @@ export default function Admin() {
                       type="button"
                       onClick={selected? updateStudent : addStudent}
                       disabled={saving}
-                      className={`flex-1 px-6 py-3 ${saving ? 'bg-gray-400 dark:bg-gray-600' : 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 dark:from-emerald-600 dark:to-teal-700'} text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none`}
+                      className={`flex-1 px-6 py-3 ${saving ? 'bg-gray-400 dark:bg-gray-600' : 'bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-700'} text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none`}
                     >
                       {saving ? 'Saving...' : (selected? 'Update Student' : 'Add Student')}
                     </button>
@@ -660,7 +656,7 @@ export default function Admin() {
                         try { window.dispatchEvent(new CustomEvent('ui:rfid-clear', { detail: {} })); } catch {}
                         try { localStorage.removeItem('last_student'); } catch {}
                       }}
-                      className="px-6 py-3 bg-gradient-to-r from-gray-500 to-slate-600 hover:from-gray-600 hover:to-slate-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                      className="px-6 py-3 bg-gray-500 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                     >
                       Clear
                     </button>

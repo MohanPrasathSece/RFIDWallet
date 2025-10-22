@@ -52,11 +52,11 @@ export default function BulkStudentUpload() {
   return (
     // Guard: only admins may access this page
     !user || user.role !== 'admin' ? <Navigate to="/login" replace /> : (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
       <div className="max-w-4xl mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-end">
             <div>
               <Button variant="outline" onClick={() => navigate('/admin')}>
                 Back to Admin Dashboard
@@ -66,37 +66,37 @@ export default function BulkStudentUpload() {
         </div>
 
         {/* Upload Form */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <form onSubmit={handleExcelUpload} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Excel File (.xlsx, .xls)
               </label>
               <input
                 type="file"
                 accept=".xlsx,.xls"
                 onChange={(e) => setExcelFile(e.target.files[0])}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 disabled={isUploading}
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 Required columns: name, rollno, email, mobilenumber, rfidnumber, department, password
               </p>
             </div>
 
             {error && (
-              <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-sm text-red-800">{error}</p>
+              <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg">
+                <p className="text-sm text-red-800 dark:text-red-300">{error}</p>
               </div>
             )}
 
             {isUploading && (
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700">Uploading...</span>
-                  <span className="text-sm text-gray-600">{uploadProgress}%</span>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Uploading...</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">{uploadProgress}%</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                   <div
                     className="bg-blue-600 h-2 rounded-full transition-all"
                     style={{ width: `${uploadProgress}%` }}
@@ -115,16 +115,16 @@ export default function BulkStudentUpload() {
           </form>
 
           {uploadResult && (
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg border">
-              <h3 className="font-medium text-sm text-gray-900 mb-3">Upload Results</h3>
+            <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-900/30 rounded-lg border border-gray-200 dark:border-gray-700">
+              <h3 className="font-medium text-sm text-gray-900 dark:text-gray-100 mb-3">Upload Results</h3>
               <div className="text-sm space-y-2">
-                <p className="text-green-600">✓ Created {uploadResult.createdCount} students</p>
-                <p className="text-gray-600">Total processed: {uploadResult.totalProcessed}</p>
+                <p className="text-green-600 dark:text-green-300">✓ Created {uploadResult.createdCount} students</p>
+                <p className="text-gray-600 dark:text-gray-400">Total processed: {uploadResult.totalProcessed}</p>
                 {uploadResult.duplicates.length > 0 && (
-                  <p className="text-amber-600">⚠ Duplicates skipped: {uploadResult.duplicates.length}</p>
+                  <p className="text-amber-600 dark:text-amber-300">⚠ Duplicates skipped: {uploadResult.duplicates.length}</p>
                 )}
                 {uploadResult.errors.length > 0 && (
-                  <p className="text-red-600">✗ Errors: {uploadResult.errors.length}</p>
+                  <p className="text-red-600 dark:text-red-300">✗ Errors: {uploadResult.errors.length}</p>
                 )}
               </div>
             </div>
@@ -132,9 +132,9 @@ export default function BulkStudentUpload() {
         </div>
 
         {/* Instructions */}
-        <div className="mt-8 bg-blue-50 rounded-lg border border-blue-200 p-6">
-          <h3 className="text-lg font-semibold text-blue-900 mb-4">Excel File Format</h3>
-          <div className="text-sm text-blue-800 space-y-2">
+        <div className="mt-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700 p-6">
+          <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-200 mb-4">Excel File Format</h3>
+          <div className="text-sm text-blue-800 dark:text-blue-300 space-y-2">
             <p><strong>Required columns:</strong></p>
             <ul className="list-disc list-inside space-y-1 ml-4">
               <li><code>name</code> - Student's full name</li>

@@ -286,29 +286,46 @@ export default function Library() {
   }, [student, borrowItemId]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 dark:from-gray-900 dark:via-slate-800 dark:to-gray-900">
+    <div className="min-h-screen bg-slate-50 dark:bg-gray-900">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-indigo-400/20 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
-        <div className="absolute top-40 left-1/2 w-80 h-80 bg-gradient-to-br from-violet-400/20 to-purple-400/20 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-400/10 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-400/10 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
+        <div className="absolute top-40 left-1/2 w-80 h-80 bg-violet-400/10 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
       </div>
 
       <div className="relative z-10 p-6 max-w-7xl mx-auto">
-        {/* Header (badge removed) */}
-        <div className="py-4 mb-4">
-          <h1 className="text-2xl font-bold text-gray-900">Library Management</h1>
-          <p className="text-sm text-gray-600">Manage book borrowing, track returns, and maintain your library collection</p>
-        </div>
+        
 
         <div className="space-y-6">
+          {/* Enhanced Page Header */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
+                <span className="text-2xl text-purple-600 dark:text-purple-400">📚</span>
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Library Management</h1>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Manage book borrowing, returns, and collections</p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <Link to="/library/add" className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+                ➕ Add Book
+              </Link>
+              <Link to="/library/scans" className="px-4 py-2 border-2 border-purple-200 dark:border-purple-700 hover:bg-purple-50 dark:hover:bg-purple-900/20 text-purple-700 dark:text-purple-300 rounded-xl text-sm font-semibold transition-all duration-200">
+                📡 Recent Scans
+              </Link>
+            </div>
+          </div>
+
           {/* Enhanced Search and Issue Section */}
           <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-6 rounded-2xl border border-white/20 dark:border-gray-700/50 shadow-xl hover:shadow-2xl transition-all duration-300">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Student Search */}
               <div className="space-y-4">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-xl flex items-center justify-center">
+                  <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
                     <span className="text-xl text-blue-600 dark:text-blue-400">👤</span>
                   </div>
                   <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Find Student</h3>
@@ -333,7 +350,7 @@ export default function Library() {
                 </div>
 
                 <div className="flex gap-3">
-                  <button onClick={findStudent} className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200" title="Find student (Alt+F)">
+                  <button onClick={findStudent} className="flex-1 px-4 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200" title="Find student (Alt+F)">
                     Find Student
                   </button>
                   <button onClick={loadData} className="px-4 py-3 border-2 border-gray-300 dark:border-gray-600 bg-white/50 dark:bg-gray-700/50 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-600 rounded-xl text-sm font-semibold transition-all duration-200" title="Reload data">
@@ -346,7 +363,7 @@ export default function Library() {
                       try { localStorage.removeItem('last_student'); } catch {}
                       try { window?.socket?.emit?.('ui:rfid-clear', {}); } catch {}
                     }}
-                    className="px-4 py-3 bg-gradient-to-r from-gray-500 to-slate-600 hover:from-gray-600 hover:to-slate-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                    className="px-4 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                     title="Clear selection (Alt+C)"
                   >
                     Clear
@@ -354,11 +371,19 @@ export default function Library() {
                 </div>
 
                 {student && (
-                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-700 rounded-xl p-4">
-                    <div className="space-y-1">
-                      <div className="font-bold text-blue-900 dark:text-blue-100 text-lg">{student.name}</div>
-                      <div className="text-sm text-blue-700 dark:text-blue-300">{student.rollNo} {student.department ? `• ${student.department}` : ''}</div>
-                      <div className="text-sm font-medium text-blue-800 dark:text-blue-200">Wallet: ₹{student.walletBalance || 0}</div>
+                  <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl p-4">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-8 h-8 bg-green-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center">
+                        <span className="text-sm text-green-600 dark:text-green-400">✓</span>
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-bold text-blue-900 dark:text-blue-100 text-lg">{student.name}</div>
+                        <div className="text-sm text-blue-700 dark:text-blue-300">{student.rollNo} {student.department ? `• ${student.department}` : ''}</div>
+                        <div className="text-sm font-medium text-blue-800 dark:text-blue-200">Wallet: ₹{student.walletBalance || 0}</div>
+                      </div>
+                    </div>
+                    <div className="text-xs text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/20 px-2 py-1 rounded-full inline-block">
+                      📡 Student scanned successfully
                     </div>
                   </div>
                 )}
@@ -367,7 +392,7 @@ export default function Library() {
               {/* Book Issue */}
               <div className="space-y-4">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-gradient-to-br from-emerald-100 to-green-100 dark:from-emerald-900/30 dark:to-green-900/30 rounded-xl flex items-center justify-center">
+                  <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center">
                     <span className="text-xl text-emerald-600 dark:text-emerald-400">📚</span>
                   </div>
                   <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Issue Book</h3>
@@ -393,7 +418,7 @@ export default function Library() {
                     <input type="date" className="w-full border-2 border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 text-sm bg-white/50 dark:bg-gray-700/50 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200" value={borrowDueDate} onChange={e => setBorrowDueDate(e.target.value)} />
                   </div>
                   <div className="flex items-end">
-                    <button onClick={borrowBook} disabled={!student || !borrowItemId} className="w-full px-4 py-3 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 disabled:bg-gray-400 dark:disabled:bg-gray-600 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none" title="Issue book (Alt+I)">
+                    <button onClick={borrowBook} disabled={!student || !borrowItemId} className="w-full px-4 py-3 bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-400 dark:bg-emerald-600 dark:hover:bg-emerald-700 dark:disabled:bg-gray-600 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none" title="Issue book (Alt+I)">
                       Issue Book
                     </button>
                   </div>
@@ -408,7 +433,7 @@ export default function Library() {
           {(loading || error) && (
             <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-4 rounded-2xl border border-white/20 dark:border-gray-700/50 shadow-xl">
               {loading && <div className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2"><div className="w-4 h-4 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>Loading...</div>}
-              {error && <div className="text-sm text-red-600 dark:text-red-400 bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 p-3 rounded-xl border border-red-200 dark:border-red-700">{error}</div>}
+              {error && <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-3 rounded-xl border border-red-200 dark:border-red-700">{error}</div>}
             </div>
           )}
 
@@ -420,7 +445,7 @@ export default function Library() {
                 onClick={() => setActiveTab('active')}
                 className={`flex-1 p-4 text-sm font-medium transition-all duration-200 ${
                   activeTab === 'active'
-                    ? 'bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/30 dark:to-indigo-900/30 text-purple-700 dark:text-purple-300 border-b-2 border-purple-500'
+                    ? 'bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border-b-2 border-purple-500'
                     : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}>
                 <div className="flex items-center justify-center gap-2">
@@ -433,7 +458,7 @@ export default function Library() {
                 onClick={() => setActiveTab('history')}
                 className={`flex-1 p-4 text-sm font-medium transition-all duration-200 ${
                   activeTab === 'history'
-                    ? 'bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/30 dark:to-indigo-900/30 text-purple-700 dark:text-purple-300 border-b-2 border-purple-500'
+                    ? 'bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border-b-2 border-purple-500'
                     : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}>
                 <div className="flex items-center justify-center gap-2">
@@ -450,7 +475,7 @@ export default function Library() {
                 <div className="space-y-4 h-full flex flex-col">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Active Book Borrows</h3>
-                    <button onClick={loadData} className="px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+                    <button onClick={loadData} className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
                       Refresh
                     </button>
                   </div>
@@ -465,12 +490,15 @@ export default function Library() {
                   ) : (
                     <div className="space-y-3 flex-grow overflow-auto">
                       {active.map(({ item, count, dueDate }, idx) => (
-                        <div key={idx} className="bg-gradient-to-r from-gray-50 to-slate-50 dark:from-gray-700/50 dark:to-slate-700/50 hover:from-purple-50 hover:to-indigo-50 dark:hover:from-purple-900/20 dark:hover:to-indigo-900/20 border border-gray-200 dark:border-gray-600 rounded-xl p-4 transition-all duration-200">
+                        <div key={idx} className="bg-gray-50 dark:bg-slate-700/50 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 border border-gray-200 dark:border-gray-600 rounded-xl p-4 transition-all duration-200">
                           <div className="flex items-center justify-between">
                             <div className="flex-1">
-                              <h4 className="font-bold text-lg text-gray-900 dark:text-gray-100">{item?.name || 'N/A'}</h4>
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className="text-lg">📖</span>
+                                <h4 className="font-bold text-xl text-gray-900 dark:text-gray-100">{item?.name || 'Unknown Book'}</h4>
+                              </div>
                               <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                <span className="font-medium">Count:</span> {count} • <span className="font-medium">Due:</span> {dueDate ? new Date(dueDate).toLocaleDateString() : 'N/A'}
+                                <span className="font-medium">Quantity:</span> {count} • <span className="font-medium">Due:</span> {dueDate ? new Date(dueDate).toLocaleDateString() : 'No due date'}
                               </div>
                               {dueDate && new Date(dueDate) < new Date() && (
                                 <div className="mt-2 inline-flex items-center px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-full text-xs font-medium">
@@ -478,7 +506,7 @@ export default function Library() {
                                 </div>
                               )}
                             </div>
-                            <button onClick={() => returnBook(item?._id)} className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+                            <button onClick={() => returnBook(item?._id)} className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
                               Return Book
                             </button>
                           </div>
@@ -493,7 +521,7 @@ export default function Library() {
                 <div className="space-y-4 h-full flex flex-col">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Transaction History</h3>
-                    <button onClick={loadData} className="px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+                    <button onClick={loadData} className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
                       Refresh
                     </button>
                   </div>
@@ -508,12 +536,15 @@ export default function Library() {
                   ) : (
                     <div className="space-y-3 flex-grow overflow-auto">
                       {history.map(tx => (
-                        <div key={tx._id} className="bg-gradient-to-r from-gray-50 to-slate-50 dark:from-gray-700/50 dark:to-slate-700/50 hover:from-purple-50 hover:to-indigo-50 dark:hover:from-purple-900/20 dark:hover:to-indigo-900/20 border border-gray-200 dark:border-gray-600 rounded-xl p-4 transition-all duration-200">
+                        <div key={tx._id} className="bg-gray-50 dark:bg-slate-700/50 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 border border-gray-200 dark:border-gray-600 rounded-xl p-4 transition-all duration-200">
                           <div className="flex items-center justify-between">
                             <div className="flex-1">
-                              <h4 className="font-bold text-lg text-gray-900 dark:text-gray-100">{tx.item?.name || 'N/A'}</h4>
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className="text-lg">📚</span>
+                                <h4 className="font-bold text-xl text-gray-900 dark:text-gray-100">{tx.item?.name || 'Unknown Book'}</h4>
+                              </div>
                               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 capitalize">
-                                {tx.action} • {new Date(tx.createdAt).toLocaleDateString()}
+                                <span className="font-medium">Action:</span> {tx.action} • <span className="font-medium">Date:</span> {new Date(tx.createdAt).toLocaleDateString()}
                               </p>
                             </div>
                             <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
@@ -535,35 +566,27 @@ export default function Library() {
             </div>
           </div>
 
-          {/* Enhanced Navigation Links */}
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-6 rounded-2xl border border-white/20 dark:border-gray-700/50 shadow-xl">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Quick Actions</h3>
-              <div className="flex gap-3">
-                <Link to="/library/add" className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
-                  Add Book
-                </Link>
-                <Link to="/library/scans" className="px-4 py-2 border-2 border-purple-200 dark:border-purple-700 hover:bg-purple-50 dark:hover:bg-purple-900/20 text-purple-700 dark:text-purple-300 rounded-xl text-sm font-semibold transition-all duration-200">
-                  Recent Scans
-                </Link>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Enhanced Confirmation Modal */}
         {showConfirmation && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-sm w-full border border-gray-200 dark:border-gray-700 shadow-2xl">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-md w-full border border-gray-200 dark:border-gray-700 shadow-2xl">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-purple-100 to-indigo-100 dark:from-purple-900/30 dark:to-indigo-900/30 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
                   <span className="text-xl text-purple-600 dark:text-purple-400">📋</span>
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Confirm {confirmationAction?.type}</h3>
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400 mb-6 space-y-2">
-                <p><span className="font-medium text-gray-900 dark:text-gray-100">Student:</span> {confirmationAction?.data?.student}</p>
-                <p><span className="font-medium text-gray-900 dark:text-gray-100">Book:</span> {confirmationAction?.data?.item}</p>
+              <div className="text-sm text-gray-600 dark:text-gray-400 mb-4 space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-gray-900 dark:text-gray-100">Student:</span>
+                  <span className="font-bold">{confirmationAction?.data?.student}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-gray-900 dark:text-gray-100">Book:</span>
+                  <span className="font-bold">{confirmationAction?.data?.item}</span>
+                </div>
               </div>
               <div className="flex gap-3">
                 <button
@@ -574,7 +597,7 @@ export default function Library() {
                 </button>
                 <button
                   onClick={confirmationAction?.type === 'borrow' ? confirmBorrow : confirmReturn}
-                  className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                  className="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                 >
                   Confirm
                 </button>

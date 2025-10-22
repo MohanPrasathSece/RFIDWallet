@@ -467,37 +467,8 @@ export default function Food() {
         </div>
 
         <div className="relative z-10 p-6 max-w-7xl mx-auto">
-          {/* Enhanced Header Section */}
-          <div className="text-center space-y-2 py-4 mb-4">
-            <div className="inline-flex items-center px-4 py-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-full border border-white/20 dark:border-gray-700/50 shadow-lg">
-              <div className="w-2.5 h-2.5 bg-orange-500 rounded-full mr-2 animate-pulse"></div>
-              <span className="text-gray-700 dark:text-gray-300 font-semibold">Food Court</span>
-            </div>
-          </div>
-
+          
           <div className="space-y-6">
-            {/* Enhanced Header with Sales Info */}
-            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-6 rounded-2xl border border-white/20 dark:border-gray-700/50 shadow-xl">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-amber-100 dark:from-orange-900/30 dark:to-amber-900/30 rounded-xl flex items-center justify-center">
-                    <span className="text-2xl text-orange-600 dark:text-orange-400">🍽️</span>
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Food Court Management</h2>
-                    <div className="flex items-center gap-3 mt-2">
-                      <div className="px-4 py-2 bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 border border-green-200 dark:border-green-700 rounded-xl">
-                        <span className="text-sm font-medium text-green-700 dark:text-green-300">Today's Sales:</span>
-                        <span className="font-bold text-green-800 dark:text-green-200 ml-2">₹{todaysSales.toFixed(2)}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <Link to="/food/add" className="px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
-                  Add Food Item
-                </Link>
-              </div>
-            </div>
 
             {/* Enhanced Student Search Section */}
             <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-6 rounded-2xl border border-white/20 dark:border-gray-700/50 shadow-xl hover:shadow-2xl transition-all duration-300">
@@ -663,7 +634,7 @@ export default function Food() {
                         onClick={() => setShowConfirm(true)}
                         className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 disabled:bg-gray-400 dark:disabled:bg-gray-600 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                       >
-                        Proceed to Pay
+                        Proceed
                       </button>
                     </div>
 
@@ -726,7 +697,7 @@ export default function Food() {
                       Print Bill
                     </button>
                     <button className="flex-1 px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200" onClick={confirmAndPurchase}>
-                      Confirm & Pay
+                      Confirm
                     </button>
                   </div>
                 </div>

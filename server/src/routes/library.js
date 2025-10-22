@@ -27,6 +27,20 @@ router.get('/my-active', auth(), async (req, res) => {
   }
 });
 
+router.get('/my-history', auth(), async (req, res) => {
+  try {
+    if (!req.student?._id) return res.status(401).json({ message: 'Unauthorized' });
+    const limit = Number.parseInt(req.query.limit, 10);
+    const history = await getLibraryHistoryByStudent(req.student._id);
+    if (!Number.isNaN(limit) && limit > 0) {
+      return res.json(history.slice(0, Math.min(limit, 50)));
+    }
+    return res.json(history);
+  } catch (e) {
+    return res.status(500).json({ message: e.message });
+  }
+});
+
 // Get active borrows for a student (by studentId or rfidNumber)
 router.get('/active', auth(), requireRoles('admin'), async (req, res) => {
   try {

@@ -463,34 +463,8 @@ export default function Store() {
         </div>
 
         <div className="relative z-10 p-6 max-w-7xl mx-auto">
-          {/* Header (badge removed) */}
-          <div className="py-4 mb-4">
-            <h1 className="text-2xl font-bold text-gray-900">Campus Store</h1>
-          </div>
-
+          
           <div className="space-y-6">
-            {/* Enhanced Header with Sales Info */}
-            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-6 rounded-2xl border border-white/20 dark:border-gray-700/50 shadow-xl">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-cyan-100 to-blue-100 dark:from-cyan-900/30 dark:to-blue-900/30 rounded-xl flex items-center justify-center">
-                    <span className="text-2xl text-cyan-600 dark:text-cyan-400">🛒</span>
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Campus Store Management</h2>
-                    <div className="flex items-center gap-3 mt-2">
-                      <div className="px-4 py-2 bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 border border-green-200 dark:border-green-700 rounded-xl">
-                        <span className="text-sm font-medium text-green-700 dark:text-green-300">Today's Sales:</span>
-                        <span className="font-bold text-green-800 dark:text-green-200 ml-2">₹{todaysSales.toFixed(2)}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <Link to="/store/add" className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
-                  Add Store Item
-                </Link>
-              </div>
-            </div>
 
             {/* Enhanced Student Search Section */}
             <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-6 rounded-2xl border border-white/20 dark:border-gray-700/50 shadow-xl hover:shadow-2xl transition-all duration-300">
@@ -658,7 +632,7 @@ export default function Store() {
                         onClick={() => setShowConfirm(true)}
                         className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 disabled:bg-gray-400 dark:disabled:bg-gray-600 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                       >
-                        Proceed to Pay
+                        Proceed
                       </button>
                     </div>
 
@@ -742,6 +716,62 @@ export default function Store() {
                 </div>
               </div>
             </div>
+
+            {/* Enhanced Confirmation Modal */}
+            {showConfirm && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-md w-full border border-gray-200 dark:border-gray-700 shadow-2xl">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 bg-gradient-to-br from-cyan-100 to-blue-100 dark:from-cyan-900/30 dark:to-blue-900/30 rounded-xl flex items-center justify-center">
+                      <span className="text-xl text-cyan-600 dark:text-cyan-400">🛒</span>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Confirm Purchase</h3>
+                  </div>
+                  <div className="text-sm text-gray-700 dark:text-gray-300 mb-4">
+                    <div className="font-medium mb-2">Student: <span className="font-bold">{student?.name}</span></div>
+                    <div className="font-mono text-xs bg-gray-100 dark:bg-gray-700 p-2 rounded">RFID: {student?.rfid_uid || student?.RFIDNumber}</div>
+                  </div>
+                  <div className="max-h-48 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-xl mb-4">
+                    <table className="w-full text-sm">
+                      <thead className="bg-gray-50 dark:bg-gray-700">
+                        <tr>
+                          <th className="px-3 py-2 text-left text-gray-900 dark:text-gray-100">Item</th>
+                          <th className="px-3 py-2 text-right text-gray-900 dark:text-gray-100">Qty</th>
+                          <th className="px-3 py-2 text-right text-gray-900 dark:text-gray-100">Amount</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {cart.map(c => (
+                          <tr key={c._id} className="border-t border-gray-200 dark:border-gray-600">
+                            <td className="px-3 py-2 text-gray-900 dark:text-gray-100">{c.name}</td>
+                            <td className="px-3 py-2 text-right text-gray-900 dark:text-gray-100">{c.qty}</td>
+                            <td className="px-3 py-2 text-right text-gray-900 dark:text-gray-100">₹{(c.qty*Number(c.price)).toFixed(2)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                      <tfoot>
+                        <tr className="border-t border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700">
+                          <td className="px-3 py-2 font-bold text-gray-900 dark:text-gray-100">Total</td>
+                          <td></td>
+                          <td className="px-3 py-2 text-right font-bold text-gray-900 dark:text-gray-100">₹{cartTotal.toFixed(2)}</td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                  <div className="flex gap-3">
+                    <button className="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-900 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-xl text-sm font-semibold transition-all duration-200" onClick={() => setShowConfirm(false)}>
+                      Cancel
+                    </button>
+                    <button className="flex-1 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200" onClick={printBill}>
+                      Print Bill
+                    </button>
+                    <button className="flex-1 px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200" onClick={confirmAndPurchase}>
+                      Confirm
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
