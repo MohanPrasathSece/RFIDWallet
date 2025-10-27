@@ -56,7 +56,8 @@ export default function RecentStudents() {
           </div>
 
           <div className="bg-white rounded border border-green-100 shadow-sm dark:bg-gray-800 dark:border-gray-700">
-            <table className="w-full text-sm">
+            <div className="w-full overflow-x-auto">
+            <table className="min-w-[900px] w-full text-sm">
               <thead className="bg-gray-50 dark:bg-gray-700">
                 <tr>
                   <th className="px-3 py-2 text-left">Name</th>
@@ -101,7 +102,9 @@ export default function RecentStudents() {
                   ))}
               </tbody>
             </table>
+            </div>
           </div>
         </div>
     </AdminLayout>
 }
+

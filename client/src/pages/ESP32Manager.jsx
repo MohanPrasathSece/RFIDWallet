@@ -81,7 +81,7 @@ export default function ESP32Manager() {
   return (
     <AdminLayout title="ESP32 Manager" subtitle="Manage firmware and connection status for ESP32">
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <h1 className="text-xl font-semibold">Connection & Firmware</h1>
           <button
             onClick={fetchStatus}
@@ -106,7 +106,7 @@ export default function ESP32Manager() {
               </div>
               
               {status.connected && (
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="font-medium">Port:</span> {status.port}
                   </div>
