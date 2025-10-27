@@ -30,11 +30,6 @@ export const ThemeProvider = ({ children }) => {
     } else {
       document.documentElement.classList.remove('dark');
     }
-
-    // Emit custom event for favicon update
-    window.dispatchEvent(new CustomEvent('theme:changed', {
-      detail: { isDark }
-    }));
   }, [isDark]);
 
   const toggleTheme = () => {

@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../shared/api';
 import { io } from 'socket.io-client';
 import { useAuth } from '../shared/AuthContext.jsx';
-import BrandLogo from '../components/BrandLogo.jsx';
 
 function StudentDashboard() {
   const brandName = import.meta?.env?.VITE_BRAND_NAME || 'CamCards';
@@ -147,7 +146,6 @@ function StudentDashboard() {
         {/* Top Bar */}
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
-            <BrandLogo size={48} />
             <h1 className="text-3xl font-extrabold leading-tight text-green-700">
               {`Welcome, ${firstName}`}
             </h1>

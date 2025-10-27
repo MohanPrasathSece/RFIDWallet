@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 import { FiBook, FiCoffee, FiShoppingCart, FiSettings } from 'react-icons/fi';
 import { api } from './api.js';
-import BrandLogo from '../components/BrandLogo.jsx';
 import { useAuth } from './AuthContext.jsx';
 import ThemeToggle from './ui/ThemeToggle.jsx';
 
@@ -190,7 +189,6 @@ export default function Sidebar() {
   return (
     <aside className="w-64 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 flex flex-col fixed top-0 left-0 h-screen p-4 border-r border-gray-200 dark:border-gray-700 overflow-hidden z-50">
       <div className="flex items-center justify-center mb-6 px-2">
-        <BrandLogo size={64} />
       </div>
 
       <nav className="flex-1 space-y-2 overflow-y-auto">

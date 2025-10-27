@@ -1,7 +1,6 @@
 import { useNavigate, Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../shared/AuthContext.jsx';
-import BrandLogo from '../components/BrandLogo.jsx';
 import { FaShieldAlt, FaUserGraduate } from 'react-icons/fa';
 
 export default function Landing() {
@@ -96,7 +95,6 @@ export default function Landing() {
       {/* Navigation - Desktop Only */}
       <nav className={`hidden lg:flex relative z-10 items-center justify-between px-4 py-2 transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
         <div className="flex items-center space-x-2">
-          <BrandLogo size={80} rounded={false} />
         </div>
       </nav>
 
@@ -107,7 +105,6 @@ export default function Landing() {
         <div className="lg:hidden flex-1 overflow-y-auto">
           <div className="px-5 py-8 space-y-6">
             <header className="flex items-center justify-between">
-              <BrandLogo size={48} rounded={false} />
               <span className="text-[11px] font-medium text-green-800 border border-green-200 rounded-full px-3 py-1 bg-white/80 backdrop-blur">
                 {brandName}
               </span>
