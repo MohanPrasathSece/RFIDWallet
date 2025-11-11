@@ -71,7 +71,7 @@ export default function Login() {
 
       <div className="max-w-6xl mx-auto min-h-[calc(100vh-56px)] grid grid-cols-1 lg:grid-cols-2">
         {/* Left: Admin */}
-        <div className="relative flex items-center justify-center p-8 md:p-12 overflow-hidden">
+        <div className="relative flex items-end md:items-center justify-center h-full pt-32 pb-6 md:p-12 overflow-hidden">
           {/* background gradient block */}
           <div className="absolute inset-0 -z-10 bg-gradient-to-br from-emerald-500/15 via-green-400/10 to-emerald-600/15" />
           {/* decorative circles */}
@@ -113,7 +113,7 @@ export default function Login() {
         </div>
 
         {/* Right: Student */}
-        <div className="relative flex items-center justify-center p-8 md:p-12 overflow-hidden">
+        <div className="relative flex items-end md:items-center justify-center h-full pt-32 pb-6 md:p-12 overflow-hidden">
           {/* background gradient block */}
           <div className="absolute inset-0 -z-10 bg-gradient-to-br from-green-500/10 via-emerald-400/10 to-green-600/10" />
           {/* decorative circles */}

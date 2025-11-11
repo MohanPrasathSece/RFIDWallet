@@ -36,6 +36,8 @@ export default function Sidebar() {
   const connectESP32 = async () => {
     if (!('serial' in navigator)) {
       setSerialStatus('Web Serial not supported');
+      try { localStorage.setItem('esp32_status', JSON.stringify({ connected: false, status: 'Web Serial not supported', ts: Date.now() })); } catch {}
+      try { socketRef.current?.emit('esp32:status:update', { connected: false, status: 'Web Serial not supported' }); } catch {}
       try { socketRef.current?.emit('esp32:web-serial', { event: 'unsupported' }); } catch {}
       return;
     }
@@ -48,6 +50,8 @@ export default function Sidebar() {
     } catch (err) {
       setSerialStatus('Connect failed');
       setSerialConnected(false);
+      try { localStorage.setItem('esp32_status', JSON.stringify({ connected: false, status: 'Connect failed', ts: Date.now() })); } catch {}
+      try { socketRef.current?.emit('esp32:status:update', { connected: false, status: 'Connect failed' }); } catch {}
       try { socketRef.current?.emit('esp32:web-serial', { event: 'connect-failed', message: err.message }); } catch {}
     }
   };
@@ -64,6 +68,8 @@ export default function Sidebar() {
     setSerialPort(port);
     setSerialConnected(true);
     setSerialStatus('Connected');
+    try { localStorage.setItem('esp32_status', JSON.stringify({ connected: true, status: 'Connected', ts: Date.now() })); } catch {}
+    try { socketRef.current?.emit('esp32:status:update', { connected: true, status: 'Connected' }); } catch {}
     try { socketRef.current?.emit('esp32:web-serial', { event: 'connected' }); } catch {}
 
     const textDecoder = new TextDecoderStream();
@@ -89,10 +95,16 @@ export default function Sidebar() {
             try { socketRef.current?.emit('esp32:web-serial', { event: 'data', message: line }); } catch {}
             if (line === 'ESP32_BOOT_OK') {
               setSerialStatus('ESP32 booted');
+              try { localStorage.setItem('esp32_status', JSON.stringify({ connected: true, status: 'ESP32 booted', ts: Date.now() })); } catch {}
+              try { socketRef.current?.emit('esp32:status:update', { connected: true, status: 'ESP32 booted' }); } catch {}
             } else if (line === 'RFID_READY') {
               setSerialStatus('RFID ready');
+              try { localStorage.setItem('esp32_status', JSON.stringify({ connected: true, status: 'RFID ready', ts: Date.now() })); } catch {}
+              try { socketRef.current?.emit('esp32:status:update', { connected: true, status: 'RFID ready' }); } catch {}
             } else if (line === 'RC522_ERROR') {
               setSerialStatus('RC522 error');
+              try { localStorage.setItem('esp32_status', JSON.stringify({ connected: true, status: 'RC522 error', ts: Date.now() })); } catch {}
+              try { socketRef.current?.emit('esp32:status:update', { connected: true, status: 'RC522 error' }); } catch {}
             }
             // Prefer RFID:<UID>; fallback to "Card UID: xx xx ..."
             let uid = null;
@@ -132,6 +144,8 @@ export default function Sidebar() {
         }
       } catch (e) {
         setSerialStatus('Read error, retrying…');
+        try { localStorage.setItem('esp32_status', JSON.stringify({ connected: false, status: 'Read error, retrying…', ts: Date.now() })); } catch {}
+        try { socketRef.current?.emit('esp32:status:update', { connected: false, status: 'Read error, retrying…' }); } catch {}
         try { socketRef.current?.emit('esp32:web-serial', { event: 'read-error', message: e.message }); } catch {}
         // Attempt auto-reconnect if permission persists
         if (!reconnectingRef.current) {
@@ -151,6 +165,8 @@ export default function Sidebar() {
       if (serialPort) { await serialPort.close(); setSerialPort(null); }
       setSerialConnected(false);
       setSerialStatus('Disconnected');
+      try { localStorage.setItem('esp32_status', JSON.stringify({ connected: false, status: 'Disconnected', ts: Date.now() })); } catch {}
+      try { socketRef.current?.emit('esp32:status:update', { connected: false, status: 'Disconnected' }); } catch {}
       try { socketRef.current?.emit('esp32:web-serial', { event: 'disconnected' }); } catch {}
     } catch (err) {
       try { socketRef.current?.emit('esp32:web-serial', { event: 'disconnect-error', message: err.message }); } catch {}
@@ -166,6 +182,8 @@ export default function Sidebar() {
         const ports = await navigator.serial.getPorts();
         if (mounted && !serialConnected && ports && ports.length > 0) {
           setSerialStatus('Reconnecting…');
+          try { localStorage.setItem('esp32_status', JSON.stringify({ connected: false, status: 'Reconnecting…', ts: Date.now() })); } catch {}
+          try { socketRef.current?.emit('esp32:status:update', { connected: false, status: 'Reconnecting…' }); } catch {}
           try { await openSelectedPort(ports[0]); } catch (e) { setSerialStatus('Reconnect failed'); }
         }
       } catch {}
@@ -177,6 +195,8 @@ export default function Sidebar() {
     const onDisconnect = () => {
       setSerialConnected(false);
       setSerialStatus('Disconnected');
+      try { localStorage.setItem('esp32_status', JSON.stringify({ connected: false, status: 'Disconnected', ts: Date.now() })); } catch {}
+      try { socketRef.current?.emit('esp32:status:update', { connected: false, status: 'Disconnected' }); } catch {}
     };
     try { navigator.serial.addEventListener('connect', onConnect); } catch {}
     try { navigator.serial.addEventListener('disconnect', onDisconnect); } catch {}
@@ -185,6 +205,17 @@ export default function Sidebar() {
       try { navigator.serial.removeEventListener('disconnect', onDisconnect); } catch {}
     };
   }, [serialConnected]);
+
+  // Answer status requests from other pages (e.g., Admin KPI on mount)
+  useEffect(() => {
+    const socket = socketRef.current;
+    const onReq = () => {
+      try { socket?.emit('esp32:status:update', { connected: serialConnected, status: serialStatus }); } catch {}
+      try { localStorage.setItem('esp32_status', JSON.stringify({ connected: serialConnected, status: serialStatus, ts: Date.now() })); } catch {}
+    };
+    try { socket?.on('esp32:status:request', onReq); } catch {}
+    return () => { try { socket?.off('esp32:status:request', onReq); } catch {} };
+  }, [serialConnected, serialStatus]);
 
   return (
     <aside className="w-64 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 flex flex-col fixed top-0 left-0 h-screen p-4 border-r border-gray-200 dark:border-gray-700 overflow-hidden z-50">

@@ -103,7 +103,7 @@ export default function Landing() {
         
         {/* Mobile Layout - Minimal Experience */}
         <div className="lg:hidden flex-1 overflow-y-auto">
-          <div className="px-5 py-8 space-y-6">
+          <div className="px-5 pt-16 pb-8 space-y-6">
             <header className="flex items-center justify-between">
               <span className="text-[11px] font-medium text-green-800 border border-green-200 rounded-full px-3 py-1 bg-white/80 backdrop-blur">
                 {brandName}

@@ -70,16 +70,20 @@ export default function Store() {
     }
     setCart(prev => {
       const idx = prev.findIndex(x => x._id === it._id);
+      const available = Number.isFinite(it?.quantity) ? Number(it.quantity) : Infinity;
       if (idx >= 0) {
-        const copy = [...prev];
+        const curQty = prev[idx].qty;
+        if (curQty >= available) return prev; // don't exceed stock
         const nextTotal = cartTotal + price;
         if (currentBalance < nextTotal) {
           setError('Insufficient wallet balance for this item.');
           return prev;
         }
-        copy[idx] = { ...copy[idx], qty: copy[idx].qty + 1 };
+        const copy = [...prev];
+        copy[idx] = { ...copy[idx], qty: curQty + 1 };
         return copy;
       }
+      if (available <= 0) return prev; // out of stock
       return [...prev, { _id: it._id, name: it.name, price: it.price ?? 0, qty: 1 }];
     });
   };
@@ -96,6 +100,11 @@ export default function Store() {
           setError('Insufficient wallet balance to increase quantity.');
           return prev;
         }
+        // Enforce stock limit using items list
+        try {
+          const stock = items.find(i => i._id === id)?.quantity;
+          if (Number.isFinite(stock) && item.qty >= Number(stock)) return prev;
+        } catch (_) {}
       }
       return prev.map(it => it._id === id ? { ...it, qty: Math.max(1, it.qty + delta) } : it);
     });
@@ -103,6 +112,18 @@ export default function Store() {
 
   const removeFromCart = (id) => setCart(prev => prev.filter(it => it._id !== id));
   const clearCart = () => setCart([]);
+
+  const deleteItem = async (id, name) => {
+    try {
+      setError('');
+      const ok = window.confirm(`Delete \"${name || 'item'}\"? This cannot be undone.`);
+      if (!ok) return;
+      await api.delete(`/items/${id}`);
+      setItems(prev => prev.filter(x => x._id !== id));
+    } catch (e) {
+      setError(e?.response?.data?.message || e.message || 'Failed to delete item');
+    }
+  };
 
   const printBill = () => {
     if (!student) return;
@@ -129,6 +150,8 @@ export default function Store() {
   const saveBillPdf = () => {
     try {
       const doc = new jsPDF();
+      // Use a standard ASCII-safe font to avoid glyph issues
+      try { doc.setFont('helvetica', 'normal'); } catch (_) {}
       const lineH = 8;
       let y = 10;
       const put = (text, x = 10) => { doc.text(String(text), x, y); y += lineH; };
@@ -138,9 +161,9 @@ export default function Store() {
       put(`RFID: ${student?.rfid_uid || ''}`);
       y += 2;
       put('Items:');
-      cart.forEach(c => put(`- ${c.name}  x${c.qty}  = ₹ ${(c.qty * Number(c.price)).toFixed(2)}`));
+      cart.forEach(c => put(`- ${c.name}  x${c.qty}  = Rs. ${(c.qty * Number(c.price)).toFixed(2)}`));
       y += 2;
-      put(`Total: ₹ ${cartTotal.toFixed(2)}`);
+      put(`Total: Rs. ${cartTotal.toFixed(2)}`);
       const ts = new Date().toISOString().replace(/[:.]/g, '-');
       const file = `StoreBill_${student?.rollNo || student?.name || 'student'}_${ts}.pdf`;
       doc.save(file);
@@ -540,6 +563,9 @@ export default function Store() {
                     <button onClick={() => setItemQuery(v => v.trim())} className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
                       Search
                     </button>
+                    <Link to="/store/add" className="px-4 py-2 border-2 border-cyan-200 dark:border-cyan-700 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 text-cyan-700 dark:text-cyan-300 rounded-xl text-sm font-semibold transition-all duration-200">
+                      Add Item
+                    </Link>
                   </div>
                 </div>
 

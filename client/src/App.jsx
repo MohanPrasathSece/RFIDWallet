@@ -7,6 +7,7 @@ import Scans from './pages/Scans.jsx';
 import Food from './pages/Food.jsx';
 import RecentStudents from './pages/RecentStudents.jsx';
 import AddItem from './pages/AddItem.jsx';
+import AddBook from './pages/AddBook.jsx';
 import FoodHistory from './pages/FoodHistory.jsx';
 import StudentDashboard from './pages/StudentDashboard.jsx';
 import StudentHistory from './pages/StudentHistory.jsx';
@@ -22,6 +23,7 @@ import StoreHistory from './pages/StoreHistory.jsx';
 import RFIDScanner from './pages/RFIDScanner.jsx';
 import AdminRFIDScanner from './pages/AdminRFIDScanner.jsx';
 import BulkStudentUpload from './pages/BulkStudentUpload.jsx';
+import ProtectedRoute from './shared/ProtectedRoute.jsx';
 
 export default function App() {
   return (
@@ -38,7 +40,7 @@ export default function App() {
       {/* Routes with the sidebar layout */}
       <Route element={<MainLayout />}>
         <Route path="/library" element={<Library />} />
-        <Route path="/library/add" element={<AddItem />} />
+        <Route path="/library/add" element={<AddBook />} />
         <Route path="/:module/scans" element={<Scans />} />
         <Route path="/food" element={<Food />} />
         <Route path="/food/add" element={<AddItem />} />
@@ -46,12 +48,12 @@ export default function App() {
         <Route path="/store" element={<Store />} />
         <Route path="/store/add" element={<AddItem />} />
         <Route path="/store/history" element={<StoreHistory />} />
-        <Route path="/admin" element={<Admin />} />
-        <Route path="/admin/students" element={<RecentStudents />} />
-        <Route path="/admin/bulk-upload" element={<BulkStudentUpload />} />
+        <Route path="/admin" element={<ProtectedRoute roles={["admin"]}><Admin /></ProtectedRoute>} />
+        <Route path="/admin/students" element={<ProtectedRoute roles={["admin"]}><RecentStudents /></ProtectedRoute>} />
+        <Route path="/admin/bulk-upload" element={<ProtectedRoute roles={["admin"]}><BulkStudentUpload /></ProtectedRoute>} />
         <Route path="/rfid-scanner" element={<RFIDScanner />} />
-        <Route path="/admin/rfid-scanner" element={<AdminRFIDScanner />} />
-        <Route path="/admin/esp32-manager" element={<ESP32Manager />} />
+        <Route path="/admin/rfid-scanner" element={<ProtectedRoute roles={["admin"]}><AdminRFIDScanner /></ProtectedRoute>} />
+        <Route path="/admin/esp32-manager" element={<ProtectedRoute roles={["admin"]}><ESP32Manager /></ProtectedRoute>} />
       </Route>
 
       {/* Fallback route */}
@@ -59,3 +61,4 @@ export default function App() {
     </Routes>
   );
 }
+

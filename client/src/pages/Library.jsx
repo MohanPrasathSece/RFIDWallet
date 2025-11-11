@@ -19,6 +19,7 @@ export default function Library() {
   // Items for library (used for borrow dropdown)
   const [items, setItems] = useState([]);
   const [borrowItemId, setBorrowItemId] = useState('');
+  const [borrowQty, setBorrowQty] = useState(1);
   const [borrowNotes, setBorrowNotes] = useState('');
   const [borrowDueDate, setBorrowDueDate] = useState('');
 
@@ -181,9 +182,13 @@ export default function Library() {
       if (!borrowItemId) { setError('Select a book to borrow'); return; }
       
       const selectedItem = items.find(item => item._id === borrowItemId);
+      const available = Number.isFinite(selectedItem?.quantity) ? Number(selectedItem.quantity) : 0;
+      const qty = Math.max(1, Math.min(Number(borrowQty) || 1, available));
+      if (qty <= 0) { setError('Selected book is out of stock'); return; }
+
       setConfirmationAction({
         type: 'borrow',
-        data: { student: student?.name, item: selectedItem?.name }
+        data: { student: student?.name, item: selectedItem?.name, qty }
       });
       setShowConfirmation(true);
     } catch (e) {
@@ -197,22 +202,25 @@ export default function Library() {
       const sid = student?._id || studentId;
       // Optional due date
       const due = borrowDueDate ? new Date(borrowDueDate) : undefined;
-      // Step 1: create transaction pending
-      const createRes = await api.post('/transactions', {
-        student: sid,
-        item: borrowItemId,
-        module: 'library',
-        action: 'borrow',
-        status: 'pending',
-        notes: borrowNotes || undefined,
-        dueDate: due ? due.toISOString() : undefined,
-      });
-      const txId = createRes.data?._id;
-      if (txId) {
-        // Step 2: approve to trigger inventory effects
-        await api.put(`/transactions/${txId}`, { status: 'approved' });
+      // Borrow multiple copies by creating/approving multiple transactions
+      const qty = Math.max(1, Number(confirmationAction?.data?.qty) || Number(borrowQty) || 1);
+      for (let i = 0; i < qty; i += 1) {
+        const createRes = await api.post('/transactions', {
+          student: sid,
+          item: borrowItemId,
+          module: 'library',
+          action: 'borrow',
+          status: 'pending',
+          notes: borrowNotes || undefined,
+          dueDate: due ? due.toISOString() : undefined,
+        });
+        const txId = createRes.data?._id;
+        if (txId) {
+          await api.put(`/transactions/${txId}`, { status: 'approved' });
+        }
       }
       setBorrowItemId(''); setBorrowNotes(''); setBorrowDueDate('');
+      setBorrowQty(1);
       setShowConfirmation(false);
       setConfirmationAction(null);
       // Optionally refresh student data if a student is selected
@@ -412,13 +420,62 @@ export default function Library() {
                   ))}
                 </select>
 
+                {/* Quantity selector for multiple copies */}
+                <div className="flex items-center gap-3">
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    {(() => {
+                      try {
+                        const sel = items.find(it => it._id === borrowItemId);
+                        const avail = Number.isFinite(sel?.quantity) ? Number(sel.quantity) : 0;
+                        if (!borrowItemId) return 'Select a book to set quantity';
+                        return `Available: ${avail}`;
+                      } catch (_) { return null; }
+                    })()}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      className="w-8 h-8 bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-500 transition-all duration-200"
+                      onClick={() => setBorrowQty(q => Math.max(1, Number(q || 1) - 1))}
+                      disabled={!borrowItemId}
+                    >-</button>
+                    <input
+                      type="number"
+                      min={1}
+                      value={borrowQty}
+                      onChange={e => {
+                        const val = Math.max(1, Number(e.target.value) || 1);
+                        try {
+                          const sel = items.find(it => it._id === borrowItemId);
+                          const avail = Number.isFinite(sel?.quantity) ? Number(sel.quantity) : val;
+                          setBorrowQty(Math.min(val, avail));
+                        } catch (_) { setBorrowQty(val); }
+                      }}
+                      className="w-16 text-center border-2 border-gray-200 dark:border-gray-600 rounded-xl px-2 py-1 text-sm bg-white/50 dark:bg-gray-700/50 text-gray-900 dark:text-gray-100"
+                      disabled={!borrowItemId}
+                    />
+                    <button
+                      type="button"
+                      className="w-8 h-8 bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-500 transition-all duration-200"
+                      onClick={() => {
+                        try {
+                          const sel = items.find(it => it._id === borrowItemId);
+                          const avail = Number.isFinite(sel?.quantity) ? Number(sel.quantity) : Infinity;
+                          setBorrowQty(q => Math.min(avail, Number(q || 1) + 1));
+                        } catch (_) { setBorrowQty(q => Number(q || 1) + 1); }
+                      }}
+                      disabled={!borrowItemId}
+                    >+</button>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs text-gray-600 dark:text-gray-400 mb-2 font-medium">Due Date</label>
                     <input type="date" className="w-full border-2 border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 text-sm bg-white/50 dark:bg-gray-700/50 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200" value={borrowDueDate} onChange={e => setBorrowDueDate(e.target.value)} />
                   </div>
                   <div className="flex items-end">
-                    <button onClick={borrowBook} disabled={!student || !borrowItemId} className="w-full px-4 py-3 bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-400 dark:bg-emerald-600 dark:hover:bg-emerald-700 dark:disabled:bg-gray-600 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none" title="Issue book (Alt+I)">
+                    <button onClick={borrowBook} disabled={!student || !borrowItemId || (Number(borrowQty)||0) < 1} className="w-full px-4 py-3 bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-400 dark:bg-emerald-600 dark:hover:bg-emerald-700 dark:disabled:bg-gray-600 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none" title="Issue book (Alt+I)">
                       Issue Book
                     </button>
                   </div>

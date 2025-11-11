@@ -70,17 +70,20 @@ export default function Food() {
     }
     setCart(prev => {
       const idx = prev.findIndex(x => x._id === it._id);
+      const available = Number.isFinite(it?.quantity) ? Number(it.quantity) : Infinity;
       if (idx >= 0) {
-        const copy = [...prev];
-        // Also ensure increasing existing item doesn't exceed balance
-        const nextTotal = cartTotal + price; // cartTotal reflects prev state
+        const curQty = prev[idx].qty;
+        if (curQty >= available) return prev; // don't exceed stock
+        const nextTotal = cartTotal + price; // based on previous state
         if (Number(student?.walletBalance || 0) < nextTotal) {
           setError('Insufficient wallet balance for this item.');
           return prev;
         }
-        copy[idx] = { ...copy[idx], qty: copy[idx].qty + 1 };
+        const copy = [...prev];
+        copy[idx] = { ...copy[idx], qty: curQty + 1 };
         return copy;
       }
+      if (available <= 0) return prev; // out of stock
       return [...prev, { _id: it._id, name: it.name, price: it.price ?? 0, qty: 1 }];
     });
   };
@@ -97,6 +100,11 @@ export default function Food() {
           setError('Insufficient wallet balance to increase quantity.');
           return prev;
         }
+        // Enforce stock limit using items list
+        try {
+          const stock = items.find(i => i._id === id)?.quantity;
+          if (Number.isFinite(stock) && item.qty >= Number(stock)) return prev;
+        } catch (_) {}
       }
       return prev.map(it => it._id === id ? { ...it, qty: Math.max(1, it.qty + delta) } : it);
     });
@@ -104,6 +112,18 @@ export default function Food() {
 
   const removeFromCart = (id) => setCart(prev => prev.filter(it => it._id !== id));
   const clearCart = () => setCart([]);
+
+  const deleteItem = async (id, name) => {
+    try {
+      setError('');
+      const ok = window.confirm(`Delete \"${name || 'item'}\"? This cannot be undone.`);
+      if (!ok) return;
+      await api.delete(`/items/${id}`);
+      setItems(prev => prev.filter(x => x._id !== id));
+    } catch (e) {
+      setError(e?.response?.data?.message || e.message || 'Failed to delete item');
+    }
+  };
 
   const cartTotal = cart.reduce((sum, it) => sum + (Number(it.price) * it.qty), 0);
 
@@ -114,20 +134,74 @@ export default function Food() {
   }, [items, itemQuery]);
 
   const printBill = () => {
-    const w = window.open('', 'PRINT', 'height=600,width=400');
-    const lines = [
-      `<h3 style="margin:0">Food Court Bill</h3>`,
-      `<div>Student: ${student?.name || ''}</div>`,
-      `<div>RFID: ${student?.rfid_uid || ''}</div>`,
-      '<hr/>',
-      '<table style="width:100%;font-size:12px">',
-      '<tr><th align="left">Item</th><th align="right">Qty</th><th align="right">Price</th></tr>',
-      ...cart.map(c => `<tr><td>${c.name}</td><td align="right">${c.qty}</td><td align="right">₹ ${(c.price*c.qty).toFixed(2)}</td></tr>`),
-      '<tr><td colspan="3"><hr/></td></tr>',
-      `<tr><td><b>Total</b></td><td></td><td align="right"><b>₹ ${cartTotal.toFixed(2)}</b></td></tr>`,
-      '</table>'
-    ];
-    w.document.write(`<html><head><title>Bill</title></head><body>${lines.join('')}</body></html>`);
+    const w = window.open('', 'PRINT', 'height=700,width=420');
+    const ts = new Date();
+    const receiptId = `FOOD-${ts.getFullYear()}${String(ts.getMonth()+1).padStart(2,'0')}${String(ts.getDate()).padStart(2,'0')}-${String(ts.getHours()).padStart(2,'0')}${String(ts.getMinutes()).padStart(2,'0')}${String(ts.getSeconds()).padStart(2,'0')}`;
+    const styles = `
+      <style>
+        * { box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 12px; }
+        .receipt { width: 280px; margin: 0 auto; }
+        .center { text-align: center; }
+        .muted { color: #555; font-size: 11px; }
+        .title { font-weight: 700; font-size: 16px; margin: 0; }
+        .row { display: flex; justify-content: space-between; margin: 2px 0; font-size: 12px; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th, td { padding: 6px 0; }
+        th { text-align: left; border-bottom: 1px dashed #999; font-weight: 600; }
+        td.qty, th.qty { text-align: center; width: 34px; }
+        td.amount, th.amount { text-align: right; width: 70px; }
+        .sep { border-top: 1px dashed #999; margin: 8px 0; }
+        .total { font-weight: 700; font-size: 13px; }
+        .footer { margin-top: 8px; text-align: center; font-size: 11px; }
+      </style>`;
+    const currency = (n) => `&#8377; ${Number(n).toFixed(2)}`; // HTML Rupee entity to avoid glyph issues
+    const items = cart.map(c => `
+      <tr>
+        <td>${c.name}</td>
+        <td class="qty">${c.qty}</td>
+        <td class="amount">${currency(c.price * c.qty)}</td>
+      </tr>
+    `).join('');
+    const html = `
+      <html>
+        <head>
+          <meta charset="utf-8" />
+          <title>Food Bill</title>
+          ${styles}
+        </head>
+        <body>
+          <div class="receipt">
+            <div class="center">
+              <div class="title">EcoCollege Food Court</div>
+              <div class="muted">Receipt</div>
+            </div>
+            <div class="sep"></div>
+            <div class="row"><div>Receipt ID</div><div>${receiptId}</div></div>
+            <div class="row"><div>Date</div><div>${ts.toLocaleString()}</div></div>
+            <div class="row"><div>Student</div><div>${student?.name || '-'}</div></div>
+            <div class="row"><div>Roll No</div><div>${student?.rollNo || '-'}</div></div>
+            <div class="row"><div>RFID</div><div>${student?.rfid_uid || '-'}</div></div>
+            <div class="sep"></div>
+            <table>
+              <thead>
+                <tr><th>Item</th><th class="qty">Qty</th><th class="amount">Amount</th></tr>
+              </thead>
+              <tbody>${items}</tbody>
+              <tfoot>
+                <tr><td colspan="3"><div class="sep"></div></td></tr>
+                <tr>
+                  <td class="total">Total</td>
+                  <td></td>
+                  <td class="amount total">${currency(cartTotal)}</td>
+                </tr>
+              </tfoot>
+            </table>
+            <div class="footer">Thank you! GST included where applicable.</div>
+          </div>
+        </body>
+      </html>`;
+    w.document.write(html);
     w.document.close();
     w.focus();
     w.print();
@@ -137,20 +211,32 @@ export default function Food() {
   const saveBillPdf = () => {
     try {
       const doc = new jsPDF();
+      // Use a standard ASCII-safe font to avoid glyph issues
+      try { doc.setFont('helvetica', 'normal'); } catch (_) {}
       const lineH = 8;
       let y = 10;
-      const put = (text, x = 10) => { doc.text(String(text), x, y); y += lineH; };
-      put('Food Court Bill');
-      put(`Student: ${student?.name || ''}`);
-      put(`Roll No: ${student?.rollNo || ''}`);
-      put(`RFID: ${student?.rfid_uid || ''}`);
+      const put = (text, x = 10, bold = false) => {
+        try { doc.setFont('helvetica', bold ? 'bold' : 'normal'); } catch (_) {}
+        doc.text(String(text), x, y);
+        y += lineH;
+      };
+      const ts = new Date();
+      const rid = `FOOD-${ts.getFullYear()}${String(ts.getMonth()+1).padStart(2,'0')}${String(ts.getDate()).padStart(2,'0')}-${String(ts.getHours()).padStart(2,'0')}${String(ts.getMinutes()).padStart(2,'0')}${String(ts.getSeconds()).padStart(2,'0')}`;
+      put('EcoCollege Food Court', 10, true);
+      put('Receipt', 10);
       y += 2;
-      put('Items:');
-      cart.forEach(c => put(`- ${c.name}  x${c.qty}  = ₹ ${(c.qty * Number(c.price)).toFixed(2)}`));
+      put(`Receipt ID: ${rid}`);
+      put(`Date: ${ts.toLocaleString()}`);
+      put(`Student: ${student?.name || '-'}`);
+      put(`Roll No: ${student?.rollNo || '-'}`);
+      put(`RFID: ${student?.rfid_uid || '-'}`);
       y += 2;
-      put(`Total: ₹ ${cartTotal.toFixed(2)}`);
-      const ts = new Date().toISOString().replace(/[:.]/g, '-');
-      const file = `FoodBill_${student?.rollNo || student?.name || 'student'}_${ts}.pdf`;
+      put('Items:', 10, true);
+      cart.forEach(c => put(`- ${c.name}  x${c.qty}  = Rs. ${(c.qty * Number(c.price)).toFixed(2)}`));
+      y += 2;
+      put(`Total: Rs. ${cartTotal.toFixed(2)}`, 10, true);
+      const fileTs = new Date().toISOString().replace(/[:.]/g, '-');
+      const file = `FoodBill_${student?.rollNo || student?.name || 'student'}_${fileTs}.pdf`;
       doc.save(file);
     } catch (_) {}
   };
@@ -542,6 +628,9 @@ export default function Food() {
                     <button onClick={() => setItemQuery(v => v.trim())} className="px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
                       Search
                     </button>
+                    <Link to="/food/add" className="px-4 py-2 border-2 border-orange-200 dark:border-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/20 text-orange-700 dark:text-orange-300 rounded-xl text-sm font-semibold transition-all duration-200">
+                      Add Food
+                    </Link>
                   </div>
                 </div>
 

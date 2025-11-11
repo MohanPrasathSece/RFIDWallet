@@ -13,6 +13,7 @@ export function AuthProvider({ children }) {
     }
   });
   const [token, setToken] = useState(localStorage.getItem('token'));
+  const [initializing, setInitializing] = useState(true);
 
   // Ensure axios has the token on mount and when token changes
   useEffect(() => {
@@ -22,17 +23,20 @@ export function AuthProvider({ children }) {
   // On first load, if we have a token but no user, fetch current user
   useEffect(() => {
     const bootstrap = async () => {
-      if (token && !user) {
-        try {
-          const { data } = await api.get('/auth/me');
-          setUser(data.user);
-          localStorage.setItem('user', JSON.stringify(data.user));
-        } catch (e) {
-          // Token might be invalid/expired
-          if (e?.response?.status === 401) {
-            logout();
+      try {
+        if (token && !user) {
+          try {
+            const { data } = await api.get('/auth/me');
+            setUser(data.user);
+            localStorage.setItem('user', JSON.stringify(data.user));
+          } catch (e) {
+            if (e?.response?.status === 401) {
+              logout();
+            }
           }
         }
+      } finally {
+        setInitializing(false);
       }
     };
     bootstrap();
@@ -61,7 +65,7 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('user');
   };
 
-  const value = useMemo(() => ({ user, token, login, logout, setUser }), [user, token]);
+  const value = useMemo(() => ({ user, token, initializing, login, logout, setUser }), [user, token, initializing]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
